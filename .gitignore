@@ -1,0 +1,9 @@
+include/
+lkl/
+.cproject/
+.project/
+*.o
+*~
+*.swp
+TAGS
+tags

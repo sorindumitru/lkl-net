@@ -1,0 +1,6 @@
+#ifndef CODES_7V5DZ3M2
+#define CODES_7V5DZ3M2
+
+#define ESUCCESS	0
+
+#endif /* CODES_7V5DZ3M2 */

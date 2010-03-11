@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <conf_tree.h>
 #include <tokens.h>
 #include <codes.h>
@@ -9,41 +10,43 @@
 
 extern char* yytext;
 extern FILE* yyin;
+extern int num_lines;
+extern int yyleng;
+extern int yylex();
 
-static int max_children = 8;
-
-int config_init(conf_tree_t* tree)
+int config_init(conf_info_t* info)
 {
-	tree->type = ROOT;
-	tree->nr_children = -1;
+	info->interfaces.next = &info->interfaces;
+	info->interfaces.prev = &info->interfaces;
+	info->topologies.next = &info->topologies;
+	info->topologies.prev = &info->topologies; 
 	return ESUCCESS;
 }
 
-int config_free(conf_tree_t* tree)
+int config_free(conf_info_t* tree)
 {
-	
+	//TODO	
 	return ESUCCESS;
 }
 
-static int conf_tree_add_child(conf_tree_t* tree, conf_tree_t* child){
-	if( tree->nr_children == -1 ) {
-		tree->children = (conf_tree_t**) malloc(max_children*sizeof(conf_tree_t*));
-		tree->nr_children++;
-	}
-	if( (tree->nr_children +1)>=max_children ) {
-		//realloc childrent
-	}
-	tree->children[tree->nr_children] = child;
-	tree->nr_children++;
-
+static int config_add_interface(conf_info_t* info, interface_t* interface)
+{
+	INIT_LIST_HEAD(&interface->list);
+	list_add(&interface->list, &info->interfaces);
 	return ESUCCESS;
 }
 
-int config_read_file(conf_tree_t* tree, const char* file_name)
+static int config_add_topology(conf_info_t* info, topology_t* topology)
+{
+	INIT_LIST_HEAD(&topology->list);
+	list_add(&topology->list, &info->topologies);
+	return ESUCCESS;
+}
+
+int config_read_file(conf_info_t* info, const char* file_name)
 {
 	int token = -1;
 	int i;
-	conf_tree_t *current_tree;
 	interface_t *current_interface;
 	topology_t  *current_topology;
 
@@ -53,59 +56,86 @@ int config_read_file(conf_tree_t* tree, const char* file_name)
 	while ( token ) {
 		switch( token ){
 		case TOK_INTERFACE:
+		{
+			token = yylex();
+			if ( token != TOK_START ) {
+				printf("%d:\tMissing {\n",num_lines);
+				exit(-1);
+			}
 			current_interface = (interface_t*) malloc(sizeof(interface_t));
 			token = yylex();
-			for (i = 0; i < 4; i++) {
-				token = yylex();
-				//TODO: get interface data
+			while ( token != TOK_END ) {
 				if ( token == TOK_IPADDRESS ) {
-					//current_interface->address = 0;
+					struct hostent *hostinfo =gethostbyname(yytext);
+					current_interface->address = *(struct in_addr*)hostinfo->h_addr;
 				}
+				if ( token == TOK_PORT ) {
+					current_interface->port = atoi(yytext);
+				}
+				if ( token == TOK_DEV ) {
+					current_interface->dev = (char*) malloc((yyleng+1)*sizeof(char));
+					strncpy(current_interface->dev, yytext, yyleng);
+				}
+				if ( token == TOK_NETMASK ) {
+					current_interface->netmask_len = atoi(yytext+1);
+				}
+				if ( token == TOK_MAC ) {
+					current_interface->mac = ether_aton(yytext);
+				}
+				if ( token == TOK_GATEWAY ) {
+					token = yylex();
+					if ( token != TOK_IPADDRESS ) {
+						printf("%d:Expecting ip address\n", num_lines);
+					}
+					struct hostent *hostinfo =gethostbyname(yytext);
+					//inet_pton(AF_INET, yytext, &current_interface->gateway);
+					current_interface->gateway = *(struct in_addr*)hostinfo->h_addr;
+				}
+
+				token = yylex();
 			}
+
+			config_add_interface(info,current_interface);
 			break;
+		}
 		case TOK_TOPOLOGY:
 		{
 			token = yylex();
 			if( token != TOK_START ){
-				//TODO:error
+				printf("%d:\tMissing {\n", num_lines);
+				exit(-1);
 			}
 
-			current_topology = (topology_t*) malloc(sizeof(topology_t));
-			
+			current_topology = (topology_t*) malloc(sizeof(topology_t));	
 			token = yylex();
-			if( token == TOK_BRIDGE ){
-				token = yylex();
-				if( token != TOK_START ){
-					//TODO: error
-				}
-
-				for (i = 0; i < 2; i++) {
+			while ( token != TOK_END ) {
+				if( token == TOK_BRIDGE ){
 					token = yylex();
-					if( token == TOK_PORT ) {
-						current_topology->port = atoi(yytext);
+					if( token != TOK_START ){
+						printf("%d:\tMissing {\n",num_lines);
+						exit(-1);
 					}
-					if ( token == TOK_IPADDRESS ) {
-						inet_pton(AF_INET, yytext, &current_topology->address);
-						/*struct hostent *hostinfo =gethostbyname(yytext);
-						current_topology->address = *(struct in_addr*) hostinfo->h_addr;*/
+
+					token = yylex();
+					while ( token != TOK_END ) {
+						if ( token == TOK_PORT ) {
+							current_topology->port = atoi(yytext);
+						}
+						if ( token == TOK_IPADDRESS ) {
+							inet_pton(AF_INET, yytext, &current_topology->address);
+						}
+						if ( token == TOK_HOSTNAME ) {
+							//
+						}
+				
+						token = yylex();
 					}
-				}
 
-				token = yylex();
-				if ( token != TOK_END ) {
-					//TODO: error
 				}
+				
+				token = yylex();	
 			}
-			
-			current_tree = (conf_tree_t*) malloc(sizeof(conf_tree_t));
-			current_tree->type = TOPOLOGY;
-			current_tree->data = (void*) current_topology;
-			conf_tree_add_child(tree, current_tree);
-
-			token = yylex();
-			if( token!=TOK_END ) {
-				//TODO:error
-			}
+			config_add_topology(info,current_topology);
 			break;
 		}
 		default:
@@ -115,6 +145,5 @@ int config_read_file(conf_tree_t* tree, const char* file_name)
 
 		token = yylex();
 	}
-
 	return ESUCCESS;
 }

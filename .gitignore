@@ -1,5 +1,7 @@
-include/
 lkl/
+lklinclude/
+bin/
+conf/parser.c
 .cproject/
 .project/
 *.o

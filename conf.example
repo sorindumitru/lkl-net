@@ -1,6 +1,13 @@
+interface {
+	ipaddress 141.85.37.216/24;
+	mac	00:16:d3:62:c4:ae;
+	gateway 141.85.37.216;
+	dev eth0;
+	port 54367;
+}
 topology {
 	bridge {
-		port	80;
-		ipaddress	74.125.77.147;
+		port	54367;
+		ipaddress	141.85.37.216;
 	}
 }

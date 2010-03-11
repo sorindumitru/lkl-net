@@ -1,3 +1,4 @@
+	int num_lines = 0;
 %{
 #include "../include/tokens.h"
 %}
@@ -28,7 +29,7 @@ PORT	[1-9]{DIGIT}{0,5}
 {START}		return TOK_START;
 {END}		return TOK_END;
 {T_IPADDRESS}	//ipaddress
-{T_GATEWAY}	//gateway
+{T_GATEWAY}	return TOK_GATEWAY;
 {T_MAC}		//mac
 {T_DEV}		//dev
 {T_PORT}	//port
@@ -38,7 +39,7 @@ PORT	[1-9]{DIGIT}{0,5}
 {DEV}		return TOK_DEV;
 {PORT}		return TOK_PORT;
 ";"	//
-\n	//
+\n	num_lines++;
 \t	//
 .	//
 %%

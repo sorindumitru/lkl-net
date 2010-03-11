@@ -11,6 +11,8 @@
 #define TOK_PORT	7
 #define TOK_TOPOLOGY	8
 #define TOK_BRIDGE	9
+#define TOK_HOSTNAME	10
+#define TOK_GATEWAY	11
 
 #define TOK_EOF		255
 

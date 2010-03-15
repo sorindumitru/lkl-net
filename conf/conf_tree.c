@@ -46,7 +46,6 @@ static int config_add_topology(conf_info_t* info, topology_t* topology)
 int config_read_file(conf_info_t* info, const char* file_name)
 {
 	int token = -1;
-	int i;
 	interface_t *current_interface;
 	topology_t  *current_topology;
 
@@ -80,7 +79,7 @@ int config_read_file(conf_info_t* info, const char* file_name)
 					current_interface->netmask_len = atoi(yytext+1);
 				}
 				if ( token == TOK_MAC ) {
-					current_interface->mac = ether_aton(yytext);
+					current_interface->mac = (struct eth_addr*) ether_aton(yytext);
 				}
 				if ( token == TOK_GATEWAY ) {
 					token = yylex();

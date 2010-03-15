@@ -11,6 +11,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/epoll.h>
 #include <netinet/in.h>
 #include <netpacket/packet.h>
 
@@ -57,6 +58,7 @@ int dev_index(char* dev){
 	int index =1;
 	int sock = socket(PF_PACKET, SOCK_RAW, 0);
 	ifr.ifr_ifindex = index;
+	ifr.ifr_addr.sa_family = AF_INET;
 	while ( ioctl(sock, SIOCGIFNAME, &ifr) == 0 ) {
 		if ( strcmp(ifr.ifr_name, dev) == 0 ) {
 			close(sock);
@@ -68,15 +70,27 @@ int dev_index(char* dev){
 	return -1;	 
 }
 
+unsigned char* dev_mac(char* dev){
+	struct ifreq ifr;
+
+	int sock = socket(PF_PACKET, SOCK_RAW, 0);
+	strncpy(ifr.ifr_name, dev, IFNAMSIZ-1);
+	ioctl(ifr.ifr_name,SIOCGIFHWADDR, &ifr);
+	close(sock);
+	return ifr.ifr_hwaddr.sa_data;
+}
+
 int main(int argc, const char *argv[])
 {
 	int host, lkl, maxfd = -1, result;
 	int port;
 	int err;
+	int epoll_listen;
 	unsigned int addr_len;
 	struct in_addr address;
 	struct sockaddr_ll saddr;
 	fd_set working, readset;
+	struct epoll_event ev_lkl, ev_host;
 
 	//read config file
 	conf_info_t* tree = malloc(sizeof(conf_info_t));
@@ -102,7 +116,7 @@ int main(int argc, const char *argv[])
 
 	printf("::Initialized TUN/TAP interface %s\n",interface);
 
-	lkl = socket(PF_INET, SOCK_RAW, htons(ETH_P_ALL));
+	lkl = socket(PF_INET, SOCK_RAW, ETH_P_ALL);
 	/*saddr.sin_port = htons(port);
 	saddr.sin_addr = address;
 	saddr.sin_family = PF_INET;
@@ -110,30 +124,58 @@ int main(int argc, const char *argv[])
 		perror("connect:");
 		return -1;
 	}*/
+	memset(&saddr,0,sizeof(saddr));
 	saddr.sll_family = AF_INET;
 	saddr.sll_halen = 6;
-	saddr.sll_ifindex = dev_index("eth0");
+	saddr.sll_ifindex = dev_index("vmnet8");
+	//saddr.sll_pkttype = PACKET_OTHERHOST;
+	//saddr.sll_protocol = htons(ETH_P_ALL);
+	char* mac = dev_mac("vmnet8");
+	saddr.sll_addr[0] = mac[0];
+	saddr.sll_addr[1] = mac[1];
+	saddr.sll_addr[2] = mac[2];
+	saddr.sll_addr[3] = mac[3];
+	saddr.sll_addr[4] = mac[4];
+	saddr.sll_addr[5] = mac[5];
+	saddr.sll_addr[6] = 0x00;
+	saddr.sll_addr[7] = 0x00;
 	if( lkl > maxfd )
 		maxfd = lkl;
-	
+	//err = bind(lkl, (struct sockaddr*) &saddr, sizeof(saddr));
+	if( err < 0 ){
+		perror("bind:");
+		exit(-1);
+	}
 	printf("::Connected\n");
 
 	FD_ZERO(&working);
 	FD_SET(lkl,&working);
 	FD_SET(host,&working);
 
-	int nr_bytes;
-	while(1){
-		memcpy(&readset, &working, sizeof(working));
-		result = select(maxfd+1, &readset, 0, 0, NULL); 
+	epoll_listen = epoll_create(2);
+	if ( epoll_listen < 0 ) {
+		perror("epoll:");
+		exit(-1);
+	}
+	ev_lkl.data.fd = lkl;
+	ev_lkl.events = EPOLLIN;
+	ev_host.data.fd = host;
+	ev_host.events = EPOLLIN;
+	epoll_ctl(epoll_listen, EPOLL_CTL_ADD, lkl, &ev_lkl);
+	epoll_ctl(epoll_listen, EPOLL_CTL_ADD, host, &ev_host);
+	int nr_bytes = 0;
+	while ( 1 ) {
+		struct epoll_event ret_ev;
 
-		if( FD_ISSET(lkl, &readset) ) {
-			nr_bytes = recvfrom(lkl, buffer, BUFFSIZE, 0, (struct sockaddr*) &saddr, &addr_len);
+		epoll_wait(epoll_listen, &ret_ev, 1, -1);
+
+		if( ret_ev.data.fd == lkl && ((ret_ev.events & EPOLLIN) != 0 ) ) {
+			nr_bytes = recvfrom(lkl, buffer, BUFFSIZE, 0, NULL, NULL);
 			write(host, buffer, nr_bytes);
 			printf("recv\n");
 		}
 
-		if( FD_ISSET(host, &readset) ) {
+		if( ret_ev.data.fd == host && ((ret_ev.events & EPOLLIN) != 0 ) ) {
 			nr_bytes = read(host, buffer, BUFFSIZE);
 			printf("got data from host %d\n", nr_bytes);
 			nr_bytes = sendto(lkl, buffer, nr_bytes, 0, (struct sockaddr*) &saddr, sizeof(saddr));
@@ -143,8 +185,33 @@ int main(int argc, const char *argv[])
 				exit(-1);
 			}
 			printf("sent %d\n",nr_bytes);
+
 		}
 	}
+
+	/*int nr_bytes;
+	while(1){
+		memcpy(&readset, &working, sizeof(working));
+		result = select(maxfd+1, &readset, 0, 0, NULL); 
+
+		if( FD_ISSET(lkl, &readset) ) {
+			nr_bytes = recvfrom(lkl, buffer, ETH_FRAME_LEN, 0, NULL, NULL);
+			write(host, buffer, nr_bytes);
+			printf("recv\n");
+		}
+
+		if( FD_ISSET(host, &readset) ) {
+			nr_bytes = read(host, buffer, ETH_FRAME_LEN);
+			printf("got data from host %d\n", nr_bytes);
+			nr_bytes = sendto(lkl, buffer, ETH_FRAME_LEN, 0, (struct sockaddr*) &saddr, sizeof(saddr));
+			//nr_bytes = send(lkl,buffer,nr_bytes,0);
+			if( nr_bytes < 0 ) {
+				perror("sendto:");
+				exit(-1);
+			}
+			printf("sent %d\n",nr_bytes);
+		}
+	}*/
 
 	return 0;
 }

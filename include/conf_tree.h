@@ -2,9 +2,8 @@
 #define CONF_TREE_9Z3VI8KG
 
 #include <list.h>
-
-#include <netinet/in.h>
-#include <netinet/ether.h>
+#include <interface.h>
+#include <topology.h>
 
 #define ROOT 1024
 #define	INTERFACE 1025
@@ -17,12 +16,6 @@
 #define	BRIDGE 1032
 #define PORT 1033
 
-/**
- * Topologies:
- */
-#define TOP_BRIDGE	1
-#define TOP_LINK	2
-
 typedef struct gen_info{
 	char* hostname;
 	unsigned short port;
@@ -33,26 +26,6 @@ typedef struct conf_info{
 	struct list_head interfaces;
 	struct list_head topologies;
 } conf_info_t;
-
-typedef struct interface{
-	char* dev;
-	struct eth_addr	*mac;
-	struct in_addr address, gateway;
-	unsigned int netmask_len;
-	unsigned short port;
-
-	struct list_head list;
-} interface_t;
-
-typedef struct topology{
-	unsigned char type;
-	struct in_addr address;
-	unsigned short port;
-	char* dev;
-
-	struct list_head list;
-} topology_t;
-
 
 extern int config_init(conf_info_t* conf);
 extern int config_free(conf_info_t* conf);

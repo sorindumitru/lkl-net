@@ -14,7 +14,7 @@
 #include <sys/epoll.h>
 #include <netinet/in.h>
 #include <netpacket/packet.h>
-
+#include <packet.h>
 #include <net/if.h>
 #include <linux/if_tun.h>
 
@@ -52,35 +52,98 @@ int init_host_interface(char* dev)
 	return device;
 }
 
-int dev_index(char* dev){
-	struct ifreq ifr;
+int main(int argc, char **argv)
+{
+	int err;
+	topology_t* topology;
+	struct list_head *head;
 
-	int index =1;
-	int sock = socket(PF_PACKET, SOCK_RAW, 0);
-	ifr.ifr_ifindex = index;
-	ifr.ifr_addr.sa_family = AF_INET;
-	while ( ioctl(sock, SIOCGIFNAME, &ifr) == 0 ) {
-		if ( strcmp(ifr.ifr_name, dev) == 0 ) {
-			close(sock);
-			return index;
-		}
-		ifr.ifr_ifindex = ++index;
+	int port;
+	struct in_addr address;
+
+	int host, lkl, epoll_listen;
+	struct sockaddr_in saddr;
+	struct epoll_event ev_lkl, ev_host;
+
+	printf("::Bridge v1.0\n");
+
+	printf("::Reading config file\n");
+	conf_info_t* info = malloc(sizeof(*info));
+	config_init(info);
+	config_read_file(info, argv[1]);
+	list_for_each(head, &info->topologies){
+		topology = list_entry(head, topology_t, list);
 	}
-	close(sock);
-	return -1;	 
+
+	port = topology->port;
+	address = topology->address;
+	printf("::Init host interface\n");
+	host = init_host_interface(interface);
+	if (host < 0) {
+		perror("init_host_interface:");
+		return -1;
+	}
+	printf("::Initialized TUN/TAP interface %s\n",interface);
+	
+	lkl = socket(AF_INET, SOCK_STREAM, 0);
+	if (lkl < 0 ) {
+		perror("socket:");
+		return -1;
+	}
+	saddr.sin_port = htons(port);
+	saddr.sin_addr = address;
+	saddr.sin_family = PF_INET;
+	if ((err=connect(lkl, (struct sockaddr*) &saddr, sizeof(saddr))) < 0) {
+		perror("connect:");
+		return -1;
+	}
+
+	epoll_listen = epoll_create(2);
+	if ( epoll_listen < 0 ) {
+		perror("epoll:");
+		exit(-1);
+	}
+	ev_lkl.data.fd = lkl;
+	ev_lkl.events = EPOLLIN;
+	ev_host.data.fd = host;
+	ev_host.events = EPOLLIN;
+	epoll_ctl(epoll_listen, EPOLL_CTL_ADD, lkl, &ev_lkl);
+	epoll_ctl(epoll_listen, EPOLL_CTL_ADD, host, &ev_host);
+
+	while (1) {
+		struct epoll_event ret_ev;
+
+		epoll_wait(epoll_listen, &ret_ev, 1, -1);
+
+		if (ret_ev.data.fd == lkl && ((ret_ev.events & EPOLLIN) != 0)) {
+			packet_t *packet = recv_packet(lkl);
+			if (!packet) {
+				continue;
+			}
+			err =send_packet_native(host, packet);
+			if (err < 0) {
+				continue;
+			}
+			printf("Send Host succesful\n");
+			free_packet(packet);
+		}
+
+		if (ret_ev.data.fd == host && ((ret_ev.events & EPOLLIN) != 0)) {
+			packet_t *packet = recv_packet_native(host);		
+			if (!packet) {
+				continue;
+			}
+			err = send_packet(lkl, packet);
+			if (err < 0) {
+				continue;
+			}
+			printf("Send LKL succesful\n");
+			free_packet(packet);	
+		}
+	}
 }
 
-unsigned char* dev_mac(char* dev){
-	struct ifreq ifr;
-
-	int sock = socket(PF_PACKET, SOCK_RAW, 0);
-	strncpy(ifr.ifr_name, dev, IFNAMSIZ-1);
-	ioctl(ifr.ifr_name,SIOCGIFHWADDR, &ifr);
-	close(sock);
-	return ifr.ifr_hwaddr.sa_data;
-}
-
-int main(int argc, const char *argv[])
+/*int main(int argc, const char *argv[])
 {
 	int host, lkl, maxfd = -1, result;
 	int port;
@@ -117,13 +180,13 @@ int main(int argc, const char *argv[])
 	printf("::Initialized TUN/TAP interface %s\n",interface);
 
 	lkl = socket(PF_INET, SOCK_RAW, ETH_P_ALL);
-	/*saddr.sin_port = htons(port);
+	saddr.sin_port = htons(port);
 	saddr.sin_addr = address;
 	saddr.sin_family = PF_INET;
 	if ( (err=connect(lkl, (struct sockaddr*) &saddr, sizeof(saddr))) < 0 ) {
 		perror("connect:");
 		return -1;
-	}*/
+	}
 	memset(&saddr,0,sizeof(saddr));
 	saddr.sll_family = AF_INET;
 	saddr.sll_halen = 6;
@@ -189,29 +252,5 @@ int main(int argc, const char *argv[])
 		}
 	}
 
-	/*int nr_bytes;
-	while(1){
-		memcpy(&readset, &working, sizeof(working));
-		result = select(maxfd+1, &readset, 0, 0, NULL); 
-
-		if( FD_ISSET(lkl, &readset) ) {
-			nr_bytes = recvfrom(lkl, buffer, ETH_FRAME_LEN, 0, NULL, NULL);
-			write(host, buffer, nr_bytes);
-			printf("recv\n");
-		}
-
-		if( FD_ISSET(host, &readset) ) {
-			nr_bytes = read(host, buffer, ETH_FRAME_LEN);
-			printf("got data from host %d\n", nr_bytes);
-			nr_bytes = sendto(lkl, buffer, ETH_FRAME_LEN, 0, (struct sockaddr*) &saddr, sizeof(saddr));
-			//nr_bytes = send(lkl,buffer,nr_bytes,0);
-			if( nr_bytes < 0 ) {
-				perror("sendto:");
-				exit(-1);
-			}
-			printf("sent %d\n",nr_bytes);
-		}
-	}*/
-
 	return 0;
-}
+}*/

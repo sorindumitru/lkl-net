@@ -20,7 +20,6 @@
 #include <asm/poll.h>
 
 
-struct tun_device td;
 
 #define MAX_PFDS 32
 /**
@@ -217,6 +216,7 @@ static int do_full_write(int fd, const char *buffer, int length)
  */
 int lkl_ping(int argc, char **argv)
 {
+	struct tun_device* td = malloc(sizeof(struct tun_device));
 	int err, sock;
 	struct sockaddr_in saddr = {
 		.sin_family = AF_INET,
@@ -227,12 +227,13 @@ int lkl_ping(int argc, char **argv)
 		return -1;
 
 	if (!strcmp(cla.role,"server")) {
-		td.port = cla.port;
-		td.type = TUN_DIRECT_DCE;
+		td->port = cla.port;
+		td->type = TUN_HUB;
+		td->address = cla.gateway.s_addr;
 	} else {
-		td.port = cla.port;
-		td.type = TUN_DIRECT_DTE;
-		td.address = cla.address.s_addr;
+		td->port = cla.port;
+		td->type = TUN_HUB;
+		td->address = cla.gateway.s_addr;
 	}
 
 	if (cla.lkl) {
@@ -247,9 +248,9 @@ int lkl_ping(int argc, char **argv)
 
 		if (lkl_env_init(16 * 1024 * 1024) < 0)
 			return -1;
-
+			printf("MAC : %s\n", ether_ntoa(cla.mac));	
 		if ((ifindex =
-		     lkl_add_eth_tun(cla.iface, (char *) cla.mac, 32,&td)) == 0)
+		     lkl_add_eth_tun(cla.iface, (char *) cla.mac, 32, td)) == 0)
 			return -1;
 
 		if ((err =
@@ -268,11 +269,11 @@ int lkl_ping(int argc, char **argv)
 			return -1;
 		}
 
-		if ((err = lkl_set_gateway(cla.gateway.s_addr))) {
+		/*if ((err = lkl_set_gateway(cla.gateway.s_addr))) {
 			printf("failed to set gateway %s: %s\n",
-			       inet_ntoa(cla.gateway), strerror(-err));
+			       inet_ntoa(cla.address), strerror(-err));
 			return -1;
-		}
+		}*/
 	}
 
 	if ((sock = do_socket(PF_INET, SOCK_STREAM, 0)) < 0) {
@@ -320,7 +321,7 @@ int lkl_ping(int argc, char **argv)
 
 
 		/* get a message from the client */
-		if (do_read(sd_current, msg, sizeof(msg)) == -1) {
+		if (do_read(sd_current, msg, 1024) == -1) {
 			perror("recv");
 			exit(1);
 		}

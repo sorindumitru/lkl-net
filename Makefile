@@ -14,7 +14,7 @@ APR_CONF=$(shell apr-config --includes --cppflags)
 
 EXTRA_FLAGS=-gstabs+
 
-all: conf_test bridge time_server
+all: conf_test bridge hub test
 
 # Include LKL {
 
@@ -54,21 +54,6 @@ $(CROSS)lkl/lkl.a: lkl/.config
 
 # }
 
-#.o: %.c $(INC)
-#	$(CC) -c $(CFLAGS) $< -o $@
-
-#conf/parser.o:conf/parser.c parser
-#	$(CC) $(CFLAGS) -c -o conf/parser.o conf/parser.c
-
-#parser: conf/parser.l
-#	flex --outfile=conf/parser.c conf/parser.l
-
-#conf_test: parser $(CONFOBJ)
-#	$(CC) $(CFLAGS) $(CONFOBJ) conf_test.c -o bin/conf_test 
-
-time_server: $(CONFOBJ) apps/time_server.o $(INC) $(CROSS)lkl/lkl.a
-	$(CC) $(CFLAGS) -o bin/time_server apps/time_server.c lkl/lkl.a -lpthread $(CONFOBJ)
-
 # Conf {
 
 CONF_DIR=conf
@@ -98,7 +83,7 @@ PARSER=conf/parser.o
 # Bridge {
 
 BRIDGE_DIR=bridge
-BRIDGE_SRC=$(BRIDGE_DIR)/bridge.c
+BRIDGE_SRC=$(BRIDGE_DIR)/bridge.c packet.c
 BRIDGE_OBJ=$(patsubst %c,%o,$(BRIDGE_SRC))
 
 .PHONY: bridge
@@ -112,13 +97,27 @@ bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
 # Test {
 
 TEST_DIR=apps;
-TEST_SRC=$(TEST_DIR)/ping.c
+TEST_SRC=$(TEST_DIR)/test.c
 TEST_OBJ=$(patsubst %c,%o,$(TEST_SRC))
 
-ping: bin/ping
+.PHONY: test
+test: bin/test
 
-bin/ping: $(INC) $(CROSS)lkl/lkl.a
-	gcc -Wall -Iinclude -Ilklinclude -o bin/ping apps/ping.c lkl/lkl.a -lpthread
+bin/test: apps/test.c $(INC) $(CROSS)lkl/lkl.a
+	$(CC) $(CFLAGS) -o bin/test apps/test.c lkl/lkl.a -lpthread
+# }
+
+# Hub {
+
+HUB_DIR=hub
+HUB_SRC=$(HUB_DIR)/hub.c
+HUB_OBJ=$(patsubst %c,%o,$(HUB_SRC))
+
+.PHONY: hub
+hub: bin/hub
+bin/hub: $(HUB_OBJ) 
+	$(CC) $(CFLAGS) $< -o $@
+
 # }
 
 # Clean up {

@@ -1,0 +1,8 @@
+hostname Liverpool
+interface {
+	ipaddress 11.11.11.2/24;
+	mac aa:bb:cc:11:55:77;
+	dev eth0;
+	gateway 127.0.0.1;
+	port 50001;
+}

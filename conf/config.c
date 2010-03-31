@@ -178,7 +178,6 @@ int config_read_file(conf_info_t* info, const char* file_name)
 				memset(sw_if->dev, 0, strlen(yytext)+1);
 				strncpy(sw_if->dev, yytext, strlen(yytext));
 				INIT_LIST_HEAD(&sw_if->list);
-				printf("%s %s\n", yytext, sw_if->dev);
 				list_add(&sw_if->list, &current_topology->port_list);
 				token = yylex();
 			}

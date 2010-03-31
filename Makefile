@@ -145,6 +145,8 @@ clean:
 	-rm apps/*.o
 	-rm conf/*.o
 	-rm bin/bridge
+	-rm bin/switch
+	-rm bin/hub
 
 clean-all: clean
 	-rm -rf lkl

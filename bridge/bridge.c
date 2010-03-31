@@ -18,7 +18,7 @@
 #include <net/if.h>
 #include <linux/if_tun.h>
 
-#include <conf_tree.h>
+#include <config.h>
 
 #define BUFFSIZE 8192
 char buffer[BUFFSIZE];
@@ -124,7 +124,6 @@ int main(int argc, char **argv)
 			if (err < 0) {
 				continue;
 			}
-			printf("Send Host succesful\n");
 			free_packet(packet);
 		}
 
@@ -137,120 +136,7 @@ int main(int argc, char **argv)
 			if (err < 0) {
 				continue;
 			}
-			printf("Send LKL succesful\n");
 			free_packet(packet);	
 		}
 	}
 }
-
-/*int main(int argc, const char *argv[])
-{
-	int host, lkl, maxfd = -1, result;
-	int port;
-	int err;
-	int epoll_listen;
-	unsigned int addr_len;
-	struct in_addr address;
-	struct sockaddr_ll saddr;
-	fd_set working, readset;
-	struct epoll_event ev_lkl, ev_host;
-
-	//read config file
-	conf_info_t* tree = malloc(sizeof(conf_info_t));
-	config_init(tree);
-	config_read_file(tree,argv[1]);//should parse arguments
-	
-	topology_t* topo;
-	struct list_head* head;
-	list_for_each(head, &tree->topologies){
-		topo=list_entry(head, topology_t, list);
-	}
-	port = topo->port;
-	address = topo->address;
-
-	printf("::Starting\n");
-	host = init_host_interface(interface);	
-	if ( host < 0 ) {
-		perror("initializing host interface:");
-		return -1;
-	}
-	if( host > maxfd )
-		maxfd = host;
-
-	printf("::Initialized TUN/TAP interface %s\n",interface);
-
-	lkl = socket(PF_INET, SOCK_RAW, ETH_P_ALL);
-	saddr.sin_port = htons(port);
-	saddr.sin_addr = address;
-	saddr.sin_family = PF_INET;
-	if ( (err=connect(lkl, (struct sockaddr*) &saddr, sizeof(saddr))) < 0 ) {
-		perror("connect:");
-		return -1;
-	}
-	memset(&saddr,0,sizeof(saddr));
-	saddr.sll_family = AF_INET;
-	saddr.sll_halen = 6;
-	saddr.sll_ifindex = dev_index("vmnet8");
-	//saddr.sll_pkttype = PACKET_OTHERHOST;
-	//saddr.sll_protocol = htons(ETH_P_ALL);
-	char* mac = dev_mac("vmnet8");
-	saddr.sll_addr[0] = mac[0];
-	saddr.sll_addr[1] = mac[1];
-	saddr.sll_addr[2] = mac[2];
-	saddr.sll_addr[3] = mac[3];
-	saddr.sll_addr[4] = mac[4];
-	saddr.sll_addr[5] = mac[5];
-	saddr.sll_addr[6] = 0x00;
-	saddr.sll_addr[7] = 0x00;
-	if( lkl > maxfd )
-		maxfd = lkl;
-	//err = bind(lkl, (struct sockaddr*) &saddr, sizeof(saddr));
-	if( err < 0 ){
-		perror("bind:");
-		exit(-1);
-	}
-	printf("::Connected\n");
-
-	FD_ZERO(&working);
-	FD_SET(lkl,&working);
-	FD_SET(host,&working);
-
-	epoll_listen = epoll_create(2);
-	if ( epoll_listen < 0 ) {
-		perror("epoll:");
-		exit(-1);
-	}
-	ev_lkl.data.fd = lkl;
-	ev_lkl.events = EPOLLIN;
-	ev_host.data.fd = host;
-	ev_host.events = EPOLLIN;
-	epoll_ctl(epoll_listen, EPOLL_CTL_ADD, lkl, &ev_lkl);
-	epoll_ctl(epoll_listen, EPOLL_CTL_ADD, host, &ev_host);
-	int nr_bytes = 0;
-	while ( 1 ) {
-		struct epoll_event ret_ev;
-
-		epoll_wait(epoll_listen, &ret_ev, 1, -1);
-
-		if( ret_ev.data.fd == lkl && ((ret_ev.events & EPOLLIN) != 0 ) ) {
-			nr_bytes = recvfrom(lkl, buffer, BUFFSIZE, 0, NULL, NULL);
-			write(host, buffer, nr_bytes);
-			printf("recv\n");
-		}
-
-		if( ret_ev.data.fd == host && ((ret_ev.events & EPOLLIN) != 0 ) ) {
-			nr_bytes = read(host, buffer, BUFFSIZE);
-			printf("got data from host %d\n", nr_bytes);
-			nr_bytes = sendto(lkl, buffer, nr_bytes, 0, (struct sockaddr*) &saddr, sizeof(saddr));
-			//nr_bytes = send(lkl,buffer,nr_bytes,0);
-			if( nr_bytes < 0 ) {
-				perror("sendto:");
-				exit(-1);
-			}
-			printf("sent %d\n",nr_bytes);
-
-		}
-	}
-
-	return 0;
-}*/

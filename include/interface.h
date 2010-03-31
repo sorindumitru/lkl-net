@@ -1,6 +1,7 @@
 #ifndef INTERFACE_6IT2DSD
 #define INTERFACE_6IT2DSD
 
+#include <list.h>
 #include <netinet/in.h>
 #include <netinet/ether.h>
 

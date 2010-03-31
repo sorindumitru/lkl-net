@@ -17,6 +17,7 @@ T_GATEWAY	"gateway"
 T_MAC		"mac"
 T_DEV		"dev"
 T_PORT		"port"
+T_SWITCH	"switch"
 IPADDRESS	(([0-9]){1,3}"."){3}([0-9]){1,3}
 NETMASK	"/"(3[0-2]|[0-2]?[0-9])
 MAC	({HEX}{HEX}:){5}{HEX}{HEX}
@@ -28,11 +29,12 @@ PORT	[1-9]{DIGIT}{0,5}
 {BRIDGE}	return TOK_BRIDGE;
 {START}		return TOK_START;
 {END}		return TOK_END;
-{T_IPADDRESS}	//ipaddress
-{T_GATEWAY}	return TOK_GATEWAY;
-{T_MAC}		//mac
-{T_DEV}		//dev
-{T_PORT}	//port
+{T_IPADDRESS}	return TOK_T_IPADDRESS;
+{T_GATEWAY}	return TOK_T_GATEWAY;
+{T_MAC}		return TOK_T_MAC;
+{T_DEV}		return TOK_T_DEV;
+{T_PORT}	return TOK_T_PORT;
+{T_SWITCH}	return TOK_SWITCH;
 {IPADDRESS}	return TOK_IPADDRESS;
 {NETMASK}	return TOK_NETMASK;
 {MAC}		return TOK_MAC;

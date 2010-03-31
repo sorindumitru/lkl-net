@@ -57,7 +57,7 @@ $(CROSS)lkl/lkl.a: lkl/.config
 # Conf {
 
 CONF_DIR=conf
-CONF_SRC=$(CONF_DIR)/conf_tree.c $(CONF_DIR)/parser.c
+CONF_SRC=$(CONF_DIR)/config.c $(CONF_DIR)/parser.c
 CONF_OBJ=$(patsubst %c,%o,$(CONF_SRC))
 
 .PHONY: conf_test
@@ -94,6 +94,20 @@ bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
 
 # }
 
+# Switch {
+
+SWITCH_DIR=switch
+SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c
+SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
+
+.PHONY: switch
+switch: bin/switch
+
+bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a -pthread
+
+# }
+
 # Test {
 
 TEST_DIR=apps;
@@ -124,13 +138,13 @@ bin/hub: $(HUB_OBJ)
 
 .PHONY: clean
 clean:
+	-rm *.o
 	-rm conf/parser.c
 	-rm bin/conf_test
 	-rm bridge/*.o
 	-rm apps/*.o
 	-rm conf/*.o
 	-rm bin/bridge
-	-rm bin/time_server
 
 clean-all: clean
 	-rm -rf lkl

@@ -108,6 +108,20 @@ bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 
 # }
 
+# Router {
+
+ROUTER_DIR=router
+ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c #topology.c
+ROUTER_OBJ=$(patsubst %c,%o,$(ROUTER_SRC))
+
+.PHONY: router
+router: bin/router
+
+bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(ROUTER_OBJ) -o bin/router lkl/lkl.a -pthread
+
+# }
+
 # Test {
 
 TEST_DIR=apps;

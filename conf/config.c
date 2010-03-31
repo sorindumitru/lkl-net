@@ -63,7 +63,7 @@ int config_read_file(conf_info_t* info, const char* file_name)
 				printf("%d:\tMissing {\n",num_lines);
 				exit(-1);
 			}
-			current_interface = alloc_interface();
+			current_interface = malloc(sizeof(interface_t));
 			token = yylex();
 			while ( token != TOK_END ) {
 				if ( token == TOK_T_IPADDRESS ) {

@@ -2,7 +2,7 @@ interface {
 	dev eth0;
 	mac aa:bb:cc:00:01:01;
 	gateway 127.0.0.1;
-	ipaddress 11.1.1.1;
+	ipaddress 199.9.9.9/24;
 	port 50001;
 	type hub;
 }
@@ -10,7 +10,7 @@ interface {
 	dev eth1;
 	mac aa:bb:cc:00:01:02;
 	gateway 127.0.0.1;
-	ipaddress 8.8.8.8;
+	ipaddress 8.8.8.8/24;
 	port 50002;
 	type hub;
 }

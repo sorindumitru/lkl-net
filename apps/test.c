@@ -38,6 +38,7 @@ static struct argp_option options[] = {
 	{"netmask-length", 'n', "int", 0,
 	 "IPv4 netmask length for the lkl interface:"},
 	{"gateway", 'g', "IPv4 address", 0, "IPv4 gateway for lkl:"},
+	{"default", 'd', "IPv4 address", 0, "IPv4 default root"},
 	{"lkl", 'l', 0, 0, "Use LKL:"},
 	{"port", 'p', "int", 0, "Port"},
 	{"role", 'r', "string", 0, "server/client"},
@@ -49,12 +50,12 @@ static struct argp_option options[] = {
 typedef struct ping_args {
 	struct ether_addr *mac;
 	const char *iface, *request, *role;
-	struct in_addr address, gateway, host;
+	struct in_addr address, def, gateway, host;
 	unsigned int netmask_len, port, lkl;
 } ping_args_t;
 
 static ping_args_t cla = {
-	.port = 65000,
+	.port = 50000,
 };
 
 
@@ -80,6 +81,17 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 				return -1;
 			}
 			cla->address =
+			    *(struct in_addr *) hostinfo->h_addr;
+			break;
+		}
+	case 'd':
+		{
+			struct hostent *hostinfo = gethostbyname(arg);
+			if (!hostinfo) {
+				printf("unknown host %s\n", arg);
+				return -1;
+			}
+			cla->def =
 			    *(struct in_addr *) hostinfo->h_addr;
 			break;
 		}
@@ -226,15 +238,12 @@ int lkl_ping(int argc, char **argv)
 	if (argp_parse(&argp, argc, argv, 0, 0, &cla) < 0)
 		return -1;
 
-	if (!strcmp(cla.role,"server")) {
 		td->port = cla.port;
 		td->type = TUN_HUB;
 		td->address = cla.gateway.s_addr;
-	} else {
 		td->port = cla.port;
 		td->type = TUN_HUB;
 		td->address = cla.gateway.s_addr;
-	}
 
 	if (cla.lkl) {
 		int ifindex;
@@ -269,14 +278,14 @@ int lkl_ping(int argc, char **argv)
 			return -1;
 		}
 
-		/*if ((err = lkl_set_gateway(cla.gateway.s_addr))) {
+		/*if ((err = lkl_set_gateway(cla.def.s_addr))) {
 			printf("failed to set gateway %s: %s\n",
 			       inet_ntoa(cla.address), strerror(-err));
 			return -1;
 		}*/
 	}
 
-	if ((sock = do_socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+	if ((sock = do_socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("can't create socket: %s\n",
 		       strerror(get_error(sock)));
 		return -1;
@@ -291,6 +300,8 @@ int lkl_ping(int argc, char **argv)
 		struct sockaddr_in pin;
 		char msg[4026];
 
+		saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
 		/* bind the socket to the port number */
 		if (lkl_sys_bind
 		    (sock, (struct sockaddr *) &saddr,
@@ -299,11 +310,16 @@ int lkl_ping(int argc, char **argv)
 			exit(1);
 		}
 
+		printf("bind\n");
+
 		/* show that we are willing to listen */
-		if (lkl_sys_listen(sock, 5) == -1) {
+		if (lkl_sys_listen(sock, 10) == -1) {
 			perror("listen");
 			exit(1);
 		}
+
+		printf("listen\n");
+
 		/* wait for a client to talk to us */
 		addrlen = sizeof(pin);
 		if ((sd_current =
@@ -312,6 +328,7 @@ int lkl_ping(int argc, char **argv)
 			perror("accept");
 			exit(1);
 		}
+
 		/* if you want to see the ip address and port of the client, uncomment the 
 		   next two lines */
 
@@ -343,7 +360,7 @@ int lkl_ping(int argc, char **argv)
 				sizeof(saddr))) < 0) {
 			printf("can't connect to %s:%u: %s\n",
 			       inet_ntoa(cla.host),
-			       ntohl(saddr.sin_port),
+			       ntohs(saddr.sin_port),
 			       strerror(get_error(err)));
 			return -1;
 		}

@@ -18,6 +18,7 @@ T_MAC		"mac"
 T_DEV		"dev"
 T_PORT		"port"
 T_SWITCH	"switch"
+T_DEFAULT	"default"
 IPADDRESS	(([0-9]){1,3}"."){3}([0-9]){1,3}
 NETMASK	"/"(3[0-2]|[0-2]?[0-9])
 MAC	({HEX}{HEX}:){5}{HEX}{HEX}
@@ -35,6 +36,7 @@ PORT	[1-9]{DIGIT}{0,5}
 {T_DEV}		return TOK_T_DEV;
 {T_PORT}	return TOK_T_PORT;
 {T_SWITCH}	return TOK_SWITCH;
+{T_DEFAULT}	return TOK_T_DEFAULT;
 {IPADDRESS}	return TOK_IPADDRESS;
 {NETMASK}	return TOK_NETMASK;
 {MAC}		return TOK_MAC;

@@ -33,6 +33,7 @@ int main(int argc,char**argv)
 	enable_ip_forward();
 	printf("next ip_forward=%c\n",read_ip_forward_value());
 	printf("next ip_forward=%c\n",read_ip_forward_value());
+
 	while(1){
 	}
 	return 0;

@@ -92,6 +92,14 @@ int config_read_file(conf_info_t* info, const char* file_name)
 				if ( token == TOK_NETMASK ) {
 					current_interface->netmask_len = atoi(yytext+1);
 				}
+				if (token == TOK_T_DEFAULT) {
+					token = yylex();
+					if (token != TOK_IPADDRESS) {
+						printf("Config reader :: expecting IPv4 address at %d, but got %s\n", num_lines, yytext);
+					}
+					struct hostent *hostinfo =gethostbyname(yytext);
+					current_interface->def_addr = *(struct in_addr*)hostinfo->h_addr;
+				}
 				if ( token == TOK_T_MAC ) {
 					token = yylex();
 					if (token != TOK_MAC) {

@@ -20,6 +20,7 @@
 #define TOK_T_MAC	131
 #define TOK_T_GATEWAY	132
 #define TOK_T_DEFAULT	133
+#define TOK_T_HOSTNAME	134
 
 #define TOK_EOF		255
 

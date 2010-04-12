@@ -52,10 +52,18 @@ int config_read_file(conf_info_t* info, const char* file_name)
 	topology_t  *current_topology;
 
 	yyin = fopen(file_name, "r");
-
+	info->general.hostname = "Device";
 	token = yylex();
 	while ( token ) {
 		switch( token ){
+		case TOK_T_HOSTNAME:
+			token = yylex();
+			if (token != TOK_HOSTNAME) {
+				printf("Config reader :: expecting hostname at %d, but got %s\n", num_lines, yytext);
+			}
+			info->general.hostname = malloc((yyleng+1)*sizeof(char));
+			strncpy(info->general.hostname, yytext, yyleng);
+			break;
 		case TOK_INTERFACE:
 		{
 			token = yylex();
@@ -190,11 +198,6 @@ int config_read_file(conf_info_t* info, const char* file_name)
 				token = yylex();
 			}
 			config_add_topology(info,current_topology);
-			break;
-		}
-		case TOK_HOSTNAME:
-		{
-			strncpy(info->general.hostname,yytext,strlen(yytext));
 			break;
 		}
 		default:

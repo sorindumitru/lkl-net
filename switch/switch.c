@@ -8,6 +8,9 @@
 #include <asm/eth.h>
 #include <asm/lkl_bridge.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #define BRIDGE_NAME "brd0"
 
 int bridge_id;
@@ -34,6 +37,8 @@ int main(int argc, const char **argv)
 	conf_info_t* info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
+	char *prompt;
+	char *command;
 
 	if (lkl_env_init(16*1024*1024) < 0) {
 		printf("LKL init :: could not init environment\n");
@@ -58,14 +63,18 @@ int main(int argc, const char **argv)
 		}
 	}
 
-	printf("brd0 id:%d\n", get_dev_index(BRIDGE_NAME));
-
 	if ((err=lkl_if_up(get_dev_index(BRIDGE_NAME)) < 0)) {
 		printf("LKL init :: could not bring bridge %s up :: %d\n", BRIDGE_NAME,err);
 	}
 
-	while(1){
+	prompt = malloc(strlen(info->general.hostname)+2);
+	sprintf(prompt, "%s>", info->general.hostname);
 
+	while(1){
+		command = readline(prompt);
+		add_history(command);
+
+		free(command);
 	}
 
         return 0;

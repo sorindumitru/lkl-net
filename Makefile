@@ -1,6 +1,7 @@
 CC=gcc
 FLEX=flex
 CFLAGS=-g -Wall -Ilklinclude -Iinclude
+LDLIBS=-pthread -lreadline
 
 # Environment {
 
@@ -104,7 +105,7 @@ SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
 switch: bin/switch
 
 bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
-	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a -pthread
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a $(LDLIBS)
 
 # }
 

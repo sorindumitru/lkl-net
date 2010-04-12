@@ -11,7 +11,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include <switch.h>
+#include <console.h>
 
 #define BRIDGE_NAME "brd0"
 

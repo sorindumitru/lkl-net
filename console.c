@@ -1,5 +1,13 @@
 #include <console.h>
 
+COMMAND commands[] = {
+	{"stp", (params *) NULL, do_set_stp, "Set stp ON or OFF"},
+	{"show", (params *) NULL, cmd_show, "Show information about BRIDGE"},
+	{"macs", (params *) NULL, do_show_arp_table, "Show arp table"},
+	{"help", (params *) NULL, show_help, "Show help"},
+	{(char *) NULL, (params *) NULL, (rl_icpfunc_t *) NULL, (char *) NULL}
+};
+
 int execute_line(char *line)
 {
 	int i = 0;
@@ -50,17 +58,4 @@ COMMAND* find_command(const char *name)
 	}
 
 	return ((COMMAND *)NULL);
-}
-
-int cmd_show(const char *name)
-{
-	struct bridge_info binfo;
-
-	lkl_br_get_bridge_info(name, &binfo);
-
-	printf("bridge name\t\tbridge id\t\t\tSTP enabled\n%s\t\t",name);
-	lkl_br_dump_bridge_id((unsigned char*) &binfo.bridge_id);
-	printf("\t\t\t%s\n", (binfo.stp_enabled ? "yes" : "no"));
-
-	return 0;
 }

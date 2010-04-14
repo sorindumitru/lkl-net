@@ -278,11 +278,11 @@ int lkl_ping(int argc, char **argv)
 			return -1;
 		}
 
-		if ((err = lkl_set_gateway(cla.def.s_addr))) {
+		/*if ((err = lkl_set_gateway(cla.def.s_addr))) {
 			printf("failed to set gateway %s: %s\n",
 			       inet_ntoa(cla.address), strerror(-err));
 			return -1;
-		}
+		}*/
 	}
 
 	if ((sock = do_socket(AF_INET, SOCK_STREAM, 0)) < 0) {

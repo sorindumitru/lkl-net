@@ -4,24 +4,33 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include <switch_cmd.h>
+
+#ifndef LKL_NET_CONSOLE_PARAMS
+#define LKL_NET_CONSOLE_PARAMS 1
+
+#define MAX_PARAM_NO	8
 typedef struct params {
-	int nr;
+	void *p[MAX_PARAM_NO];
 } params;
+#endif
 
-typedef struct COMMAND {
+#define DEVICE_ALL	1
+#define DEVICE_ROUTER	2
+#define DEVICE_SWITCH	4
+
+typedef struct command {
 	char *name;
-	params *params;
-	rl_icpfunc_t *func;
-	char *doc;
-} COMMAND;
-
-int set_host_name PARAMS((const char*));
-int cmd_show PARAMS((const char*));
-int show_help();
-int do_set_stp PARAMS((const char*));
-int do_show_arp_table PARAMS((const char*));
+	int parameters_no;
+	unsigned device_type;
+	int (*function)(params*);
+	char *documentation;
+	struct command *children;
+} command;
 
 int execute_line(char *line);
-COMMAND* find_command(const char* command);
+command* find_command(const command* commands, const char* command);
+
+int do_exit_cmd(struct params* parameters);
 
 #endif /* LKL_NET_CONSOLE_H_ */

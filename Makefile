@@ -98,7 +98,7 @@ bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
 # Switch {
 
 SWITCH_DIR=switch
-SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c console.c
+SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c console.c $(SWITCH_DIR)/switch_cmd.c
 SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
 
 .PHONY: switch

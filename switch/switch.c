@@ -85,43 +85,4 @@ int main(int argc, const char **argv)
         return 0;
 }
 
-int cmd_show(const char *name)
-{
-	struct bridge_info binfo;
 
-	lkl_br_get_bridge_info(name, &binfo);
-
-	printf("bridge name\t\tbridge id\t\tSTP enabled\t\tinterfaces\n%s\t\t",name);
-	lkl_br_dump_bridge_id((unsigned char*) &binfo.bridge_id);
-	fflush(stdout);
-	printf("\t\t%s", (binfo.stp_enabled ? "yes" : "no"));
-	fflush(stdout);
-	lkl_br_foreach_port(name, lkl_br_dump_interface, NULL);
-	printf("\n");
-
-	return 0;
-}
-
-int show_help(){
-	return 0;
-}
-
-int do_set_stp(const char *word)
-{
-	int value = 0, err;
-	if (strcmp(word,"on")) {
-		value = 1;
-	}
-
-	err = lkl_br_set_stp(BRIDGE_NAME, 1);
-	if (err < 0) {
-		printf("LKL init :: could not set stp on %s :: %d\n", BRIDGE_NAME, err);
-	}
-
-	return 0;
-}
-
-int do_show_arp_table(const char *name){
-	lkl_br_showmacs(name);
-	return 0;	
-}

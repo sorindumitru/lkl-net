@@ -18,6 +18,7 @@ command show_if_commands[] = {
 command show_commands[] = {
 	{(char *) "mac-table", 1, DEVICE_SWITCH, do_show_mac_table, "Show interface mac-table", (command*) NULL},
 	{(char *) "interface", -1, DEVICE_ALL, NULL, "Show interface information", (command*) show_if_commands},
+	{(char *) "route", 0, DEVICE_ROUTER, do_show_ip_route, "Show routing table", (command*) NULL},
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
 };
 

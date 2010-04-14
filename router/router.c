@@ -15,6 +15,9 @@ int main(int argc,char**argv)
 	conf_info_t* info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
+	char *prompt;
+	char *command;
+
 
 	if (lkl_env_init(16*1024*1024) < 0) {
 		printf("LKL init :: could not init environment\n");
@@ -28,13 +31,20 @@ int main(int argc,char**argv)
 	}
 	
 	lkl_mount_proc();
-
-	printf("ip_forward=%c\n",read_ip_forward_value());
 	enable_ip_forward();
-	printf("next ip_forward=%c\n",read_ip_forward_value());
-	printf("next ip_forward=%c\n",read_ip_forward_value());
+
+	prompt = malloc(strlen(info->general.hostname)+2);
+	sprintf(prompt, "%s>", info->general.hostname);
 
 	while(1){
+		command = readline(prompt);
+		if (!command) {
+			break;
+		}
+		add_history(command);
+		execute_line(command);
+		free(command);
+
 	}
 	return 0;
 }

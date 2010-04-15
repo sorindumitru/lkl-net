@@ -286,7 +286,7 @@ const char *ll_index_to_name(unsigned idx)
 	return ll_idx_n2a(idx, nbuf);
 }
 
-static const char *ipx_ntop(int af,void* ptr, char *str, size_t len)
+static const char *ipx_ntop(int af, const void* ptr, char *str, size_t len)
 {
 	int i;
 	size_t pos = 0;
@@ -424,6 +424,7 @@ const char *format_host(int af, int len, const void *addr,
 
 int print_route(const struct sockaddr_nl *who, struct nlmsghdr *n, void *arg)
 {
+
 	FILE *fp = (FILE*)arg;
 	struct rtmsg *r = NLMSG_DATA(n);
 	int len = n->nlmsg_len;
@@ -950,12 +951,22 @@ int ll_remember_index(const struct sockaddr_nl *who,
 	return 0;
 }
 
+void iproute_reset_filter()
+{
+	memset(&filter, 0, sizeof(filter));
+	filter.mdst.bitlen = -1;
+	filter.msrc.bitlen = -1;
+}
+
 int do_show_ip_route(struct params* params)
 {
 	if (rtnl_open(&rth,0) < 0) {
 		printf("Could not open netlink socket\n");
 		return -1;
 	}
+
+	iproute_reset_filter();
+	filter.tb = RT_TABLE_MAIN;
 
 	if (rtnl_wilddump_request(&rth, AF_UNSPEC, RTM_GETLINK) < 0) {
 		printf("Cannot send dump request");
@@ -965,7 +976,17 @@ int do_show_ip_route(struct params* params)
 	if (rtnl_dump_filter(&rth, ll_remember_index, &idxmap, NULL, NULL) < 0) {
 		printf("Dump terminated\n");
 		return -1;
-	}	
+	}
+
+	if (rtnl_wilddump_request(&rth, AF_INET, RTM_GETROUTE) < 0) {
+		printf("Cannot send dump request");
+		exit(1);
+	}
+
+	if (rtnl_dump_filter(&rth, print_route, stdout, NULL, NULL) < 0) {
+		fprintf(stderr, "Dump terminated\n");
+		exit(1);
+	}
 	
 	return 0;
 }

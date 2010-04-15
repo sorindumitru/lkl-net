@@ -5,6 +5,7 @@
 #include <readline/history.h>
 
 #include <switch_cmd.h>
+#include <router_cmd.h>
 
 #ifndef LKL_NET_CONSOLE_PARAMS
 #define LKL_NET_CONSOLE_PARAMS 1

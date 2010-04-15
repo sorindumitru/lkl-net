@@ -98,7 +98,7 @@ bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
 # Switch {
 
 SWITCH_DIR=switch
-SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c console.c $(SWITCH_DIR)/switch_cmd.c
+SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c console.c $(SWITCH_DIR)/switch_cmd.c router/router_cmd.c
 SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
 
 .PHONY: switch
@@ -112,7 +112,7 @@ bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 # Router {
 
 ROUTER_DIR=router
-ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c console.c switch/switch_cmd.c #topology.c
+ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c console.c switch/switch_cmd.c router/router_cmd.c#topology.c
 ROUTER_OBJ=$(patsubst %c,%o,$(ROUTER_SRC))
 
 .PHONY: router

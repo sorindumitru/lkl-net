@@ -74,8 +74,8 @@ int main(int argc, const char **argv)
 
 	while(1){
 		command = readline(prompt);
-		if (!command) {
-			break;
+		if (!command || (strlen(command) == 0)) {
+			continue;
 		}
 		add_history(command);
 		execute_line(command);

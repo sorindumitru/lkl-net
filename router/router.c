@@ -7,6 +7,7 @@
 #include <asm/env.h>
 #include <asm/eth.h>
 #include <asm/lkl_router.h>
+#include <console.h>
 
 int main(int argc,char**argv)
 {
@@ -38,8 +39,8 @@ int main(int argc,char**argv)
 
 	while(1){
 		command = readline(prompt);
-		if (!command) {
-			break;
+		if (!command || (strlen(command) == 0)) {
+			continue;
 		}
 		add_history(command);
 		execute_line(command);

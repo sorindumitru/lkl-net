@@ -1,14 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <console.h>
-
-/* command commands[] = {
-	{"stp", (params *) NULL, do_set_stp, "Set stp ON or OFF"},
-	{"show", (params *) NULL, cmd_show, "Show information about BRIDGE"},
-	{"macs", (params *) NULL, do_show_arp_table, "Show arp table"},
-	{"help", (params *) NULL, show_help, "Show help"},
-	{(char *) NULL, (params *) NULL, (rl_icpfunc_t *) NULL, (char *) NULL}
-};*/
+#include <arpa/inet.h>
 
 command show_if_commands[] = {
 	{"bridge", 1, DEVICE_SWITCH, do_show_bridge_interface, "Show bridge interface", (command*) NULL},
@@ -26,6 +19,8 @@ command root[] = {
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands},
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL},
+	{"add", 3, DEVICE_ROUTER, do_add_route, "Add router", (command*) NULL},
+	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Add router", (command*) NULL},
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
 };
 
@@ -68,41 +63,6 @@ int execute_line(char *line)
 	}
 
 	return ((*(com->function)) (parameters));
-	/*int i = 0;
-	command *command;
-	char *word;
-
-	while (line[i] && whitespace(line[i])) {
-		i++;
-	}
-	word = line + i;
-
-	while (line[i] && !whitespace(line[i])) {
-		i++;
-	}
-
-	if (line[i]) {
-		line[i++] = '\0';
-	}
-
-	command = find_command(word);
-
-	if (!command) {
-		printf("command not found\n");
-		return -1;
-	}
-	
-	while (whitespace(line[i])) {
-	    i++;
-	}
-	word = line + i;
-
-	if (!word) {
-		printf("show accepts one parameter\n");
-		return -1;
-	}
-
-	return ((*(command->function)) (word));*/
 }
 
 command* find_command(const command *commands, const char *name)

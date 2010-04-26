@@ -16,7 +16,7 @@ int main(int argc,char**argv)
 	conf_info_t* info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
-	char *prompt;
+	extern char *prompt;
 	char *command;
 
 

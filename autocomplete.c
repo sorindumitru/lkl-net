@@ -4,6 +4,15 @@
 
 char cc[100];
 extern command *com;
+extern char *prompt;
+void add_newline(char **matches, int num_matches, int max_length){
+	int i;
+	for(i=1;i<=num_matches;i++){
+		printf("\n\t\t%s",matches[i]);
+	}
+	printf("\n%s%s",prompt,rl_line_buffer);
+}
+
 char *complete_other_words(const char *text,int state)
 {
 	static int list_index, len,rest,rest_of_cmd_size;
@@ -84,6 +93,6 @@ void initialize_autocomplete( void )
 	cmd->doc=(char**)malloc(MAX_COMMAND_NO*sizeof(char*));
 	memset(cmd->doc,0,MAX_COMMAND_NO);
 	list_commands(com,0);
-
+	rl_completion_display_matches_hook = add_newline;
 	rl_completion_entry_function = complete_other_words;
 }

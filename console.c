@@ -52,6 +52,7 @@ command root[] = {
 };
 
 
+extern command *com=root;
 
 int execute_line(char *line)
 {

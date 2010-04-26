@@ -3,7 +3,7 @@
 #include <console.h>
 
 char cc[100];
-
+extern command *com;
 char *complete_other_words(const char *text,int state)
 {
 	static int list_index, len,rest,rest_of_cmd_size;
@@ -73,7 +73,7 @@ void list_commands(command* c, int i)
 	}
 }
 
-void initialize_autocomplete(command *com)
+void initialize_autocomplete( void )
 {
 	int i;
 
@@ -83,7 +83,7 @@ void initialize_autocomplete(command *com)
 	memset(cmd->cmds,0,MAX_COMMAND_NO);
 	cmd->doc=(char**)malloc(MAX_COMMAND_NO*sizeof(char*));
 	memset(cmd->doc,0,MAX_COMMAND_NO);
-	list_commands(root,0);
+	list_commands(com,0);
 
 	rl_completion_entry_function = complete_other_words;
 }

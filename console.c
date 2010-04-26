@@ -24,7 +24,7 @@ command show_commands[] = {
 	{"devices", 0, DEVICE_HYPERVISOR, do_show_devices, "Show devices", (command *) NULL, NULL},
 	{"device", 1, DEVICE_HYPERVISOR, do_show_device, "Show device information", (command *) NULL, NULL},
 #endif
-	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
+	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
 };
 
 command create_commands[] = {
@@ -48,7 +48,7 @@ command root[] = {
 #endif
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands, NULL},
 	{"exit", 0, DEVICE_ALL, NULL, "Exit", (command*) NULL, NULL},
-	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
+	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
 };
 
 

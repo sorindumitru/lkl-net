@@ -33,6 +33,7 @@ DEV	{LETTER}{3}{DIGIT}+
 PORT	[1-9]{DIGIT}{0,5}
 HOSTNAME ({LETTER}|{DIGIT}|_)+
 CONFIG_FILE ({LETTER}|{DIGIT}|"/"|"_"|".")+
+%x	CONFIG
 %%
 {ROUTER}	return TOK_ROUTER;
 {HUB}		return TOK_HUB;
@@ -52,14 +53,14 @@ CONFIG_FILE ({LETTER}|{DIGIT}|"/"|"_"|".")+
 {T_HYPERVISOR}	return TOK_T_HYPERVISOR;
 {T_TYPE}	return TOK_T_TYPE;
 {T_DEVICE}	return TOK_T_DEVICE;
-{T_CONFIG}	return TOK_T_CONFIG;
+{T_CONFIG}	BEGIN(CONFIG); return TOK_T_CONFIG;
 {IPADDRESS}	return TOK_IPADDRESS;
 {NETMASK}	return TOK_NETMASK;
 {MAC}		return TOK_MAC;
 {DEV}		return TOK_DEV;
 {PORT}		return TOK_PORT;
 {HOSTNAME}	return TOK_HOSTNAME;
-{CONFIG_FILE}	return TOK_CONFIG_FILE;
+<CONFIG>{CONFIG_FILE}	BEGIN(INITIAL); return TOK_CONFIG_FILE;
 ";"	//
 \n	num_lines++;
 \t	//

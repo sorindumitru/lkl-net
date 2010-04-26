@@ -22,6 +22,7 @@ typedef struct command {
 	int (*function)(params*);
 	char *documentation;
 	struct command *children;
+	char *parameters;
 } command;
 
 typedef struct all_commands {

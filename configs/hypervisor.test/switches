@@ -16,4 +16,10 @@ hypervisor {
 		hostname hub3;
 		config gamma;
 	}
+
+	device {
+		type switch;
+		hostname London;
+		config configs/test.switch/switch.london;
+	}
 }

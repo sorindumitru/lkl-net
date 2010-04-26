@@ -134,7 +134,7 @@ bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
 # Hypervisor {
 
 HYPERVISOR_DIR=hypervisor
-HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c console.c
+HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c console.c device.c
 HYPERVISOR_OBJ=$(patsubst %c,%o,$(HYPERVISOR_SRC))
 
 .PHONY: hypervisor

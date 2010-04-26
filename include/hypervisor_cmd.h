@@ -8,6 +8,7 @@
 
 extern int do_create_link(struct params *params);
 extern int do_show_devices(struct params *params);
+extern int do_show_device(struct params *params);
 extern int do_create_router(struct params *params);
 
 #endif /* LKL_NET_HYPERVISOR_CMD_H_ */

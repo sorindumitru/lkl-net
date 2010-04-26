@@ -19,6 +19,7 @@
 typedef struct gen_info{
 	char* hostname;
 	unsigned short port;
+	struct in_addr address;
 } gen_info_t;
 
 typedef struct conf_info{

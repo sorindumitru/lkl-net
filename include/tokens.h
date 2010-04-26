@@ -15,6 +15,7 @@
 #define TOK_SWITCH	11
 #define TOK_ROUTER	12
 #define TOK_HUB		13
+#define TOK_CONFIG_FILE 14
 
 #define TOK_T_IPADDRESS 128
 #define TOK_T_PORT	129

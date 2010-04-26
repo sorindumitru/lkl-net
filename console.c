@@ -22,6 +22,7 @@ command show_commands[] = {
 #endif
 #ifdef ISHYPERVISOR
 	{"devices", 0, DEVICE_HYPERVISOR, do_show_devices, "Show devices", (command *) NULL},
+	{"device", 1, DEVICE_HYPERVISOR, do_show_device, "Show device information", (command *) NULL},
 #endif
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
 };

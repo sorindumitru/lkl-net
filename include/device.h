@@ -42,6 +42,7 @@ static enum device_type get_device_type(char *type)
 	return DEV_UNKNOWN;
 }
 
+
 static char* get_type(enum device_type type)
 {
 	switch(type){
@@ -59,5 +60,12 @@ static char* get_type(enum device_type type)
 		break;
 	}
 }
+
+typedef struct socket {
+	char *address;
+	unsigned short port;
+} socket_t;
+
+extern socket_t* get_device_socket(device_t *device); 
 
 #endif /* LKL_NET_DEVICE_H_ */

@@ -28,9 +28,29 @@ int config_init(conf_info_t* info)
 	return ESUCCESS;
 }
 
-int config_free(conf_info_t* tree)
+int config_free(conf_info_t* info)
 {
-	//TODO	
+	struct list_head *head, *temp;
+
+	list_for_each_safe(head, temp, &info->interfaces) {
+		interface_t *interface = list_entry(head, interface_t, list);
+		list_del(head);
+		free(interface);
+	}
+
+	list_for_each_safe(head, temp, &info->topologies) {
+		topology_t *topology = list_entry(head, topology_t, list);
+		list_del(head);
+		free(topology);
+	}
+
+	list_for_each_safe(head, temp, &info->devices) {
+		device_t *device = list_entry(head, device_t, list);
+		list_del(head);
+		free(device);
+	}
+
+	free(info);
 	return ESUCCESS;
 }
 
@@ -73,6 +93,21 @@ int config_read_file(conf_info_t* info, const char* file_name)
 			}
 			info->general.hostname = malloc((yyleng+1)*sizeof(char));
 			strncpy(info->general.hostname, yytext, yyleng);
+			break;
+		case TOK_T_IPADDRESS:
+			token = yylex();
+			if (token != TOK_IPADDRESS) {
+				printf("Config reader :: expecting IPv4 address at %d, but found %s\n", num_lines, yytext);
+			}
+			struct hostent *hostinfo =gethostbyname(yytext);
+			info->general.address = *(struct in_addr*)hostinfo->h_addr;
+			break;
+		case TOK_T_PORT:
+			token = yylex();
+			if (token != TOK_PORT) {
+				printf("Config reader :: expecting port at %d, but found %s\n", num_lines, yytext);
+			}
+			info->general.port = atoi(yytext);
 			break;
 		case TOK_INTERFACE:
 		{

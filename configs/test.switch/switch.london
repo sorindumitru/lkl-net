@@ -1,5 +1,6 @@
 hostname London;
-ipaddress 127.0.0.1;
+ipaddress 192.168.1.1;
+port 60001;
 interface {
 	dev eth0;
 	mac aa:bb:cc:00:01:01;

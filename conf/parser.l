@@ -32,6 +32,7 @@ MAC	({HEX}{HEX}:){5}{HEX}{HEX}
 DEV	{LETTER}{3}{DIGIT}+
 PORT	[1-9]{DIGIT}{0,5}
 HOSTNAME ({LETTER}|{DIGIT}|_)+
+CONFIG_FILE ({LETTER}|{DIGIT}|"/"|"_"|".")+
 %%
 {ROUTER}	return TOK_ROUTER;
 {HUB}		return TOK_HUB;
@@ -58,6 +59,7 @@ HOSTNAME ({LETTER}|{DIGIT}|_)+
 {DEV}		return TOK_DEV;
 {PORT}		return TOK_PORT;
 {HOSTNAME}	return TOK_HOSTNAME;
+{CONFIG_FILE}	return TOK_CONFIG_FILE;
 ";"	//
 \n	num_lines++;
 \t	//

@@ -72,6 +72,8 @@ int main(int argc, const char **argv)
 	prompt = malloc(strlen(info->general.hostname)+2);
 	sprintf(prompt, "%s>", info->general.hostname);
 
+	initialize_autocomplete();
+
 	while(1){
 		command = readline(prompt);
 		if (!command || (strlen(command) == 0)) {

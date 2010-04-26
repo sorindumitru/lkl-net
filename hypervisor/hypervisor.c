@@ -18,6 +18,8 @@ int main(int argc, char **argv)
 
 	start_request_thread();
 
+	initialize_autocomplete();
+
 	printf("LKL NET :: Hypervisor initialised\n");
 	while(1){
 		command = readline(prompt);

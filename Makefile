@@ -83,7 +83,7 @@ PARSER=conf/parser.o
 
 # Console {
 
-CONSOLE_SRC=console.c switch/switch_cmd.c router/router_cmd.c hypervisor/hypervisor_cmd.c
+CONSOLE_SRC=console.c autocomplete.c
 
 # }
 
@@ -104,7 +104,7 @@ bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
 # Switch {
 
 SWITCH_DIR=switch
-SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c console.c $(SWITCH_DIR)/switch_cmd.c router/router_cmd.c
+SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c 
 SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
 
 .PHONY: switch
@@ -119,7 +119,7 @@ bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 # Router {
 
 ROUTER_DIR=router
-ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c console.c switch/switch_cmd.c router/router_cmd.c#topology.c
+ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c 
 ROUTER_OBJ=$(patsubst %c,%o,$(ROUTER_SRC))
 
 .PHONY: router
@@ -134,7 +134,7 @@ bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
 # Hypervisor {
 
 HYPERVISOR_DIR=hypervisor
-HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c console.c device.c
+HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c $(CONSOLE_SRC) device.c
 HYPERVISOR_OBJ=$(patsubst %c,%o,$(HYPERVISOR_SRC))
 
 .PHONY: hypervisor

@@ -16,9 +16,9 @@ command show_if_commands[] = {
 
 command show_commands[] = {
 #if defined(ISROUTER)||defined(ISSWITCH)
-	{(char *) "mac-table", 1, DEVICE_SWITCH, do_show_mac_table, "Show interface mac-table", (command*) NULL},
-	{(char *) "interface", -1, DEVICE_ALL, NULL, "Show interface information", (command*) show_if_commands},
-	{(char *) "route", 0, DEVICE_ROUTER, do_show_ip_route, "Show routing table", (command*) NULL},
+	{"mac-table", 1, DEVICE_SWITCH, do_show_mac_table, "Show interface mac-table", (command*) NULL},
+	{"interface", -1, DEVICE_ALL, NULL, "Show interface information", (command*) show_if_commands},
+	{"route", 0, DEVICE_ROUTER, do_show_ip_route, "Show routing table", (command*) NULL},
 #endif
 #ifdef ISHYPERVISOR
 	{"devices", 0, DEVICE_HYPERVISOR, do_show_devices, "Show devices", (command *) NULL},
@@ -35,10 +35,12 @@ command create_commands[] = {
 };
 
 command root[] = {
-#if defined(ISROUTER)||defined(ISSWITCH)
+#ifdef ISSWITCH
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL},
-	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL},
+#endif
+#ifdef ISROUTER	
 	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Add route", (command*) NULL},
+	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL},
 #endif
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands},

@@ -111,6 +111,7 @@ SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
 switch: bin/switch
 
 bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
+	$(CC) $(CFLAGS) -c console.c -DISSWITCH -o console.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a $(LDLIBS)
 
 # }
@@ -125,6 +126,7 @@ ROUTER_OBJ=$(patsubst %c,%o,$(ROUTER_SRC))
 router: bin/router
 
 bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
+	$(CC) $(CFLAGS) -c console.c -DISROUTER -o console.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(ROUTER_OBJ) -o bin/router lkl/lkl.a $(LDLIBS)
 
 # }

@@ -130,7 +130,7 @@ int config_read_file(conf_info_t* info, const char* file_name)
 					if ( token != TOK_IPADDRESS ) {
 						printf("Config reader :: expecting IPv4 address at %d, but got %s\n", num_lines, yytext);
 					}
-					struct hostent *hostinfo =gethostbyname(yytext);
+					struct hostent *hostinfo = gethostbyname(yytext);
 					//inet_pton(AF_INET, yytext, &current_interface->gateway);
 					current_interface->gateway = *(struct in_addr*)hostinfo->h_addr;
 				}

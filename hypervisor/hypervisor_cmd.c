@@ -22,7 +22,7 @@ int do_create_link(struct params *params)
 			"xterm",
 			"-e",
 			"bin/hub", 
-			"50004",
+			params->p[0],
 			NULL
 		};
 		err = execvp("xterm", args);
@@ -43,7 +43,7 @@ int do_show_devices(struct params *params)
 	printf("Devices:\n");
 	list_for_each(head,&info->devices) {
 		device_t *device = list_entry(head, device_t, list);
-		printf("\t%s\n", device->hostname);
+		printf("\t%s : %s\n", device->hostname, get_type(device->type));
 	}
 	return 0;
 }

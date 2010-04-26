@@ -42,4 +42,22 @@ static enum device_type get_device_type(char *type)
 	return DEV_UNKNOWN;
 }
 
+static char* get_type(enum device_type type)
+{
+	switch(type){
+	case DEV_ROUTER:
+		return "router";
+		break;
+	case DEV_SWITCH:
+		return "switch";
+		break;
+	case DEV_HUB:
+		return "hub";
+		break;
+	default:
+		return "unknown";
+		break;
+	}
+}
+
 #endif /* LKL_NET_DEVICE_H_ */

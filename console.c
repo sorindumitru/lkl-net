@@ -51,7 +51,7 @@ command root[] = {
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
 };
 
-
+extern command *com = root;
 
 int execute_line(char *line)
 {

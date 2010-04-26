@@ -9,6 +9,7 @@
 #include <netdb.h>
 
 #include <interface.h>
+#include <device.h>
 
 extern char* yytext;
 extern FILE* yyin;
@@ -22,6 +23,8 @@ int config_init(conf_info_t* info)
 	info->interfaces.prev = &info->interfaces;
 	info->topologies.next = &info->topologies;
 	info->topologies.prev = &info->topologies; 
+	info->devices.next = &info->devices;
+	info->devices.prev = &info->devices;
 	return ESUCCESS;
 }
 
@@ -42,6 +45,13 @@ static int config_add_topology(conf_info_t* info, topology_t* topology)
 {
 	INIT_LIST_HEAD(&topology->list);
 	list_add(&topology->list, &info->topologies);
+	return ESUCCESS;
+}
+
+static int config_add_device(conf_info_t* info, device_t *device)
+{
+	INIT_LIST_HEAD(&device->list);
+	list_add(&device->list, &info->devices);
 	return ESUCCESS;
 }
 
@@ -200,8 +210,53 @@ int config_read_file(conf_info_t* info, const char* file_name)
 			config_add_topology(info,current_topology);
 			break;
 		}
+		case TOK_T_HYPERVISOR:
+			token = yylex();
+			if (token != TOK_START) {
+				printf("Config reader :: expecting { at %d, but found %s\n", num_lines, yytext);
+			}
+
+			device_t *device;
+			token = yylex();
+			while (token != TOK_END) {
+				device = malloc(sizeof(*device));
+				if (token != TOK_T_DEVICE) {
+					printf("Config reader :: expecting device at %d, but got %s\n", num_lines, yytext);
+				}
+				token = yylex();
+				if (token != TOK_START) {
+					printf("Config reader :: expecting { at %d, but found %s\n", num_lines, yytext);
+				}
+				
+				token = yylex();
+				while (token != TOK_END) {
+					if (token == TOK_T_TYPE) {
+						token = yylex();
+						device->type = get_device_type(yytext);
+					} else if (token == TOK_T_PORT) {
+						token = yylex();
+						device->port = atoi(yytext);
+					} else if (token == TOK_T_HOSTNAME) {
+						token = yylex();
+						device->hostname = malloc(strlen(yytext)+1);
+						memset(device->hostname, 0, strlen(yytext)+1);
+						memcpy(device->hostname, yytext, strlen(yytext));
+					} else if (token == TOK_T_CONFIG) {
+						token = yylex();	
+						device->config = malloc(strlen(yytext)+1);
+						memset(device->config, 0, strlen(yytext)+1);
+						memcpy(device->config, yytext, strlen(yytext));
+					} else {
+						printf("Config reader :: unexpected input at %d, %s\n", num_lines, yytext);
+					}
+					token = yylex();
+				}
+				config_add_device(info, device);
+				token = yylex();
+			}
+			break;
 		default:
-			printf("Error in config file\n");
+			printf("Config reader :: error at %d, value found is %s\n", num_lines, yytext);
 			break;
 		}
 

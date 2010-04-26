@@ -168,6 +168,7 @@ void wait_for_messages( int port_no )
 
 int main(int argc, char** argv)
 {
+	printf("LKL NET :: hub started on %d\n", atoi(argv[1]));
 	wait_for_messages(atoi(argv[1]));
 	return 0;
 }

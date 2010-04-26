@@ -6,19 +6,12 @@
 
 #include <switch_cmd.h>
 #include <router_cmd.h>
-
-#ifndef LKL_NET_CONSOLE_PARAMS
-#define LKL_NET_CONSOLE_PARAMS 1
-
-#define MAX_PARAM_NO	8
-typedef struct params {
-	void *p[MAX_PARAM_NO];
-} params;
-#endif
+#include <hypervisor_cmd.h>
 
 #define DEVICE_ALL	1
 #define DEVICE_ROUTER	2
 #define DEVICE_SWITCH	4
+#define DEVICE_HYPERVISOR 8
 
 typedef struct command {
 	char *name;

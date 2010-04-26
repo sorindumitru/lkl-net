@@ -4,23 +4,47 @@
 #include <arpa/inet.h>
 
 command show_if_commands[] = {
+#if defined(ISROUTER)||defined(ISSWITCH)
+#endif
+#ifdef ISROUTER
+#endif
+#ifdef ISSWTICH
 	{"bridge", 1, DEVICE_SWITCH, do_show_bridge_interface, "Show bridge interface", (command*) NULL},
+#endif
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
 };
 
 command show_commands[] = {
+#if defined(ISROUTER)||defined(ISSWITCH)
 	{(char *) "mac-table", 1, DEVICE_SWITCH, do_show_mac_table, "Show interface mac-table", (command*) NULL},
 	{(char *) "interface", -1, DEVICE_ALL, NULL, "Show interface information", (command*) show_if_commands},
 	{(char *) "route", 0, DEVICE_ROUTER, do_show_ip_route, "Show routing table", (command*) NULL},
+#endif
+#ifdef ISHYPERVISOR
+	{"devices", 0, DEVICE_HYPERVISOR, do_show_devices, "Show devices", (command *) NULL},
+#endif
+	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
+};
+
+command create_commands[] = {
+#ifdef ISHYPERVISOR
+	{"link", 1, DEVICE_HYPERVISOR, do_create_link, "Create new link", (command*) NULL},	
+	{"router", 1, DEVICE_HYPERVISOR, do_create_router, "Create new router", (command*) NULL},
+#endif
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
 };
 
 command root[] = {
-	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands},
+#if defined(ISROUTER)||defined(ISSWITCH)
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL},
+	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL},
+	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Add route", (command*) NULL},
+#endif
+#ifdef ISHYPERVISOR
+	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands},
+#endif
+	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL},
-	{"add", 3, DEVICE_ROUTER, do_add_route, "Add router", (command*) NULL},
-	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Add router", (command*) NULL},
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL}
 };
 
@@ -71,7 +95,7 @@ command* find_command(const command *commands, const char *name)
 
 	for (i = 0; commands[i].name; i++) {
 		if (strcmp (name, commands[i].name) == 0) {
-			return &commands[i];
+			return (command*) &commands[i];
 		}
 	}
 

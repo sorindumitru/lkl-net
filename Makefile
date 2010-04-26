@@ -81,6 +81,12 @@ PARSER=conf/parser.o
 
 # }
 
+# Console {
+
+CONSOLE_SRC=console.c switch/switch_cmd.c router/router_cmd.c hypervisor/hypervisor_cmd.c
+
+# }
+
 # Bridge {
 
 BRIDGE_DIR=bridge
@@ -123,6 +129,21 @@ bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
 
 # }
 
+# Hypervisor {
+
+HYPERVISOR_DIR=hypervisor
+HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c console.c
+HYPERVISOR_OBJ=$(patsubst %c,%o,$(HYPERVISOR_SRC))
+
+.PHONY: hypervisor
+hypervisor: bin/hypervisor
+
+bin/hypervisor: $(CONF_OBJ) $(HYPERVISOR_OBJ)
+	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(HYPERVISOR_OBJ) -o bin/hypervisor $(LDLIBS) -DISHYPERVISOR=1
+
+# }
+
 # Test {
 
 TEST_DIR=apps;
@@ -162,6 +183,8 @@ clean:
 	-rm bin/bridge
 	-rm bin/switch
 	-rm bin/hub
+	-rm switch/*.o
+	-rm router/*.o
 
 clean-all: clean
 	-rm -rf lkl

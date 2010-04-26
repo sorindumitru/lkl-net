@@ -25,6 +25,7 @@ typedef struct conf_info{
 	gen_info_t general;
 	struct list_head interfaces;
 	struct list_head topologies;
+	struct list_head devices;
 } conf_info_t;
 
 extern int config_init(conf_info_t* conf);

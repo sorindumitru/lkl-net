@@ -1,0 +1,19 @@
+hypervisor {
+	device {
+		type hub;
+		hostname hub1;
+		config alfa;
+	}
+
+	device {
+		type hub;
+		hostname hub2;
+		config beta;
+	}
+
+	device {
+		type hub;
+		hostname hub3;
+		config gamma;
+	}
+}

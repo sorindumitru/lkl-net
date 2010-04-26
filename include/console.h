@@ -8,6 +8,8 @@
 #include <router_cmd.h>
 #include <hypervisor_cmd.h>
 
+#define MAX_COMMAND_NO 20
+
 #define DEVICE_ALL	1
 #define DEVICE_ROUTER	2
 #define DEVICE_SWITCH	4
@@ -22,8 +24,19 @@ typedef struct command {
 	struct command *children;
 } command;
 
+typedef struct all_commands {
+	char **cmds;
+	char **doc;
+	int cmds_no;
+} all_commands;
+
+all_commands *cmd;
+
 int execute_line(char *line);
 command* find_command(const command* commands, const char* command);
+char *complete_other_words(const char *text,int state);
+void list_commands(command* c, int i);
+void initialize_autocomplete(command *com);
 
 int do_exit_cmd(struct params* parameters);
 

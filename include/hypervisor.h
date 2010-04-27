@@ -19,6 +19,5 @@ typedef struct hypervisor {
 void init_hypervisor(hypervisor_t *hypervisor, conf_info_t *info);
 void start_request_thread();
 void* request_thread(void *params);
-void boot_up_devices();
 
 #endif /* LKL_NET_HYPERVISOR_H_ */

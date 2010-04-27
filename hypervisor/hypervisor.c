@@ -29,7 +29,6 @@ int main(int argc, char **argv)
 	port = info->general.port;
 
 	printf("LKL NET :: Hypervisor initialised\n");
-	boot_up_devices();
 	while(1){
 		command = readline(prompt);
 		if (!command || (strlen(command) == 0)) {
@@ -124,28 +123,4 @@ void* request_thread(void *params)
 	shutdown(req_socket, SHUT_RDWR);
 
 	return NULL;
-}
-
-void boot_up_devices() {
-	struct list_head *head;
-
-	//starting hubs
-	list_for_each(head, &info->devices){
-		device_t *device = list_entry(head, device_t, list);
-		if (device->type == DEV_HUB) {
-			printf("LKL NET :: started %s\n", device->hostname);
-			struct params params;
-			params.p[0] = malloc(8*sizeof(char));
-			sprintf((char*)params.p[0],"%d",device->port);
-			printf("Port : %s\n", params.p[0]);
-			do_create_link(&params);
-		}
-	}
-
-	list_for_each(head, &info->devices){
-		device_t *device = list_entry(head, device_t, list);
-		if (device->type != DEV_HUB) {
-			printf("LKL NET :: started %s\n", device->hostname);
-		}
-	}
 }

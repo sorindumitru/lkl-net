@@ -12,6 +12,7 @@
 #include <readline/history.h>
 
 #include <console.h>
+#include <switch_cmd.h>
 
 #define BRIDGE_NAME "brd0"
 
@@ -73,6 +74,15 @@ int main(int argc, const char **argv)
 	sprintf(prompt, "%s>", info->general.hostname);
 
 	initialize_autocomplete();
+
+	struct params p = {
+		.p = {
+			"brd0",
+			"on",
+			NULL
+		}
+	};
+	do_set_stp(&p);
 
 	while(1){
 		command = readline(prompt);

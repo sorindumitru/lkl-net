@@ -8,7 +8,7 @@ command show_if_commands[] = {
 #endif
 #ifdef ISROUTER
 #endif
-#ifdef ISSWTICH
+#ifdef ISSWITCH
 	{"bridge", 1, DEVICE_SWITCH, do_show_bridge_interface, "Show bridge interface", (command*) NULL, "<bridge_name>"},
 #endif
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
@@ -17,8 +17,11 @@ command show_if_commands[] = {
 command show_commands[] = {
 #if defined(ISROUTER)||defined(ISSWITCH)
 	{"mac-table", 1, DEVICE_SWITCH, do_show_mac_table, "Show interface mac-table", (command*) NULL, "<switch-name>"},
-	{"interface", -1, DEVICE_ALL, NULL, "Show interface information", (command*) show_if_commands, NULL},
+	{"interface", -1, DEVICE_ALL, NULL, "Show interface information", show_if_commands, NULL},
 	{"route", 0, DEVICE_ROUTER, do_show_ip_route, "Show routing table", (command*) NULL, NULL},
+#endif
+#ifdef ISSWITCH
+	{"stp", 1, DEVICE_SWITCH, do_show_stp, "Show stp information", (command*) NULL, "<bridge_name>"},
 #endif
 #ifdef ISHYPERVISOR
 	{"devices", 0, DEVICE_HYPERVISOR, do_show_devices, "Show devices", (command *) NULL, NULL},
@@ -47,6 +50,7 @@ command root[] = {
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},
 	{"telnet", 2, DEVICE_HYPERVISOR, do_telnet, "Telent to a device", (command*) NULL, "<ip_address> <port_no> | dev <device_name>"},
+	{"boot", 0, DEVICE_HYPERVISOR, do_boot_up, "Boot up devices", (command*) NULL, ""},
 #endif
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands, NULL},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL, NULL},

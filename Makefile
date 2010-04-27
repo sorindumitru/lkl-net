@@ -112,6 +112,7 @@ switch: bin/switch
 
 bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 	$(CC) $(CFLAGS) -c console.c -DISSWITCH -o console.o
+	$(CC) $(CFLAGS) -c autocomplete.c -o autocomplete.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a $(LDLIBS)
 
 # }

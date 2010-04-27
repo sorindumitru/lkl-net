@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -129,7 +130,7 @@ int do_show_device(struct params *params)
 	}
 
 	socket = get_device_socket(device);
-	printf("Device:\n\tName:\t\t%s\n\tAddress:\t%s\n\tPort:\t\t%d\n", params->p[0], socket->address, socket->port);
+	printf("Device:\n\tName:\t\t%s\n\tAddress:\t%s\n\tPort:\t\t%d\n", (char*)params->p[0], socket->address, socket->port);
 
 	return 0;
 }
@@ -167,5 +168,48 @@ int do_telnet(struct params *params)
 		perror("LKL NET :: could not create link");
 		exit(-1);
 	}
+	return 0;
+}
+
+int do_boot_up(struct params *par) {
+	struct list_head *head;
+
+	//starting hubs
+	list_for_each(head, &info->devices){
+		device_t *device = list_entry(head, device_t, list);
+		if (device->type == DEV_HUB) {
+			printf("LKL NET :: started %s\n", device->hostname);
+			struct params params;
+			params.p[0] = malloc(8*sizeof(char));
+			sprintf((char*)params.p[0],"%d",device->port);
+			do_create_link(&params);
+			free(params.p[0]);
+		}
+	}
+
+	sleep(1);
+
+	list_for_each(head, &info->devices){
+		device_t *device = list_entry(head, device_t, list);
+		if (device->type != DEV_HUB) {
+			printf("LKL NET :: started %s\n", device->hostname);
+			struct params params;
+			params.p[0] = malloc(256*sizeof(char));
+			sprintf((char*)params.p[0],"%s",device->config);
+			switch(device->type){
+			case DEV_ROUTER:
+				do_create_router(&params);
+				break;
+			case DEV_SWITCH:
+				do_create_switch(&params);
+				break;
+			default:
+				printf("LKL NET :: unknown device %s\n", device->hostname);
+			}
+			free(params.p[0]);
+			sleep(1);
+		}
+	}
+
 	return 0;
 }

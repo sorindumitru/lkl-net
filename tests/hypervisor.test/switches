@@ -23,6 +23,18 @@ hypervisor {
 	device {
 		type switch;
 		hostname London;
-		config configs/test.switch/switch.london;
+		config tests/stp/switch.london;
+	}
+
+	device {
+		type switch;
+		hostname Manchester;
+		config tests/stp/switch.manchester;
+	}
+
+	device {
+		type switch;
+		hostname Glasgow;
+		config tests/stp/switch.glasgow;
 	}
 }

@@ -33,7 +33,6 @@ typedef struct all_commands {
 
 all_commands *cmd;
 command *com;
-char *prompt;
 
 int execute_line(char *line);
 command* find_command(const command* commands, const char* command);

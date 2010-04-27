@@ -45,6 +45,7 @@ command root[] = {
 #endif
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},
+	{"telnet", 2, DEVICE_HYPERVISOR, do_telnet, "Telent to a device", (command*) NULL, "<ip_address> <port_no> | dev <device_name>"},
 #endif
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands, NULL},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL, NULL},

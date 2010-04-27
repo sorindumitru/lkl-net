@@ -48,7 +48,7 @@ char *complete_other_words(const char *text,int state)
 		}
 	}
 
-    /* If no names matched, then return NULL. */
+	/* If no names matched, then return NULL. */
 	return ((char *)NULL);
 }
 
@@ -84,8 +84,6 @@ void list_commands(command* c, int i)
 
 void initialize_autocomplete( void )
 {
-	int i;
-
 	cmd=(all_commands*)malloc(sizeof(all_commands));
 	cmd->cmds_no = 0;
 	cmd->cmds=(char**)malloc(MAX_COMMAND_NO*sizeof(char*));

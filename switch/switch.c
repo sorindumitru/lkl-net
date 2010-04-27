@@ -16,6 +16,7 @@
 #define BRIDGE_NAME "brd0"
 
 int bridge_id;
+char *prompt;
 
 static int lkl_setup_switch(topology_t *topo)
 {
@@ -39,7 +40,6 @@ int main(int argc, const char **argv)
 	conf_info_t* info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
-	extern char *prompt;
 	char *command;
 
 	if (lkl_env_init(16*1024*1024) < 0) {

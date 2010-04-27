@@ -45,7 +45,7 @@ command root[] = {
 #endif
 #ifdef ISROUTER	
 	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Add route", (command*) NULL, "<ip_address> <gateway> <netmask>"},
-	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<ip_address> <netmask> <gateway>"},
+	{"add", 2, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address> <gateway>"},
 #endif
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},

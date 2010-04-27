@@ -41,8 +41,8 @@ command root[] = {
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL, "<on/off> <switch_name>"},
 #endif
 #ifdef ISROUTER	
-	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Add route", (command*) NULL, "<ip_address> <gateway> <netmask>"},
-	{"add", 2, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address> <gateway>"},
+	{"remove", 2, DEVICE_ROUTER, do_remove_route, "Remove route", (command*) NULL, "<network_address/netmask> <gateway>"},
+	{"add", 2, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address/netmask> <gateway>"},
 #endif
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},

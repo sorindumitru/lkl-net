@@ -1000,12 +1000,13 @@ int do_add_route(struct params* params)
 
 int do_remove_route(struct params* params)
 {
+	lkl_remove_route((char*)params->p[0],(char*)params->p[1]);
 	/*struct {
 		struct nlmsghdr 	n;
 		struct rtmsg 		r;
 		char   			buf[1024];
 	} req;*/
-	int netmask = atoi((char *)params->p[1]);
+	/*int netmask = atoi((char *)params->p[1]);
 	struct hostent *hostinfo =gethostbyname((char*)params->p[0]);
 	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
 	hostinfo = gethostbyname((char*)params->p[2]);

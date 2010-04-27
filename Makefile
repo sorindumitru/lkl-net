@@ -90,7 +90,7 @@ CONSOLE_SRC=console.c autocomplete.c
 # Bridge {
 
 BRIDGE_DIR=bridge
-BRIDGE_SRC=$(BRIDGE_DIR)/bridge.c packet.c
+BRIDGE_SRC=$(BRIDGE_DIR)/bridge.c packet.c device.c
 BRIDGE_OBJ=$(patsubst %c,%o,$(BRIDGE_SRC))
 
 .PHONY: bridge
@@ -104,7 +104,7 @@ bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
 # Switch {
 
 SWITCH_DIR=switch
-SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c 
+SWITCH_SRC=$(SWITCH_DIR)/switch.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c 
 SWITCH_OBJ=$(patsubst %c,%o,$(SWITCH_SRC))
 
 .PHONY: switch
@@ -119,7 +119,7 @@ bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 # Router {
 
 ROUTER_DIR=router
-ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c 
+ROUTER_SRC=$(ROUTER_DIR)/router.c interface.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c
 ROUTER_OBJ=$(patsubst %c,%o,$(ROUTER_SRC))
 
 .PHONY: router

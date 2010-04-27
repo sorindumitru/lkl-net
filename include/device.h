@@ -1,6 +1,8 @@
 #ifndef LKL_NET_DEVICE_H_
 #define LKL_NET_DEVICE_H_
 
+#include <string.h>
+
 enum device_type {
 	DEV_BRIDGE,
 	DEV_HUB,
@@ -24,42 +26,9 @@ typedef struct device_list_element {
 	struct list_head list;
 } device_list_element_t;
 
-static enum device_type get_device_type(char *type)
-{
-	if (!strcmp("router", type)) {
-		return DEV_ROUTER;
-	}
-	if (!strcmp("switch", type)) {
-		return DEV_SWITCH;
-	}
-	if (!strcmp("hub", type)) {
-		return DEV_HUB;
-	}
-	if (!strcmp("bridge", type)) {
-		return DEV_BRIDGE;
-	}
+extern enum device_type get_device_type(char *type);
 
-	return DEV_UNKNOWN;
-}
-
-
-static char* get_type(enum device_type type)
-{
-	switch(type){
-	case DEV_ROUTER:
-		return "router";
-		break;
-	case DEV_SWITCH:
-		return "switch";
-		break;
-	case DEV_HUB:
-		return "hub";
-		break;
-	default:
-		return "unknown";
-		break;
-	}
-}
+extern char* get_type(enum device_type type);
 
 typedef struct socket {
 	char *address;

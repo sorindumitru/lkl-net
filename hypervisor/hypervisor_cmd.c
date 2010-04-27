@@ -54,6 +54,59 @@ int do_show_devices(struct params *params)
 
 int do_create_router(struct params *params)
 {
+	pid_t pid;
+	int err;
+
+	pid = fork();
+
+	if (pid > 0) {
+		//add link to link list	
+	} else if (pid == 0) {
+		char *args[] = {
+			"xterm",
+			"-e",
+			"bin/router", 
+			params->p[0],
+			NULL
+		};
+		err = execvp("xterm", args);
+		if (err < 0) {
+			perror("could not run program");
+		}
+	} else {
+		perror("LKL NET :: could not create link");
+		exit(-1);
+	}
+
+	return 0;
+}
+
+int do_create_switch(struct params *params)
+{
+	pid_t pid;
+	int err;
+
+	pid = fork();
+
+	if (pid > 0) {
+		//add link to link list	
+	} else if (pid == 0) {
+		char *args[] = {
+			"xterm",
+			"-e",
+			"bin/switch", 
+			params->p[0],
+			NULL
+		};
+		err = execvp("xterm", args);
+		if (err < 0) {
+			perror("could not run program");
+		}
+	} else {
+		perror("LKL NET :: could not create link");
+		exit(-1);
+	}
+
 	return 0;
 }
 

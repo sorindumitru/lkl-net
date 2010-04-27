@@ -3,18 +3,21 @@ hypervisor {
 		type hub;
 		hostname hub1;
 		config alfa;
+		port 50001;
 	}
 
 	device {
 		type hub;
 		hostname hub2;
 		config beta;
+		port 50002;
 	}
 
 	device {
 		type hub;
 		hostname hub3;
 		config gamma;
+		port 50003;
 	}
 
 	device {

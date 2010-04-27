@@ -966,13 +966,15 @@ int do_add_route(struct params* params)
 		struct rtmsg 		r;
 		char   			buf[1024];
 	} req;*/
-	int netmask = atoi((char *)params->p[1]);
-	struct hostent *hostinfo =gethostbyname((char*)params->p[0]);
+	//int netmask = atoi((char *)params->p[1]);
+	/*struct hostent *hostinfo =gethostbyname((char*)params->p[0]);
 	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
 	hostinfo = gethostbyname((char*)params->p[2]);
 	struct in_addr gateway = *(struct in_addr*)hostinfo->h_addr;
-
-	lkl_add_route(addr.s_addr,gateway.s_addr,netmask);
+	hostinfo = gethostbyname((char*)params->p[1]);
+	struct in_addr netmask = *(struct in_addr*)hostinfo->h_addr;
+	*/
+	lkl_add_route((char*)params->p[0],(char*)params->p[1]);
 	/*struct rtattr * mxrta = (void*)mxbuf;
 
 	memset(&req, 0, sizeof(req));

@@ -1,0 +1,52 @@
+hypervisor {
+	device {
+		type hub;
+		hostname hub1;
+		port 55001;
+	}
+	device {
+		type hub;
+		hostname hub2;
+		port 55002;
+	}
+	device {
+		type hub;
+		hostname hub3;
+		port 55003;
+	}
+	device {
+		type hub;
+		hostname hub4;
+		port 55004;
+	}
+	device {
+		type hub;
+		hostname hub5;
+		port 55005;
+	}
+	device {
+		type hub;
+		hostname hub6;
+		port 55006;
+	}
+	device {
+		type router;
+		hostname Gateway;
+		config tests/small/gateway;
+	}
+	device {
+		type router;
+		hostname Internet;
+		config tests/small/internet;
+	}
+	device {
+		type switch;
+		hostname Main;
+		config tests/small/main
+	}
+	device {
+		type switch;
+		hostname Backup;
+		config tests/small/backup
+	}
+}

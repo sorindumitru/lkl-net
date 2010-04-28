@@ -207,7 +207,6 @@ int do_boot_up(struct params *par) {
 				printf("LKL NET :: unknown device %s\n", device->hostname);
 			}
 			free(params.p[0]);
-			sleep(1);
 		}
 	}
 

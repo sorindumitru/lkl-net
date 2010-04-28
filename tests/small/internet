@@ -1,0 +1,19 @@
+hostname Internet;
+ipaddress 127.0.0.1;
+port 60001;
+interface {
+	dev eth0;
+	mac aa:bb:cc:00:04:01;
+	gateway 127.0.0.1;
+	ipaddress 198.9.9.6/24;
+	port 55004;
+	type hub;
+}
+interface {
+	dev eth1;
+	mac aa:bb:cc:00:04:02;
+	gateway 127.0.0.1;
+	ipaddress 7.7.7.7/24;
+	port 55006;
+	type hub;
+}

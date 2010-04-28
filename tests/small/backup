@@ -1,18 +1,18 @@
-hostname London;
+hostname Backup;
 ipaddress 127.0.0.1;
-port 60002;
+port 60003;
 interface {
 	dev eth0;
-	mac aa:bb:cc:00:02:01;
+	mac aa:bb:cc:00:03:01;
 	gateway 127.0.0.1;
-	port 50001;
+	port 55004;
 	type hub;
 }
 interface {
 	dev eth1;
-	mac aa:bb:cc:00:02:02;
+	mac aa:bb:cc:00:03:02;
 	gateway 127.0.0.1;
-	port 50002;
+	port 55002;
 	type hub;
 }
 switch {

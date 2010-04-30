@@ -17,6 +17,7 @@ void lkl_br_show_timer(const struct br_timeval *tv)
 
 static int dump_info(const char *br, struct bridge_info *bri)
 {
+	int err;
 
 	printf("%s\n", br);
 	printf(" bridge id\t\t");
@@ -56,9 +57,9 @@ static int dump_info(const char *br, struct bridge_info *bri)
 	printf("\n");
 	printf("\n");
 
-	/*err = lkl_br_foreach_port(br, dump_port_info, NULL);
+	err = lkl_br_foreach_port(br, lkl_dump_port_info, NULL);
 	if (err < 0)
-		printf("can't get ports: %s\n", strerror(-err));*/
+		printf("can't get ports: %s\n", strerror(-err));
 	
 	return 0;
 }

@@ -2,15 +2,17 @@ hostname Glasgow;
 ipaddress 127.0.0.1;
 port 60003;
 interface {
+	ipaddress 0.0.0.0/32;
 	dev eth0;
-	mac aa:bb:cc:00:01:01;
+	mac aa:bb:cc:60:01:01;
 	gateway 127.0.0.1;
 	port 50003;
 	type hub;
 }
 interface {
+	ipaddress 0.0.0.0/32;
 	dev eth1;
-	mac aa:bb:cc:00:01:02;
+	mac aa:bb:cc:50:01:02;
 	gateway 127.0.0.1;
 	port 50002;
 	type hub;

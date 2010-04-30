@@ -2,15 +2,17 @@ hostname Manchester;
 ipaddress 127.0.0.1;
 port 60002;
 interface {
+	ipaddress 0.0.0.0/0;
 	dev eth0;
-	mac aa:bb:cc:00:03:01;
+	mac 00:11:22:10:03:01;
 	gateway 127.0.0.1;
 	port 50001;
 	type hub;
 }
 interface {
+	ipaddress 0.0.0.0/0;
 	dev eth1;
-	mac aa:bb:cc:00:03:02;
+	mac 00:11:22:20:03:02;
 	gateway 127.0.0.1;
 	port 50003;
 	type hub;

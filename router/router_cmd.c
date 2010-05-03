@@ -974,7 +974,7 @@ int do_add_route(struct params* params)
 	hostinfo = gethostbyname((char*)params->p[1]);
 	struct in_addr netmask = *(struct in_addr*)hostinfo->h_addr;
 	*/
-	lkl_add_route((char*)params->p[0],(char*)params->p[1]);
+	lkl_add_route((char*)params->p[0],(char*)params->p[1],(char*)params->p[2],(char*)params->p[3]);
 	/*struct rtattr * mxrta = (void*)mxbuf;
 
 	memset(&req, 0, sizeof(req));
@@ -1000,7 +1000,7 @@ int do_add_route(struct params* params)
 
 int do_remove_route(struct params* params)
 {
-	lkl_remove_route((char*)params->p[0],(char*)params->p[1]);
+	lkl_remove_route((char*)params->p[0],(char*)params->p[1],(char*)params->p[2],(char*)params->p[3]);
 	/*struct {
 		struct nlmsghdr 	n;
 		struct rtmsg 		r;

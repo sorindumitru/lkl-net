@@ -24,14 +24,14 @@ hypervisor {
 
 	device {
 		type router;
-		hostname R1;
-		config tests/test.router/3routers/router.R1;
+		hostname R2;
+		config tests/test.router/3routers/router.R2;
 	}
 
 	device {
 		type router;
-		hostname R2;
-		config tests/test.router/3routers/router.R2;
+		hostname R1;
+		config tests/test.router/3routers/router.R1;
 	}
 
 	device {

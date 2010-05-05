@@ -18,6 +18,7 @@
 
 int bridge_id;
 char *prompt;
+conf_info_t *info;
 
 static int lkl_setup_switch(topology_t *topo)
 {
@@ -38,7 +39,7 @@ int main(int argc, const char **argv)
 {
 	int err;
 	struct list_head *head;
-	conf_info_t* info = malloc(sizeof(*info));
+	info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
 	char *command;
@@ -83,6 +84,8 @@ int main(int argc, const char **argv)
 		}
 	};
 	do_set_stp(&p);
+
+	start_device_thread();
 
 	while(1){
 		command = readline(prompt);

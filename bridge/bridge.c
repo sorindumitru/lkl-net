@@ -22,8 +22,9 @@
 
 #define BUFFSIZE 8192
 char buffer[BUFFSIZE];
-
 char interface[IFNAMSIZ];
+
+conf_info_t *info;
 
 int init_host_interface(char* dev)
 {
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
 	printf("::Bridge v1.0\n");
 
 	printf("::Reading config file\n");
-	conf_info_t* info = malloc(sizeof(*info));
+	info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
 	list_for_each(head, &info->topologies){

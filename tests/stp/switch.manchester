@@ -1,6 +1,6 @@
 hostname Manchester;
 ipaddress 127.0.0.1;
-port 60002;
+port 60001;
 interface {
 	ipaddress 0.0.0.0/0;
 	dev eth0;

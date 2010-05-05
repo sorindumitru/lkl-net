@@ -66,6 +66,7 @@ command root[] = {
 #endif
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands, NULL},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL, NULL},
+	{"test", 1, DEVICE_ALL, do_test, "Test", (command*) NULL, "<device_name>"},
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
 };
 
@@ -126,4 +127,15 @@ command* find_command(const command *commands, const char *name)
 int do_exit_cmd(params *parameters)
 {
 	exit(0);
+}
+
+int do_test(params* parameters)
+{
+	socket_t *socket = get_remote_device_socket(parameters->p[0]);
+	if (socket == NULL) {
+		printf("Device not found\n");
+		return -1;
+	}
+	printf("Address:%s\nPort:%d\n", socket->address, socket->port);
+	return 0;
 }

@@ -4,6 +4,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include <device.h>
 #include <switch_cmd.h>
 #include <router_cmd.h>
 #include <hypervisor_cmd.h>
@@ -41,5 +42,6 @@ void list_commands(command* c, int i);
 void initialize_autocomplete(void);
 
 int do_exit_cmd(struct params* parameters);
+int do_test(struct params *parameters);
 
 #endif /* LKL_NET_CONSOLE_H_ */

@@ -10,12 +10,13 @@
 #include <console.h>
 
 char *prompt;
+conf_info_t* info;
 
 int main(int argc,char**argv)
 {
 	int err;
 	struct list_head *head;
-	conf_info_t* info = malloc(sizeof(*info));
+	info = malloc(sizeof(*info));
 	config_init(info);
 	config_read_file(info, argv[1]);
 	char *command;

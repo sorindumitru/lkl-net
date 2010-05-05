@@ -9,6 +9,7 @@
 
 #include <list.h>
 #include <string.h>
+#include <config.h>
 
 #define PORT_NO 10000
 #define PACKET_SIZE 8192 
@@ -33,6 +34,8 @@ struct result *modify_packet(char *packet, int size)
 	myres->message = packet; 
 	return myres;
 }
+
+conf_info_t *info = NULL;
 
 void forward_packet(int fd, char *data, int size)
 {

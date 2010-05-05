@@ -1,4 +1,9 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <sys/socket.h>
+#include <sys/epoll.h>
+#include <signal.h>
 
 #include <config.h>
 #include <device.h>
@@ -6,8 +11,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 #include <string.h>
+
+extern conf_info_t *info;
 
 char* get_type(enum device_type type)
 {
@@ -45,18 +53,184 @@ enum device_type get_device_type(char *type)
 	return DEV_UNKNOWN;
 }
 
+int hypervisor_socket(){
+	struct hostent *host;
+	struct sockaddr_in hypervisor;
+	int err, sock;
+	
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock < 0) {
+		perror("could no open socket");
+		return sock;
+	}
+	host = gethostbyname("127.0.0.1");
+	hypervisor.sin_family = AF_INET;
+	hypervisor.sin_port = htons(57200);
+	hypervisor.sin_addr = *((struct in_addr*)host->h_addr);
+
+	err = connect(sock, (struct sockaddr*) &hypervisor, sizeof(struct sockaddr));
+	if (err < 0) {
+		perror("could not connect");
+		return err;
+	}
+
+	return sock;
+}
+
 socket_t* get_device_socket(device_t *device)
 {
+	char *address;
 	socket_t *socket = malloc(sizeof(*socket));
-	conf_info_t *dev_info = malloc(sizeof(*dev_info));
-	config_init(dev_info);
-	config_read_file(dev_info, device->config);
+	
+	if (device->type == DEV_HUB) {
+		strcpy(socket->address,"127.0.0.1");
+		socket->port = device->port;
+	} else {
+		conf_info_t *dev_info = malloc(sizeof(*dev_info));
+		config_init(dev_info);
+		config_read_file(dev_info, device->config);
 
-	//TODO: Get device address
-	socket->address = inet_ntoa(dev_info->general.address);
-	socket->port = dev_info->general.port;
+		address = inet_ntoa(dev_info->general.address);
+		memcpy(socket->address, address, strlen(address));
+		socket->port = dev_info->general.port;
 
-	config_free(dev_info);
+		config_free(dev_info);
+		free(address);
+	}
 
 	return socket;
+}
+
+socket_t* get_remote_device_socket(char *device)
+{
+	socket_t *dev_socket;
+	int sock = hypervisor_socket();
+	hyper_info_t hinfo, *response;
+
+	hinfo.type = REQUEST_DEVICE_NAME;
+	hinfo.length = sizeof(hyper_info_header) + strlen(device) + 1;
+	memset(hinfo.padding, 0, PACKAGE_PADDING);
+	memcpy(hinfo.padding, device, strlen(device));
+
+	send_hyper(sock, &hinfo);
+	response = recv_hyper(sock);
+
+	if (response->type == REQUEST_ERROR_DEVICE_NOT_FOUND) {
+		close(sock);
+		return NULL;
+	}
+	
+	dev_socket = (socket_t*) response->padding;
+	
+	close(sock);
+	return dev_socket;
+}
+
+int send_hyper(int sock, hyper_info_t *hinfo)
+{
+	int err;
+	err = send(sock, hinfo, sizeof(hyper_info_header), 0);
+	if (err < 0) {
+		perror("could not send header");
+		return -1;
+	}
+	err = send(sock, hinfo->padding, hinfo->length-2*sizeof(unsigned int), 0);
+	if (err < 0) {
+		perror("could not send data");
+		return -1;
+	}
+
+	return 0;
+}
+
+hyper_info_t* recv_hyper(int sock)
+{
+	int err;
+	hyper_info_t *hinfo = malloc(sizeof(*hinfo));
+
+	err = recv(sock, hinfo, sizeof(hyper_info_header), 0);
+	if (err < 0) {
+		perror("could not receive header");
+		return -1;
+	}
+	err = recv(sock, hinfo->padding, hinfo->length - 2*sizeof(unsigned int), 0);
+	if (err < 0) {
+		perror("could not receive data");
+		return -1;
+	}
+
+	return hinfo;
+}
+
+void start_device_thread()
+{
+	int err;
+	pthread_t request;
+	err = pthread_create(&request, NULL, device_request_thread, NULL);
+	if (err < 0) {
+		perror("LKL NET :: could not start request thread\n");
+		exit(-1);
+	}
+}
+
+#define MAX_CONNECTIONS	1024
+
+void* device_request_thread(void *params)
+{
+	struct epoll_event event;
+	int req_socket, err, one = 1, epoll_fd;
+	struct sockaddr_in addr = {
+		.sin_family = AF_INET,
+		.sin_port = htons(info->general.port),
+	};
+	addr.sin_addr.s_addr = INADDR_ANY;
+
+	printf("LKL NET :: started request thread\n");
+	req_socket = socket(AF_INET, SOCK_STREAM, 0);
+	if (req_socket < 0) {
+		perror("LKL NET :: request thread :: Could not open request socket\n");
+		exit(-1);
+	}
+	err = bind(req_socket, (struct sockaddr*) &addr, sizeof(addr));
+	if (err < 0) {
+		perror("LKL NET :: request thread :: Could not bind socket\n");
+		exit(-1);
+	}
+	err = setsockopt(req_socket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+	if (err < 0) {
+		perror("LKL NET :: requestthread :: Could not set reuse address on socket\n");
+		exit(-1);
+	}
+	err = listen(req_socket, MAX_CONNECTIONS);
+	if (err < 0) {
+		perror("LKL NET :: request thread :: Could not listen on socket\n");
+		exit(-1);
+	}
+
+	epoll_fd = epoll_create(16);
+	if (epoll_fd < 0) {
+		perror("LKL NET :: request thread :: Could not intialise epoll\n");
+		exit(-1);
+	}
+	event.data.fd = req_socket;
+	event.events = EPOLLIN;
+	err = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, req_socket, &event);
+	if (err < 0) {
+		perror("LKL NET :: request thread :: Could not add socket to epoll\n");
+		exit(-1);
+	}
+
+	while (1) {
+		struct epoll_event ret_event;
+		err = epoll_wait(epoll_fd, &ret_event, 1, -1);
+		if (err < 0) {
+			perror("LKL NET :: request thread :: Error on wait\n");
+		}
+		//TODO: process requests
+	}
+
+	shutdown(req_socket, SHUT_RDWR);
+
+	return NULL;
+
 }

@@ -15,6 +15,7 @@
 #include <linux/in_route.h>
 
 #include <asm/libnetlink.h>
+#include <asm/eth.h>
 
 #include <netdb.h>
 
@@ -1073,21 +1074,27 @@ int do_show_ip_route(struct params* params)
 	
 	return 0;
 }
-/*{"add", 6, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <IPv4 address> <netmask length> <gateway address> <port no>"}*/
+/*{"add", 6, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <gateway address> <port no>"}*/
 int do_add_interface(struct params *params)
 {
-	/*int ifindex;
-	struct tun_device* td = malloc(sizeof(*td));
-
-	td->type = TUN_HUB;
-	td->port = interface->port;
-	td->address = interface->gateway.s_addr;
-		
-	
-	if ((ifindex=lkl_add_eth_tun(interface->dev, (char*) interface->mac, 32, td)) < 0) {
-		printf("LKL init :: could not bring up interface %s\n",interface->dev);
+	int ifindex = get_interface_index((char*)params->p[0]);
+	struct tun_device* td = malloc(sizeof(struct tun_device));
+	struct hostent *hostinfo =gethostbyname((char*)params->p[2]);
+	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
+	if (ifindex >= 0){
+		lkl_printf("LKL::Interface already exists in system\n");
 		return -1;
-	}*/
+	}else{
+		/* TODO: initializa from interface_t */	
+		td->type = 0;
+		td->port = atoi((char*)params->p[3]);
+		td->address = addr.s_addr;
+		if ((ifindex=lkl_add_eth_tun((char*)params->p[0],(char*)params->p[1], 32, td)) < 0) {
+			printf("LKL init :: could not add interface %s\n",(char*)params->p[0]);
+			return -1;
+		}
+	}
+		
 	return 0;
 }
 

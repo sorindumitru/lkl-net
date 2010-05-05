@@ -1,4 +1,5 @@
 #include <router_cmd.h>
+#include <interface.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -16,6 +17,8 @@
 #include <asm/libnetlink.h>
 
 #include <netdb.h>
+
+
 #define SPRINT_BSIZE 64
 #define SPRINT_BUF(x)	char x[SPRINT_BSIZE]
 #define _SL_	"\n"
@@ -983,7 +986,8 @@ int do_add_route(struct params* params)
 	req.n.nlmsg_flags = NLM_F_REQUEST|flags;
 	req.n.nlmsg_type = cmd;
 	req.r.rtm_family = preferred_family;
-	req.r.rtm_table = RT_TABLE_MAIN;
+	req.r.rstruct hostent *hostinfo =gethostbyname((char*)params->p[0]);
+	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;tm_table = RT_TABLE_MAIN;
 	req.r.rtm_scope = RT_SCOPE_NOWHERE;
 
 	if (cmd != RTM_DELROUTE) {
@@ -1067,5 +1071,61 @@ int do_show_ip_route(struct params* params)
 		exit(1);
 	}
 	
+	return 0;
+}
+/*{"add", 6, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <IPv4 address> <netmask length> <gateway address> <port no>"}*/
+int do_add_interface(struct params *params)
+{
+	/*int ifindex;
+	struct tun_device* td = malloc(sizeof(*td));
+
+	td->type = TUN_HUB;
+	td->port = interface->port;
+	td->address = interface->gateway.s_addr;
+		
+	
+	if ((ifindex=lkl_add_eth_tun(interface->dev, (char*) interface->mac, 32, td)) < 0) {
+		printf("LKL init :: could not bring up interface %s\n",interface->dev);
+		return -1;
+	}*/
+	return 0;
+}
+
+int do_set_interface_up(struct params *params)
+{
+	int ifindex = get_interface_index((char*)params->p[0]);
+	if (ifindex < 0){
+		lkl_printf("LKL::No such interface in system\n");
+		return -1;
+	}else
+		return lkl_if_up(ifindex);
+}
+
+int do_set_interface_down(struct params *params)
+{
+	int ifindex = get_interface_index((char*)params->p[0]);
+	if (ifindex < 0){
+		lkl_printf("LKL::No such interface in system\n");
+		return -1;
+	}else
+		return lkl_if_down(ifindex);
+}
+
+int do_change_if_address(struct params *params)
+{
+	int netmask_len = atoi((char*)params->p[2]);
+	struct hostent *hostinfo =gethostbyname((char*)params->p[1]);
+	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
+	int ifindex = get_interface_index((char*)params->p[0]);
+	if (ifindex < 0){
+		lkl_printf("LKL::No such interface in system\n");
+		return -1;
+	}else
+		return lkl_if_set_ipv4(ifindex,addr.s_addr,netmask_len);
+}
+
+int do_list_router_interfaces(struct params *params)
+{
+	lkl_list_interfaces(2);
 	return 0;
 }

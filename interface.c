@@ -8,12 +8,40 @@
 #include <asm/eth.h>
 #include <linux/sockios.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+
+
 interface_t* alloc_interface()
 {
 	interface_t* interface = malloc(sizeof(interface_t));
 	interface->address.s_addr = 0;
 	return interface;
 }
+
+/*int get_interface_index(char *ifname)
+{
+	int err, sock = lkl_sys_socket(PF_INET, SOCK_DGRAM, 0);
+	struct ifreq ifr;
+	int ifname_siz;
+	memset(&ifr,0,sizeof(struct ifreq));
+	if (sock < 0){
+		printf("LKL init :: change interface name negative value for \n");
+		return -sock;
+	}
+	ifname_siz = (IFNAMSIZ > strlen(ifname))?strlen(ifname):IFNAMSIZ;
+	memcpy(ifr.ifr_name,ifname,ifname_siz);
+	err=lkl_sys_ioctl(sock, SIOCGIFINDEX, (long)&ifr);
+	if (err < 0){
+		printf("LKL init :: could not get if index NO SUCK INTERFACE NAME %s\n",strerror(-err));	
+		return -err;
+	}
+	lkl_sys_close(sock);
+	return ifr.ifr_ifindex;	
+}*/
+
 static void lkl_change_ifname(int ifindex, char *newname)
 {
 	int err, sock = lkl_sys_socket(PF_INET, SOCK_DGRAM, 0);
@@ -81,3 +109,45 @@ int lkl_init_interface(const interface_t* interface)
 
 	return ifindex;
 }
+
+int lkl_list_interfaces( int max_if_no)
+{
+	int err, sock = lkl_sys_socket(PF_INET, SOCK_DGRAM, 0);
+	struct ifreq *ifr;
+	struct ifreq ifr2;
+	struct ifconf ifc;
+	struct sockaddr_in* inaddr;
+
+	int i,ifno;
+
+	if (sock < 0){
+		printf("LKL init :: change interface name negative value for \n");
+		return sock;
+	}
+	ifr = (struct ifreq*)malloc(max_if_no*sizeof(struct ifreq));
+	ifc.ifc_len = max_if_no * sizeof(struct ifreq);
+	ifc.ifc_req = ifr;
+	err=lkl_sys_ioctl(sock, SIOCGIFCONF, (long)&ifc);
+	if (err < 0){
+		printf("LKL init :: could not get interfaces\n");
+		return -err;
+	}
+
+	if (ifc.ifc_len >= max_if_no * sizeof(struct ifconf)){
+		free(ifr);
+		return lkl_list_interfaces(2*max_if_no);
+	}
+
+	ifno=ifc.ifc_len/sizeof(struct ifreq);
+	for(i=0;i<ifno;i++){
+		memset(&ifr2,0,sizeof(struct ifreq));
+		memcpy(ifr2.ifr_name,ifr[i].ifr_name,strlen(ifr[i].ifr_name));
+		err = lkl_sys_ioctl(sock,SIOCGIFFLAGS,(long)&ifr2);	
+		inaddr = &(ifr[i].ifr_addr);
+		lkl_printf("%s %s %s\n",ifr[i].ifr_name,inet_ntoa(inaddr->sin_addr),((ifr2.ifr_flags &IFF_UP)?"UP":"DOWN"));
+	}
+	lkl_sys_close(sock);
+	free(ifr);
+	return 0;	
+}
+

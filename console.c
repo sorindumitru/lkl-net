@@ -39,6 +39,17 @@ command create_commands[] = {
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
 };
 
+command interface_commands[] = {
+#ifdef ISROUTER
+	{"add", 6, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <IPv4 address> <netmask length> <gateway address> <port no>"},
+	{"up", 1, DEVICE_ROUTER, do_set_interface_up, "Bring interface up", (command*) NULL, "<interface name>" },
+	{"down", 1, DEVICE_ROUTER, do_set_interface_down, "Set interface down", (command*) NULL, "<interface name>"},
+	{"address", 3, DEVICE_ROUTER, do_change_if_address, "Change IP address", (command*) NULL, "<interface name> <IPv4 address> <netmask length>"},
+	{"list", 0, DEVICE_ROUTER, do_list_router_interfaces, "List router interfaces", (command*) NULL, NULL},
+	{(char *) NULL, -1, DEVICE_ROUTER, NULL,"Interface information",(command*) NULL, NULL}
+#endif
+};
+
 command root[] = {
 #ifdef ISSWITCH
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL, "<on/off> <switch_name>"},
@@ -46,6 +57,7 @@ command root[] = {
 #ifdef ISROUTER	
 	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Remove route", (command*) NULL, "<network_address/netmask> <interface_name>"},
 	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address/netmask> <interface_name>"},
+	{"interface", -1, DEVICE_ROUTER, NULL, "Interface commands",interface_commands , NULL},
 #endif
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},

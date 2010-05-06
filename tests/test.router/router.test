@@ -1,4 +1,6 @@
 hostname Router;
+ipaddress 127.0.0.1;
+port 65000;
 interface {
 	dev eth0;
 	mac aa:bb:cc:00:01:01;

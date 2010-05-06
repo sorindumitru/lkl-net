@@ -42,6 +42,7 @@ interface_t* alloc_interface()
 	return ifr.ifr_ifindex;	
 }*/
 
+#ifdef ISLKL
 void lkl_change_ifname(int ifindex, char *newname)
 {
 	int err, sock = lkl_sys_socket(PF_INET, SOCK_DGRAM, 0);
@@ -150,4 +151,9 @@ int lkl_list_interfaces( int max_if_no)
 	free(ifr);
 	return 0;	
 }
+#endif
 
+void dump_interface(int fd, interface_t *interface)
+{
+
+}

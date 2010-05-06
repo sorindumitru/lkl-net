@@ -303,3 +303,21 @@ int config_read_file(conf_info_t* info, const char* file_name)
 	}
 	return ESUCCESS;
 }
+
+int dump_config_file(int fd, conf_info_t *conf)
+{
+	char buffer[256], address[32];
+	struct list_head *head;
+	//write general info
+	memset(buffer, 0, 256);
+	sprintf(buffer, "hostname %s;\nport %d;\naddress %s;\n", conf->general.hostname, conf->general.port, 
+			inet_ntop(AF_INET, &conf->general.address, address, 32));
+	write(fd, buffer, strlen(buffer));
+
+	//dump interfaces
+	list_for_each(head, &conf->interfaces) {
+		interface_t *interface = list_entry(head, interface_t, list);
+		dump_interface(fd, interface);
+	}
+	return 0;
+}

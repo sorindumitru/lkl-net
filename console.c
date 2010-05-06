@@ -1,7 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <console.h>
+#include <config.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 command show_if_commands[] = {
 #if defined(ISROUTER)||defined(ISSWITCH)
@@ -53,11 +55,13 @@ command interface_commands[] = {
 command root[] = {
 #ifdef ISSWITCH
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL, "<on/off> <switch_name>"},
+	{"dump", 1, DEVICE_ROUTER, do_dump_config_file, "Dump config file", (command*) NULL, "<config file>"},
 #endif
 #ifdef ISROUTER	
 	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Remove route", (command*) NULL, "<network_address/netmask> <interface_name>"},
 	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address/netmask> <interface_name>"},
 	{"interface", -1, DEVICE_ROUTER, NULL, "Interface commands",interface_commands , NULL},
+	{"dump", 1, DEVICE_ROUTER, do_dump_config_file, "Dump config file", (command*) NULL, "<config file>"},
 #endif
 #ifdef ISHYPERVISOR
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},
@@ -72,6 +76,7 @@ command root[] = {
 };
 
 command *com = root;
+extern conf_info_t *info;
 
 int execute_line(char *line)
 {
@@ -128,6 +133,17 @@ command* find_command(const command *commands, const char *name)
 int do_exit_cmd(params *parameters)
 {
 	exit(0);
+}
+
+int do_dump_config_file(params *parameters)
+{
+	int fd = open(parameters->p[0], O_CREAT | O_WRONLY | O_TRUNC, 0666);
+	if (fd < 0) {
+		perror("Could not open file");
+		return -1;
+	}
+	dump_config_file(fd, info);	
+	return 0;
 }
 
 int do_test(params* parameters)

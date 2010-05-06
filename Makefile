@@ -84,13 +84,14 @@ CONSOLE_SRC=console.c autocomplete.c
 # Bridge {
 
 BRIDGE_DIR=bridge
-BRIDGE_SRC=$(BRIDGE_DIR)/bridge.c packet.c
+BRIDGE_SRC=$(BRIDGE_DIR)/bridge.c packet.c interface.c
 BRIDGE_OBJ=$(patsubst %c,%o,$(BRIDGE_SRC))
 
 .PHONY: bridge
 bridge: bin/bridge
 
 bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
+	$(CC) $(CFLAGS) -c interface.c -o interface.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(BRIDGE_OBJ) -o bin/bridge $(LDLIBS)
 
 # }
@@ -107,7 +108,8 @@ switch: bin/switch
 bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 	$(CC) $(CFLAGS) -c console.c -DISSWITCH -o console.o
 	$(CC) $(CFLAGS) -c autocomplete.c -o autocomplete.o
-	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a $(LDLIBS)
+	$(CC) $(CFLAGS) -DISLKL -c interface.c -o interface.o
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a $(LDLIBS) -DISLKL
 
 # }
 
@@ -122,14 +124,15 @@ router: bin/router
 
 bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
 	$(CC) $(CFLAGS) -c console.c -DISROUTER -o console.o
-	$(CC) $(CFLAGS) $(CONF_OBJ) $(ROUTER_OBJ) -o bin/router lkl/lkl.a $(LDLIBS)
+	$(CC) $(CFLAGS) -DISLKL -c interface.c -o interface.o
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(ROUTER_OBJ) -o bin/router lkl/lkl.a $(LDLIBS) -DISLKL
 
 # }
 
 # Hypervisor {
 
 HYPERVISOR_DIR=hypervisor
-HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c $(CONSOLE_SRC)
+HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c $(CONSOLE_SRC) interface.c
 HYPERVISOR_OBJ=$(patsubst %c,%o,$(HYPERVISOR_SRC))
 
 .PHONY: hypervisor
@@ -137,6 +140,7 @@ hypervisor: bin/hypervisor
 
 bin/hypervisor: $(CONF_OBJ) $(HYPERVISOR_OBJ)
 	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
+	$(CC) $(CFLAGS) -c interface.c -o interface.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(HYPERVISOR_OBJ) -o bin/hypervisor $(LDLIBS) -DISHYPERVISOR=1
 
 # }

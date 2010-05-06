@@ -41,6 +41,7 @@ char *complete_other_words(const char *text,int state);
 void list_commands(command* c, int i);
 void initialize_autocomplete(void);
 
+int do_dump_config_file(struct params *parameters);
 int do_exit_cmd(struct params* parameters);
 int do_test(struct params *parameters);
 

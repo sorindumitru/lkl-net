@@ -33,5 +33,6 @@ extern int config_init(conf_info_t* conf);
 extern int config_free(conf_info_t* conf);
 //extern int config_read(struct conf_tree_t* conf, int file_descriptor);
 extern int config_read_file(conf_info_t* conf, const char* file_name);
+extern int dump_config_file(int fd, conf_info_t *conf);
 
 #endif /* CONF_TREE_9Z3VI8KG */

@@ -48,6 +48,7 @@ command interface_commands[] = {
 	{"down", 1, DEVICE_ROUTER, do_set_interface_down, "Set interface down", (command*) NULL, "<interface name>"},
 	{"address", 3, DEVICE_ROUTER, do_change_if_address, "Change IP address", (command*) NULL, "<interface name> <IPv4 address> <netmask length>"},
 	{"list", 0, DEVICE_ROUTER, do_list_router_interfaces, "List router interfaces", (command*) NULL, NULL},
+	{"del",1,DEVICE_ROUTER, do_delete_interface, "Delete interface", (command*) NULL, "<interface name>"},
 	{(char *) NULL, -1, DEVICE_ROUTER, NULL,"Interface information",(command*) NULL, NULL}
 #endif
 };

@@ -1138,3 +1138,13 @@ int do_list_router_interfaces(struct params *params)
 	lkl_list_interfaces(2);
 	return 0;
 }
+
+int do_delete_interface(struct params *params)
+{
+	int ifindex = get_interface_index((char*)params->p[0]);
+	if (ifindex < 0){
+		lkl_printf("LKL::No such interface in system\n");
+		return -1;
+	}else 
+		return lkl_del_eth_tun(ifindex);
+}

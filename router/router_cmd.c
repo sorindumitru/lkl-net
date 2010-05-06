@@ -1089,10 +1089,12 @@ int do_add_interface(struct params *params)
 		td->type = TUN_HUB;
 		td->port = atoi((char*)params->p[3]);
 		td->address = addr.s_addr;
+		printf("Port %d\n", td->port);
 		if ((ifindex=lkl_add_eth_tun((char*)params->p[0],(char*)params->p[1], 32, td)) < 0) {
 			printf("LKL init :: could not add interface %s\n",(char*)params->p[0]);
 			return -1;
 		}
+		lkl_change_ifname(ifindex, params->p[0]);
 	}
 		
 	return 0;

@@ -42,7 +42,7 @@ interface_t* alloc_interface()
 	return ifr.ifr_ifindex;	
 }*/
 
-static void lkl_change_ifname(int ifindex, char *newname)
+void lkl_change_ifname(int ifindex, char *newname)
 {
 	int err, sock = lkl_sys_socket(PF_INET, SOCK_DGRAM, 0);
 	int ifname_siz;

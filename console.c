@@ -43,7 +43,7 @@ command create_commands[] = {
 
 command interface_commands[] = {
 #ifdef ISROUTER
-	{"add", 4, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <gateway address> <port no>"},
+	{"add", 4, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <hub address> <port no>"},
 	{"up", 1, DEVICE_ROUTER, do_set_interface_up, "Bring interface up", (command*) NULL, "<interface name>" },
 	{"down", 1, DEVICE_ROUTER, do_set_interface_down, "Set interface down", (command*) NULL, "<interface name>"},
 	{"address", 3, DEVICE_ROUTER, do_change_if_address, "Change IP address", (command*) NULL, "<interface name> <IPv4 address> <netmask length>"},

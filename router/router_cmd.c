@@ -18,6 +18,7 @@
 #include <asm/eth.h>
 
 #include <netdb.h>
+#include <device.h>
 
 
 #define SPRINT_BSIZE 64
@@ -1079,8 +1080,10 @@ int do_add_interface(struct params *params)
 {
 	int ifindex = get_interface_index((char*)params->p[0]);
 	struct tun_device* td = malloc(sizeof(struct tun_device));
+	socket_t *socket = get_remote_device_socket("hub1");
 	struct hostent *hostinfo =gethostbyname((char*)params->p[2]);
 	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
+	printf("DEVICE %s %d\n", socket->address, socket->port);
 	if (ifindex >= 0){
 		lkl_printf("LKL::Interface already exists in system\n");
 		return -1;

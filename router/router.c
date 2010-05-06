@@ -14,7 +14,6 @@ conf_info_t* info;
 
 int main(int argc,char**argv)
 {
-	int err;
 	struct list_head *head;
 	info = malloc(sizeof(*info));
 	config_init(info);

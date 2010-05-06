@@ -23,12 +23,14 @@ int do_create_link(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		device_t *dev = malloc(sizeof(*dev));
-		dev->type = DEV_HUB;
-		dev->port = atoi(params->p[1]);
-		dev->hostname = strdup(params->p[0]);
-		INIT_LIST_HEAD(&dev->list);
-		list_add(&dev->list,&hypervisor->links);
+		if (!params->p[2]) {
+			device_t *dev = malloc(sizeof(*dev));
+			dev->type = DEV_HUB;
+			dev->port = atoi(params->p[1]);
+			dev->hostname = strdup(params->p[0]);
+			INIT_LIST_HEAD(&dev->list);
+			list_add(&dev->list,&hypervisor->links);
+		}
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
@@ -68,12 +70,14 @@ int do_create_router(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		device_t *dev = malloc(sizeof(*dev));
-		dev->type = DEV_ROUTER;
-		dev->config = strdup(params->p[1]);
-		dev->hostname = strdup(params->p[0]);
-		INIT_LIST_HEAD(&dev->list);
-		list_add(&dev->list,&hypervisor->routers);
+		if (!params->p[2]) {
+			device_t *dev = malloc(sizeof(*dev));
+			dev->type = DEV_ROUTER;
+			dev->config = strdup(params->p[1]);
+			dev->hostname = strdup(params->p[0]);
+			INIT_LIST_HEAD(&dev->list);
+			list_add(&dev->list,&hypervisor->routers);
+		}
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
@@ -102,12 +106,14 @@ int do_create_switch(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		device_t *dev = malloc(sizeof(*dev));
-		dev->type = DEV_SWITCH;
-		dev->config = strdup(params->p[1]);
-		dev->hostname = strdup(params->p[0]);
-		INIT_LIST_HEAD(&dev->list);
-		list_add(&dev->list,&hypervisor->switches);
+		if (!params->p[2]) {
+			device_t *dev = malloc(sizeof(*dev));
+			dev->type = DEV_SWITCH;
+			dev->config = strdup(params->p[1]);
+			dev->hostname = strdup(params->p[0]);
+			INIT_LIST_HEAD(&dev->list);
+			list_add(&dev->list,&hypervisor->switches);
+		}
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
@@ -197,8 +203,9 @@ int do_boot_up(struct params *par) {
 		if (device->type == DEV_HUB) {
 			printf("LKL NET :: started %s\n", device->hostname);
 			struct params params;
-			params.p[0] = malloc(8*sizeof(char));
-			sprintf((char*)params.p[0],"%d",device->port);
+			params.p[1] = malloc(8*sizeof(char));
+			params.p[2] = malloc(sizeof(char));
+			sprintf((char*)params.p[1],"%d",device->port);
 			do_create_link(&params);
 			free(params.p[0]);
 		}
@@ -211,8 +218,9 @@ int do_boot_up(struct params *par) {
 		if (device->type != DEV_HUB) {
 			printf("LKL NET :: started %s\n", device->hostname);
 			struct params params;
-			params.p[0] = malloc(256*sizeof(char));
-			sprintf((char*)params.p[0],"%s",device->config);
+			params.p[1] = malloc(256*sizeof(char));
+			params.p[2] = malloc(sizeof(char));
+			sprintf((char*)params.p[1],"%s",device->config);
 			switch(device->type){
 			case DEV_ROUTER:
 				do_create_router(&params);

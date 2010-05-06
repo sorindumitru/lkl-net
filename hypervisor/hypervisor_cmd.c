@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 #include <config.h>
 #include <device.h>
@@ -12,6 +13,7 @@
 #include <arpa/inet.h>
 
 extern conf_info_t *info;
+extern hypervisor_t *hypervisor;
 
 int do_create_link(struct params *params)
 {
@@ -21,13 +23,18 @@ int do_create_link(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		//add link to link list	
+		device_t *dev = malloc(sizeof(*dev));
+		dev->type = DEV_HUB;
+		dev->port = atoi(params->p[1]);
+		dev->hostname = strdup(params->p[0]);
+		INIT_LIST_HEAD(&dev->list);
+		list_add(&dev->list,&hypervisor->links);
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
 			"-e",
 			"bin/hub", 
-			params->p[0],
+			params->p[1],
 			NULL
 		};
 		err = execvp("xterm", args);
@@ -61,13 +68,18 @@ int do_create_router(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		//add link to link list	
+		device_t *dev = malloc(sizeof(*dev));
+		dev->type = DEV_ROUTER;
+		dev->config = strdup(params->p[1]);
+		dev->hostname = strdup(params->p[0]);
+		INIT_LIST_HEAD(&dev->list);
+		list_add(&dev->list,&hypervisor->routers);
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
 			"-e",
 			"bin/router", 
-			params->p[0],
+			params->p[1],
 			NULL
 		};
 		err = execvp("xterm", args);
@@ -90,13 +102,18 @@ int do_create_switch(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		//add link to link list	
+		device_t *dev = malloc(sizeof(*dev));
+		dev->type = DEV_SWITCH;
+		dev->config = strdup(params->p[1]);
+		dev->hostname = strdup(params->p[0]);
+		INIT_LIST_HEAD(&dev->list);
+		list_add(&dev->list,&hypervisor->switches);
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
 			"-e",
 			"bin/switch", 
-			params->p[0],
+			params->p[1],
 			NULL
 		};
 		err = execvp("xterm", args);
@@ -209,6 +226,61 @@ int do_boot_up(struct params *par) {
 			free(params.p[0]);
 		}
 	}
+
+	return 0;
+}
+
+static void dump_device(int fd, device_t* device)
+{
+	char buffer[128];
+	memset(buffer,0,128);
+	sprintf(buffer,"\tdevice {\n");
+	write(fd, buffer, strlen(buffer));
+	memset(buffer,0,128);
+	sprintf(buffer,"\t\ttype %s;\n",get_type(device->type));
+	write(fd, buffer, strlen(buffer));
+	memset(buffer,0,128);
+	sprintf(buffer,"\t\thostname %s;\n",device->hostname);
+	write(fd, buffer, strlen(buffer));
+	if (device->type != DEV_HUB) {
+		memset(buffer,0,128);
+		sprintf(buffer,"\t\tconfig %s;\n",device->config);
+		write(fd, buffer, strlen(buffer));
+	} else {
+		memset(buffer,0,128);
+		sprintf(buffer,"\t\tport %d;\n", device->port);
+		write(fd, buffer, strlen(buffer));
+	}
+}
+
+
+int do_dump_hyper_config(params *params)
+{
+	struct list_head *head;
+	int fd = open(params->p[0], O_CREAT | O_WRONLY | O_TRUNC, 0666);	
+	if (fd < 0) {
+		perror("could not open file");
+		return -1;
+	}
+
+	write(fd, "hypervisor {\n", strlen("hypervisor {\n"));
+
+	list_for_each(head, &hypervisor->links) {
+		device_t *device = list_entry(head, device_t, list);
+		dump_device(fd, device);
+	}
+
+	list_for_each(head, &hypervisor->routers) {
+		device_t *device = list_entry(head, device_t, list);
+		dump_device(fd, device);
+	}
+
+	list_for_each(head, &hypervisor->switches) {
+		device_t *device = list_entry(head, device_t, list);
+		dump_device(fd, device);
+	}
+
+	write(fd, "}\n", strlen("}\n"));
 
 	return 0;
 }

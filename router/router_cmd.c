@@ -1086,7 +1086,7 @@ int do_add_interface(struct params *params)
 		return -1;
 	}else{
 		/* TODO: initializa from interface_t */	
-		td->type = 0;
+		td->type = TUN_HUB;
 		td->port = atoi((char*)params->p[3]);
 		td->address = addr.s_addr;
 		if ((ifindex=lkl_add_eth_tun((char*)params->p[0],(char*)params->p[1], 32, td)) < 0) {

@@ -11,6 +11,7 @@
 #include <hypervisor_cmd.h>
 
 conf_info_t *info;
+hypervisor_t *hypervisor;
 pthread_t request;
 unsigned int port;
 char *prompt = ">";
@@ -19,8 +20,10 @@ int main(int argc, char **argv)
 {
 	char *command;
 	info = malloc(sizeof(*info));
+	hypervisor = malloc(sizeof(*hypervisor));
 	config_init(info);
 	config_read_file(info, argv[1]);
+	init_hypervisor(hypervisor,info);
 
 	printf("LKL NET :: Hypervisor is starting\n");
 

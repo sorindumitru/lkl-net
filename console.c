@@ -32,7 +32,7 @@ command show_commands[] = {
 
 command create_commands[] = {
 #ifdef ISHYPERVISOR
-	{"link", 1, DEVICE_HYPERVISOR, do_create_link, "Create new link", (command*) NULL, "<hub_name>"},	
+	{"link", 2, DEVICE_HYPERVISOR, do_create_link, "Create new link", (command*) NULL, "<hub_name> <port>"},
 	{"router", 1, DEVICE_HYPERVISOR, do_create_router, "Create new router", (command*) NULL, "<config file>"},
 	{"switch", 1, DEVICE_HYPERVISOR, do_create_switch, "Create new switch", (command*) NULL, "<config file>"},
 #endif
@@ -63,6 +63,7 @@ command root[] = {
 	{"create", -1, DEVICE_HYPERVISOR, NULL, "Create new link/device", create_commands, NULL},
 	{"telnet", 2, DEVICE_HYPERVISOR, do_telnet, "Telent to a device", (command*) NULL, "<ip_address> <port_no> | dev <device_name>"},
 	{"boot", 0, DEVICE_HYPERVISOR, do_boot_up, "Boot up devices", (command*) NULL, ""},
+	{"dump", 1, DEVICE_ALL, do_dump_hyper_config, "Dump configuration", (command *) NULL, "<file>"},
 #endif
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands, NULL},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL, NULL},

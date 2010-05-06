@@ -1085,7 +1085,6 @@ int do_add_interface(struct params *params)
 		lkl_printf("LKL::Interface already exists in system\n");
 		return -1;
 	}else{
-		/* TODO: initializa from interface_t */	
 		td->type = TUN_HUB;
 		td->port = atoi((char*)params->p[3]);
 		td->address = addr.s_addr;

@@ -2,6 +2,7 @@
 #include <interface.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <syslog.h>
 #include <fcntl.h>
@@ -16,6 +17,7 @@
 
 #include <asm/libnetlink.h>
 #include <asm/eth.h>
+//#include <asm/lkl_router.h>
 
 #include <netdb.h>
 #include <device.h>

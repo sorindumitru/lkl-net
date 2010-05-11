@@ -17,9 +17,13 @@ command show_if_commands[] = {
 };
 
 command show_commands[] = {
-#if defined(ISROUTER)||defined(ISSWITCH)
+#if defined(ISSWITCH)
 	{"mac-table", 1, DEVICE_SWITCH, do_show_mac_table, "Show interface mac-table", (command*) NULL, "<switch-name>"},
+#endif
+#if defined(IS_ROUTER)||defined(ISSWITCH)
 	{"interface", -1, DEVICE_ALL, NULL, "Show interface information", show_if_commands, NULL},
+#endif
+#ifdef ISROUTER
 	{"route", 0, DEVICE_ROUTER, do_show_ip_route, "Show routing table", (command*) NULL, NULL},
 #endif
 #ifdef ISSWITCH
@@ -42,7 +46,7 @@ command create_commands[] = {
 };
 
 command interface_commands[] = {
-#ifdef ISROUTER
+#if defined(ISROUTER)||defined(ISSWITCH)
 	{"add", 4, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <gateway address> <port no>"},
 	{"up", 1, DEVICE_ROUTER, do_set_interface_up, "Bring interface up", (command*) NULL, "<interface name>" },
 	{"down", 1, DEVICE_ROUTER, do_set_interface_down, "Set interface down", (command*) NULL, "<interface name>"},
@@ -105,6 +109,7 @@ int execute_line(char *line)
 	if (com->parameters_no > 0) {
 		int i=0;
 		parameters = malloc(sizeof(struct params));
+		memset(parameters, 0, sizeof(*parameters));
 		for(i=0;i<com->parameters_no;i++) {
 			token = strtok(NULL," \t");
 			if (!token) {

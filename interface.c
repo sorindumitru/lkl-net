@@ -155,5 +155,21 @@ int lkl_list_interfaces( int max_if_no)
 
 void dump_interface(int fd, interface_t *interface)
 {
+	char buffer[256];
+
+	memset(buffer, 0, 256);
+	sprintf(buffer,"interface {\n");
+	write(fd, buffer, strlen(buffer));
+
+	if (interface->dev) {
+		memset(buffer, 0, 256);
+		sprintf(buffer,"\tdev %s\n", interface->dev);
+		write(fd, buffer, strlen(buffer));
+	}	
+	
+	memset(buffer, 0, 256);
+	sprintf(buffer,"\tnetmask %d\n\tport %d\n\ttype hub;\n}\n", interface->netmask_len, interface->port);
+	write(fd, buffer, strlen(buffer));
+
 
 }

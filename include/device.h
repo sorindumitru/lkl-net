@@ -30,6 +30,7 @@ typedef struct device_list_element {
 #define PACKAGE_PADDING		128
 
 #define REQUEST_DEVICE_NAME	1
+#define REQUEST_DUMP_CONFIG	2
 #define REQUEST_ERROR_DEVICE_NOT_FOUND	128
 
 typedef struct hyper_info_head {

@@ -71,9 +71,13 @@ int main(int argc, const char **argv)
 		printf("LKL init :: could not bring bridge %s up :: %d\n", BRIDGE_NAME,err);
 	}
 
-	prompt = malloc(strlen(info->general.hostname)+2);
-	sprintf(prompt, "%s>", info->general.hostname);
-
+	if (info->general.hostname) {
+		prompt = malloc(strlen(info->general.hostname)+2);
+		sprintf(prompt, "%s>", info->general.hostname);
+	} else {
+		prompt = malloc(strlen("Switch>")+1);
+		sprintf(prompt, "Switch>");
+	}
 	initialize_autocomplete();
 
 	struct params p = {

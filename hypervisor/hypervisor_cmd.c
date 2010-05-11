@@ -259,6 +259,10 @@ static void dump_device(int fd, device_t* device)
 		sprintf(buffer,"\t\tport %d;\n", device->port);
 		write(fd, buffer, strlen(buffer));
 	}
+	memset(buffer,0,128);
+	sprintf(buffer,"\t}\n");
+	write(fd, buffer, strlen(buffer));
+
 }
 
 

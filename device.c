@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 #include <signal.h>
 
 #include <config.h>
@@ -151,12 +152,12 @@ hyper_info_t* recv_hyper(int sock)
 	err = recv(sock, hinfo, sizeof(hyper_info_header), 0);
 	if (err < 0) {
 		perror("could not receive header");
-		return -1;
+		return NULL;
 	}
 	err = recv(sock, hinfo->padding, hinfo->length - 2*sizeof(unsigned int), 0);
 	if (err < 0) {
 		perror("could not receive data");
-		return -1;
+		return NULL;
 	}
 
 	return hinfo;

@@ -93,7 +93,7 @@ int do_show_stp(struct params *params)
 	struct bridge_info binfo;
 	int err;
 
-	if (err = lkl_br_get_bridge_info(params->p[0], &binfo)) {
+	if ((err = lkl_br_get_bridge_info(params->p[0], &binfo))) {
 		printf("could not get bridge info : %s\n", strerror(err));
 		return 1;
 	}

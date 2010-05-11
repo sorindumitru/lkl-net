@@ -231,28 +231,6 @@ int do_boot_up(struct params *par) {
 		free(params.p[0]);
 	}
 
-	/*list_for_each(head, &info->devices){
-		device_t *device = list_entry(head, device_t, list);
-		if (device->type != DEV_HUB) {
-			printf("LKL NET :: started %s\n", device->hostname);
-			struct params params;
-			params.p[1] = malloc(256*sizeof(char));
-			params.p[2] = malloc(sizeof(char));
-			sprintf((char*)params.p[1],"%s",device->config);
-			switch(device->type){
-			case DEV_ROUTER:
-				do_create_router(&params);
-				break;
-			case DEV_SWITCH:
-				do_create_switch(&params);
-				break;
-			default:
-				printf("LKL NET :: unknown device %s\n", device->hostname);
-			}
-			free(params.p[0]);
-		}
-	}*/
-
 	return 0;
 }
 

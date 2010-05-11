@@ -198,22 +198,40 @@ int do_boot_up(struct params *par) {
 	struct list_head *head;
 
 	//starting hubs
-	list_for_each(head, &info->devices){
+	list_for_each(head, &hypervisor->links){
 		device_t *device = list_entry(head, device_t, list);
-		if (device->type == DEV_HUB) {
-			printf("LKL NET :: started %s\n", device->hostname);
-			struct params params;
-			params.p[1] = malloc(8*sizeof(char));
-			params.p[2] = malloc(sizeof(char));
-			sprintf((char*)params.p[1],"%d",device->port);
-			do_create_link(&params);
-			free(params.p[0]);
-		}
+		printf("LKL NET :: started %s\n", device->hostname);
+		struct params params;
+		params.p[1] = malloc(8*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%d",device->port);
+		do_create_link(&params);
+		free(params.p[0]);
 	}
 
-	sleep(1);
+	list_for_each(head, &hypervisor->switches){
+		device_t *device = list_entry(head, device_t, list);
+		printf("LKL NET :: started %s\n", device->hostname);
+		struct params params;
+		params.p[1] = malloc(8*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%s",device->config);
+		do_create_switch(&params);
+		free(params.p[0]);
+	}
 
-	list_for_each(head, &info->devices){
+	list_for_each(head, &hypervisor->routers){
+		device_t *device = list_entry(head, device_t, list);
+		printf("LKL NET :: started %s\n", device->hostname);
+		struct params params;
+		params.p[1] = malloc(256*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%s",device->config);
+		do_create_router(&params);
+		free(params.p[0]);
+	}
+
+	/*list_for_each(head, &info->devices){
 		device_t *device = list_entry(head, device_t, list);
 		if (device->type != DEV_HUB) {
 			printf("LKL NET :: started %s\n", device->hostname);
@@ -233,7 +251,7 @@ int do_boot_up(struct params *par) {
 			}
 			free(params.p[0]);
 		}
-	}
+	}*/
 
 	return 0;
 }

@@ -18,6 +18,7 @@ char *prompt = ">";
 
 int main(int argc, char **argv)
 {
+	struct list_head *head, *temp;
 	char *command;
 	info = malloc(sizeof(*info));
 	hypervisor = malloc(sizeof(*hypervisor));
@@ -30,6 +31,25 @@ int main(int argc, char **argv)
 	start_request_thread();
 	initialize_autocomplete();
 	port = info->general.port;
+
+	list_for_each_safe(head, temp, &info->devices){
+		device_t *dev = list_entry(head, device_t, list);
+		list_del(head);
+		INIT_LIST_HEAD(&dev->list);
+		switch(dev->type){
+		case DEV_HUB:
+			list_add(&dev->list, &hypervisor->links);
+			break;
+		case DEV_SWITCH:
+			list_add(&dev->list, &hypervisor->switches);
+			break;
+		case DEV_ROUTER:
+			list_add(&dev->list, &hypervisor->routers);
+			break;
+		default:
+			break;
+		}
+	}
 
 	printf("LKL NET :: Hypervisor initialised\n");
 	while(1){

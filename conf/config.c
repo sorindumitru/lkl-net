@@ -317,7 +317,7 @@ int dump_config_file(int fd, conf_info_t *conf)
 	struct list_head *head;
 	//write general info
 	memset(buffer, 0, 256);
-	sprintf(buffer, "hostname %s;\nport %d;\naddress %s;\n", conf->general.hostname, conf->general.port, 
+	sprintf(buffer, "hostname %s;\nport %d;\nipaddress %s;\n", conf->general.hostname, conf->general.port, 
 			inet_ntop(AF_INET, &conf->general.address, address, 32));
 	write(fd, buffer, strlen(buffer));
 

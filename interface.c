@@ -157,6 +157,7 @@ int lkl_list_interfaces( int max_if_no)
 
 void dump_interface(int fd, interface_t *interface)
 {
+	char address[32];
 	char buffer[256];
 
 	memset(buffer, 0, 256);
@@ -165,12 +166,34 @@ void dump_interface(int fd, interface_t *interface)
 
 	if (interface->dev) {
 		memset(buffer, 0, 256);
-		sprintf(buffer,"\tdev %s\n", interface->dev);
+		sprintf(buffer,"\tdev %s;\n", interface->dev);
 		write(fd, buffer, strlen(buffer));
-	}	
+	}
+
+	if (interface->address.s_addr) {
+		memset(buffer, 0, 256);
+		memset(address, 0, 32);
+		inet_ntop(AF_INET, &interface->address, address, 32);
+		sprintf(buffer, "\tipaddress %s;\n", address);
+		write(fd, buffer, strlen(buffer));
+	}
+
+	if (interface->mac) {
+		memset(buffer, 0, 256);
+		sprintf(buffer, "\tmac %s\n", ether_ntoa(interface->mac));
+		write(fd, buffer, strlen(buffer));
+	}
+
+	if (interface->gateway.s_addr) {
+		memset(buffer, 0, 256);
+		memset(address, 0, 32);
+		inet_ntop(AF_INET, &interface->gateway, address, 32);
+		sprintf(buffer, "\tgateway %s;\n", address);
+		write(fd, buffer, strlen(buffer));
+	}
 	
 	memset(buffer, 0, 256);
-	sprintf(buffer,"\tnetmask %d\n\tport %d\n\ttype hub;\n}\n", interface->netmask_len, interface->port);
+	sprintf(buffer,"\tnetmask %d;\n\tport %d;\n\ttype hub;\n}\n", interface->netmask_len, interface->port);
 	write(fd, buffer, strlen(buffer));
 
 

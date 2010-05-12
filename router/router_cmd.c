@@ -21,7 +21,9 @@
 
 #include <netdb.h>
 #include <device.h>
+#include <config.h>
 
+extern conf_info_t *info;
 
 #define SPRINT_BSIZE 64
 #define SPRINT_BUF(x)	char x[SPRINT_BSIZE]
@@ -1080,6 +1082,7 @@ int do_show_ip_route(struct params* params)
 /*{"add", 6, DEVICE_ROUTER, do_add_interface, "Add a new interface", (command*) NULL, "<name> <MAC address> <gateway address> <port no>"}*/
 int do_add_interface(struct params *params)
 {
+	interface_t *interface = malloc(sizeof(*interface));
 	int ifindex = get_interface_index((char*)params->p[0]);
 	struct tun_device* td = malloc(sizeof(struct tun_device));
 	//socket_t *socket = get_remote_device_socket("hub1");
@@ -1100,7 +1103,13 @@ int do_add_interface(struct params *params)
 		}
 		lkl_change_ifname(ifindex, params->p[0]);
 	}
-		
+	interface->dev = strdup(params->p[0]);
+	interface->gateway = addr;
+	interface->mac = ether_aton(params->p[1]);
+	interface->port = atoi((char*)params->p[3]);
+	INIT_LIST_HEAD(&interface->list);
+	list_add(&interface->list, &info->interfaces);
+	interface->address.s_addr = 0;
 	return 0;
 }
 
@@ -1126,15 +1135,27 @@ int do_set_interface_down(struct params *params)
 
 int do_change_if_address(struct params *params)
 {
+	struct list_head *head;
 	int netmask_len = atoi((char*)params->p[2]);
 	struct hostent *hostinfo =gethostbyname((char*)params->p[1]);
 	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
 	int ifindex = get_interface_index((char*)params->p[0]);
+
+	
+	
 	if (ifindex < 0){
 		lkl_printf("LKL::No such interface in system\n");
 		return -1;
-	}else
+	} else {
+		list_for_each(head, &info->interfaces) {
+			interface_t *interface = list_entry(head, interface_t, list);
+			if (!strcmp(interface->dev, params->p[0])) {
+				interface->netmask_len = netmask_len;
+				interface->address.s_addr = addr.s_addr;
+			}
+		}
 		return lkl_if_set_ipv4(ifindex,addr.s_addr,netmask_len);
+	}
 }
 
 int do_list_router_interfaces(struct params *params)

@@ -23,6 +23,8 @@ typedef struct gen_info{
 } gen_info_t;
 
 typedef struct conf_info{
+	unsigned char read;
+	char *config_file;
 	gen_info_t general;
 	struct list_head interfaces;
 	struct list_head topologies;

@@ -65,9 +65,9 @@ typedef struct arp_header {
 	unsigned char prot_addr_len;
 	unsigned short opcode;
 	unsigned char sender_hdwaddr[6];
-	unsigned int sender_protaddr[6];
+	unsigned int sender_protaddr;
 	unsigned char target_hdwaddr[6];
-	unsigned int target_protaddr[6];
+	unsigned int target_protaddr;
 } arp_header;	
   
 static unsigned short dump_eth_header(eth_header *e)
@@ -85,20 +85,21 @@ static unsigned short dump_eth_header(eth_header *e)
 static void dump_ip_header(ip_header *i)
 {
 
-		printf("IP:\n\tihl=%u\tversion=%u\ttos=%u\n\
-		\ttotal_length=%u\tid=%u\tflags=%u\n\
-		\tfragment_offset=%u\tTTL=%u\tprotocol=%u\n\
-		\tDestination:\t"NIPQUAD_FMT"\n\
-		\tSource:"NIPQUAD_FMT"\n",\
-		i->ihl,i->version,i->tos,\
-		i->total_length,i->id,i->flags,\
-		i->fragment_offset,i->ttl,i->protocol,\
-		NIPQUAD(i->daddr),NIPQUAD(i->saddr));
+	printf("IP:\n\tihl=%u\tversion=%u\ttos=%u\n\
+	\ttotal_length=%u\tid=%u\tflags=%u\n\
+	\tfragment_offset=%u\tTTL=%u\tprotocol=%u\n\
+	\tDestination:\t"NIPQUAD_FMT"\n\
+	\tSource:"NIPQUAD_FMT"\n",\
+	i->ihl,i->version,i->tos,\
+	ntohs(i->total_length),ntohs(i->id),ntohs(i->flags),\
+	ntohs(i->fragment_offset),i->ttl,i->protocol,\
+	NIPQUAD(i->daddr),NIPQUAD(i->saddr));
 
 }
 
 static void dump_arp_header(arp_header *arp)
 {
+	
 	printf("ARP:\n\thdw_type=%u\t \
 	prot_type=%u\t	\
 	hdw_addr_len=%d\t	\

@@ -21,7 +21,7 @@ typedef struct connection{
 
 typedef struct result{
 	int size;
-	char *message;
+	unsigned char *message;
 } result;
 
 struct list_head my_conn;
@@ -33,16 +33,18 @@ typedef struct eth_header {
 	unsigned short protocol;
 } eth_header;
 
+typedef struct 
+
 static void dump_eth_header(eth_header *e)
 {
 	printf("Ethernet:\n\tDestination:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tSource:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tProtocolt: %X\n",
-	       e->dest[0], e->dest[1], e->dest[2], e->dest[3], e->dest[4], e->dest[5],
-	       e->src[0], e->src[1], e->src[2], e->src[3], e->src[4], e->src[5],
+	       (unsigned int)e->dest[0], (unsigned int)e->dest[1], (unsigned int)e->dest[2], (unsigned int)e->dest[3], (unsigned int)e->dest[4], (unsigned int)e->dest[5],
+	       (unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],
 	       e->protocol
 	       );
 }
 
-struct result *modify_packet(char *packet, int size)
+struct result *modify_packet(unsigned char *packet, int size)
 {
 	struct result *myres = malloc(sizeof(struct result));
 	myres->size = size;
@@ -52,7 +54,7 @@ struct result *modify_packet(char *packet, int size)
 
 conf_info_t *info = NULL;
 
-void forward_packet(int fd, char *data, int size)
+void forward_packet(int fd, unsigned char *data, int size)
 {
 	struct list_head *lh;
 	struct connection *conn;
@@ -60,7 +62,6 @@ void forward_packet(int fd, char *data, int size)
 		conn=list_entry(lh,struct connection,conn_list);
 		if(conn->sock != fd){
 			//printf("tb sa trimit lui %d msg=%s\n",conn->sock, data);
-			dump_eth_header((struct eth_header*)data+sizeof(int));
 			if(send(conn->sock, &size, sizeof(size), 0) < 0 ){
 				perror("error:send:\n");
 				exit(-1);
@@ -87,6 +88,13 @@ void remove_connection(int fd)
 	}
 }
 
+void print_data_hexa(int size, unsigned char *buff)
+{
+	int i;
+	for(i=0;i<size;i++)
+		printf("%02x",buff[i]);
+}
+
 void wait_for_messages( int port_no )
 {
 	int sockfd,newsockfd;
@@ -103,13 +111,13 @@ void wait_for_messages( int port_no )
 
 	struct result *res;
 	int n;
-	char *buf;
+	unsigned char *buf;
 	struct list_head *lh;
 	struct connection *conn;
 	lh=(struct list_head*)malloc(sizeof(struct list_head));
 	conn=(struct connection*)malloc(sizeof(struct connection));
 	
-	buf=(char*)malloc(PACKET_SIZE);
+	buf=(unsigned char*)malloc(PACKET_SIZE);
 
 	//create socket
 	sockfd = socket(AF_INET, SOCK_STREAM, 6);
@@ -164,16 +172,25 @@ void wait_for_messages( int port_no )
 		}else {
 			memset(buf,0,PACKET_SIZE);
 			n=recv(ret_ev.data.fd, &size, sizeof(size), 0);
+			printf("!!!!!!!!!!!!!!!!!N=%d\n",n);
 			if(n>0){//TO DO: closed conn; not n==0
+				memset(buf,0,PACKET_SIZE);
 				printf("hub:primit datele #%s# de la %d\n",buf,ret_ev.data.fd);
 				n=recv(ret_ev.data.fd, buf, size, 0);
-				if (n == 0) {
-					epoll_ctl(epfd, EPOLL_CTL_DEL, ret_ev.data.fd, &ev);
-					remove_connection(ret_ev.data.fd);
-				}
+				print_data_hexa(size,buf);
 				res=modify_packet(buf,size);
-				//printf("asta ajunge:%d\t%s\n",res->size,res->message);
+				dump_eth_header((struct eth_header*)buf);
 				forward_packet(ret_ev.data.fd, res->message, res->size);
+				/*if (n<=14){
+					//length packet
+					printf("LENGTH PACKET\n");
+					forward_packet(ret_ev.data.fd, res->message, res->size);
+				}else if(n>14){
+					dump_eth_header((struct eth_header*)buf+sizeof(int));
+					res=modify_packet(buf,size);
+					//printf("asta ajunge:%d\t%s\n",res->size,res->message);
+					forward_packet(ret_ev.data.fd, res->message, res->size);
+				}*/
 			} else{
 				printf("received a fin from %d\n",ret_ev.data.fd);
 				epoll_ctl(epfd, EPOLL_CTL_DEL,ret_ev.data.fd, &ev);

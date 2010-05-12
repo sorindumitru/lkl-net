@@ -44,6 +44,10 @@ int main(int argc, const char **argv)
 	config_read_file(info, argv[1]);
 	char *command;
 
+	if (!info->general.hostname && argc > 2){
+		info->general.hostname = strdup(argv[2]);
+	}
+
 	if (lkl_env_init(16*1024*1024) < 0) {
 		printf("LKL init :: could not init environment\n");
 	}

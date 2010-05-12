@@ -84,6 +84,7 @@ int do_create_router(struct params *params)
 			"-e",
 			"bin/router", 
 			params->p[1],
+			params->p[0],
 			NULL
 		};
 		err = execvp("xterm", args);
@@ -120,6 +121,7 @@ int do_create_switch(struct params *params)
 			"-e",
 			"bin/switch", 
 			params->p[1],
+			params->p[0],
 			NULL
 		};
 		err = execvp("xterm", args);

@@ -7,7 +7,7 @@
 
 typedef struct interface{
 	char* dev;
-	struct eth_addr	*mac;
+	struct ether_addr	*mac;
 	struct in_addr address, def_addr, gateway;
 	unsigned int netmask_len;
 	unsigned short port;

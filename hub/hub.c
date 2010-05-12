@@ -43,10 +43,10 @@ typedef struct eth_header {
 } eth_header;
 
 typedef struct ip_header {
-	unsigned char version:4,
-		      ihl:4;
+	unsigned char ihl:4,
+		      version:4;
 	unsigned char tos;
-	unsigned short total_lenght;
+	unsigned short total_length;
 	unsigned short id;
 	unsigned short flags:3,
 		       fragment_offset:13;
@@ -55,7 +55,7 @@ typedef struct ip_header {
 	unsigned short hdr_checksum;
 	unsigned int saddr;
 	unsigned int daddr;
-	unsigned char options[0];
+	//unsigned char options[0];
 } ip_header;   	
   
 static void dump_eth_header(eth_header *e)
@@ -67,7 +67,10 @@ static void dump_eth_header(eth_header *e)
 
 static void dump_ip_header(ip_header *i)
 {
-	printf("IP\n\tDestination:\t"NIPQUAD_FMT"\n\tSource:"NIPQUAD_FMT"\n\tTTL=%u\tProtocol=%u\n",NIPQUAD(i->daddr),NIPQUAD(i->saddr),i->ttl,i->protocol);
+	//if (i->ihl >0){
+		//printf("IP\n\tDestination:\t"NIPQUAD_FMT"\n\tSource:"NIPQUAD_FMT"\n\tTTL=%u\tProtocol=%u version=%u ihl=%u\n",NIPQUAD(i->daddr),NIPQUAD(i->saddr),i->ttl,i->protocol,i->version,i->ihl);
+		printf("IP:\nihl=%u\tversion=%u\ttos=%u\t total_length=%u\tid=%u\nflags=%u\tfragment_offset=%u\tTTL=%u\tprotocol=%u\nDestination:\t"NIPQUAD_FMT"\n\tSource:"NIPQUAD_FMT"\n",i->ihl,i->version,i->tos,i->total_length,i->id,i->flags,i->fragment_offset,i->ttl,i->protocol,NIPQUAD(i->daddr),NIPQUAD(i->saddr));
+	//}
 }
 
 struct result *modify_packet(unsigned char *packet, int size)
@@ -114,12 +117,15 @@ void remove_connection(int fd)
 	}
 }
 
-void print_data_hexa(int size, unsigned char *buff)
+/*void print_data_hexa(int size, unsigned char *buff)
 {
 	int i;
-	for(i=0;i<size;i++)
+	printf("NEW DATA::START\n");
+	for(i=0;i<size;i++){
 		printf("%02x",buff[i]);
-}
+	}
+	printf("\nNEW DATA::END\n");
+}*/
 
 void wait_for_messages( int port_no )
 {
@@ -198,12 +204,12 @@ void wait_for_messages( int port_no )
 		}else {
 			memset(buf,0,PACKET_SIZE);
 			n=recv(ret_ev.data.fd, &size, sizeof(size), 0);
-			printf("!!!!!!!!!!!!!!!!!N=%d\n",n);
-			if(n>0){//TO DO: closed conn; not n==0
+			//printf("!!!!!!!!!!!!!!!!!N=%d\n",n);
+			if(n>0){
 				memset(buf,0,PACKET_SIZE);
-				printf("hub:primit datele #%s# de la %d\n",buf,ret_ev.data.fd);
+				//printf("hub:primit datele #%s# de la %d\n",buf,ret_ev.data.fd);
 				n=recv(ret_ev.data.fd, buf, size, 0);
-				print_data_hexa(size,buf);
+				//print_data_hexa(size,buf);
 				res=modify_packet(buf,size);
 				dump_eth_header((struct eth_header*)buf);
 				dump_ip_header((struct ip_header*)(buf+14));
@@ -220,8 +226,11 @@ void wait_for_messages( int port_no )
 				}*/
 			} else{
 				printf("received a fin from %d\n",ret_ev.data.fd);
-				epoll_ctl(epfd, EPOLL_CTL_DEL,ret_ev.data.fd, &ev);
+				memset(buf,0,PACKET_SIZE);
+				n=recv(ret_ev.data.fd, buf, size, 0);
 				remove_connection(ret_ev.data.fd); //remove connection from the connections list
+				shutdown(ret_ev.data.fd,2);
+				epoll_ctl(epfd, EPOLL_CTL_DEL,ret_ev.data.fd, &ev);
 			}
 			
     		}

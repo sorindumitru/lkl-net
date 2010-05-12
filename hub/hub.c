@@ -14,6 +14,15 @@
 #define PORT_NO 10000
 #define PACKET_SIZE 8192 
 
+#define NIPQUAD(addr) \
+	((unsigned char *)&addr)[0], \
+	((unsigned char *)&addr)[1], \
+	((unsigned char *)&addr)[2], \
+	((unsigned char *)&addr)[3]
+
+#define NIPQUAD_FMT "%u.%u.%u.%u"
+
+
 typedef struct connection{
 	int sock;
 	struct list_head conn_list;
@@ -33,15 +42,32 @@ typedef struct eth_header {
 	unsigned short protocol;
 } eth_header;
 
-typedef struct 
-
+typedef struct ip_header {
+	unsigned char version:4,
+		      ihl:4;
+	unsigned char tos;
+	unsigned short total_lenght;
+	unsigned short id;
+	unsigned short flags:3,
+		       fragment_offset:13;
+	unsigned char ttl;
+	unsigned char protocol;
+	unsigned short hdr_checksum;
+	unsigned int saddr;
+	unsigned int daddr;
+	unsigned char options[0];
+} ip_header;   	
+  
 static void dump_eth_header(eth_header *e)
 {
 	printf("Ethernet:\n\tDestination:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tSource:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tProtocolt: %X\n",
 	       (unsigned int)e->dest[0], (unsigned int)e->dest[1], (unsigned int)e->dest[2], (unsigned int)e->dest[3], (unsigned int)e->dest[4], (unsigned int)e->dest[5],
-	       (unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],
-	       e->protocol
-	       );
+	       (unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],e->protocol);
+}
+
+static void dump_ip_header(ip_header *i)
+{
+	printf("IP\n\tDestination:\t"NIPQUAD_FMT"\n\tSource:"NIPQUAD_FMT"\n\tTTL=%u\tProtocol=%u\n",NIPQUAD(i->daddr),NIPQUAD(i->saddr),i->ttl,i->protocol);
 }
 
 struct result *modify_packet(unsigned char *packet, int size)
@@ -180,6 +206,7 @@ void wait_for_messages( int port_no )
 				print_data_hexa(size,buf);
 				res=modify_packet(buf,size);
 				dump_eth_header((struct eth_header*)buf);
+				dump_ip_header((struct ip_header*)(buf+14));
 				forward_packet(ret_ev.data.fd, res->message, res->size);
 				/*if (n<=14){
 					//length packet

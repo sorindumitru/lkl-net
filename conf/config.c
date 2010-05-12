@@ -83,11 +83,16 @@ int config_read_file(conf_info_t* info, const char* file_name)
 	interface_t *current_interface;
 	topology_t  *current_topology;
 
+	if (file_name){
+		info->config_file = strdup(file_name);
+	}
+	
 	yyin = fopen(file_name, "r");
 	if (yyin == NULL) {
 		printf("Config reader :: could not open config file\n");
 		return 1;
 	}
+	info->read = 1;
 	info->general.hostname = "Device";
 	token = yylex();
 	while ( token ) {

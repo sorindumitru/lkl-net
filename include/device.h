@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <list.h>
+#include <params.h>
 
 enum device_type {
 	DEV_BRIDGE,
@@ -59,5 +60,6 @@ extern void start_device_thread();
 extern int send_hyper(int sock, hyper_info_t *hyper);
 extern hyper_info_t* recv_hyper(int sock);
 extern socket_t* get_remote_device_socket(char *device);
+int do_dump_config_file(struct params *parameters);
 
 #endif /* LKL_NET_DEVICE_H_ */

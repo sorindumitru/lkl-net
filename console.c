@@ -141,17 +141,6 @@ int do_exit_cmd(params *parameters)
 	exit(0);
 }
 
-int do_dump_config_file(params *parameters)
-{
-	int fd = open(parameters->p[0], O_CREAT | O_WRONLY | O_TRUNC, 0666);
-	if (fd < 0) {
-		perror("Could not open file");
-		return -1;
-	}
-	dump_config_file(fd, info);	
-	return 0;
-}
-
 int do_test(params* parameters)
 {
 	socket_t *socket = get_remote_device_socket(parameters->p[0]);

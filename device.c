@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <signal.h>
 
 #include <config.h>
@@ -180,13 +181,14 @@ void* device_request_thread(void *params)
 {
 	struct epoll_event event;
 	int req_socket, err, one = 1, epoll_fd;
-	socklen_t addrlen;
+	socklen_t addrlen = sizeof(struct sockaddr_in);
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
-		.sin_port = htons(info->general.port),
+		.sin_port = info->general.port,
 	};
 	struct sockaddr_in raddr;
-	addr.sin_addr.s_addr = INADDR_ANY;
+	struct hostent *he = gethostbyname("127.0.0.1");
+	addr.sin_addr  = *(struct in_addr*)he->h_addr;
 
 	printf("LKL NET :: started request thread\n");
 	req_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -201,7 +203,7 @@ void* device_request_thread(void *params)
 	}
 	err = setsockopt(req_socket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
 	if (err < 0) {
-		perror("LKL NET :: requestthread :: Could not set reuse address on socket\n");
+		perror("LKL NET :: request thread :: Could not set reuse address on socket\n");
 		exit(-1);
 	}
 	err = listen(req_socket, MAX_CONNECTIONS);
@@ -210,6 +212,16 @@ void* device_request_thread(void *params)
 		exit(-1);
 	}
 
+	//dump config file
+	getsockname(req_socket, (struct sockaddr*) &raddr, &addrlen);
+	if (!info->read){
+		struct params params;
+		info->general.address = raddr.sin_addr;
+		info->general.port = raddr.sin_port;
+		params.p[0] = info->config_file;
+		do_dump_config_file(&params);
+	}
+	
 	epoll_fd = epoll_create(16);
 	if (epoll_fd < 0) {
 		perror("LKL NET :: request thread :: Could not intialise epoll\n");
@@ -222,10 +234,6 @@ void* device_request_thread(void *params)
 		perror("LKL NET :: request thread :: Could not add socket to epoll\n");
 		exit(-1);
 	}
-
-	//dump config file
-	getsockname(req_socket, (struct sockaddr*) &raddr, &addrlen);
-	printf("port %d\n", raddr.sin_port);
 	
 	while (1) {
 		struct epoll_event ret_event;
@@ -240,4 +248,15 @@ void* device_request_thread(void *params)
 
 	return NULL;
 
+}
+
+int do_dump_config_file(params *parameters)
+{
+	int fd = open(parameters->p[0], O_CREAT | O_WRONLY | O_TRUNC, 0666);
+	if (fd < 0) {
+		perror("Could not open file");
+		return -1;
+	}
+	dump_config_file(fd, info);	
+	return 0;
 }

@@ -209,6 +209,8 @@ int do_boot_up(struct params *par) {
 		free(params.p[0]);
 	}
 
+	sleep(1);
+
 	list_for_each(head, &hypervisor->switches){
 		device_t *device = list_entry(head, device_t, list);
 		printf("LKL NET :: started %s\n", device->hostname);

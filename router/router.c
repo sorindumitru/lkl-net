@@ -14,7 +14,6 @@ conf_info_t* info;
 
 int main(int argc,char**argv)
 {
-	int err;
 	struct list_head *head;
 	info = malloc(sizeof(*info));
 	config_init(info);
@@ -36,9 +35,13 @@ int main(int argc,char**argv)
 	lkl_mount_proc();
 	enable_ip_forward();
 
-	prompt = malloc(strlen(info->general.hostname)+2);
-	sprintf(prompt, "%s>", info->general.hostname);
-
+	if (info->general.hostname){
+		prompt = malloc(strlen(info->general.hostname)+2);
+		sprintf(prompt, "%s>", info->general.hostname);
+	} else {
+		prompt = malloc(strlen("Router>")+1);
+		sprintf(prompt, "Router>");
+	}
 	initialize_autocomplete();
 
 	while(1){

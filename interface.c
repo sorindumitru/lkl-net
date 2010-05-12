@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+
 #include <interface.h>
 #include <linux/if.h>
 
@@ -144,7 +146,7 @@ int lkl_list_interfaces( int max_if_no)
 		memset(&ifr2,0,sizeof(struct ifreq));
 		memcpy(ifr2.ifr_name,ifr[i].ifr_name,strlen(ifr[i].ifr_name));
 		err = lkl_sys_ioctl(sock,SIOCGIFFLAGS,(long)&ifr2);	
-		inaddr = &(ifr[i].ifr_addr);
+		inaddr = (struct sockaddr_in *) &(ifr[i].ifr_addr);
 		lkl_printf("%s %s %s\n",ifr[i].ifr_name,inet_ntoa(inaddr->sin_addr),((ifr2.ifr_flags &IFF_UP)?"UP":"DOWN"));
 	}
 	lkl_sys_close(sock);
@@ -155,5 +157,21 @@ int lkl_list_interfaces( int max_if_no)
 
 void dump_interface(int fd, interface_t *interface)
 {
+	char buffer[256];
+
+	memset(buffer, 0, 256);
+	sprintf(buffer,"interface {\n");
+	write(fd, buffer, strlen(buffer));
+
+	if (interface->dev) {
+		memset(buffer, 0, 256);
+		sprintf(buffer,"\tdev %s\n", interface->dev);
+		write(fd, buffer, strlen(buffer));
+	}	
+	
+	memset(buffer, 0, 256);
+	sprintf(buffer,"\tnetmask %d\n\tport %d\n\ttype hub;\n}\n", interface->netmask_len, interface->port);
+	write(fd, buffer, strlen(buffer));
+
 
 }

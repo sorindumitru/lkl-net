@@ -27,6 +27,21 @@ typedef struct result{
 struct list_head my_conn;
 LIST_HEAD(my_conn);
 
+typedef struct eth_header {
+	unsigned char dest[6];
+	unsigned char src[6];
+	unsigned short protocol;
+} eth_header;
+
+static void dump_eth_header(eth_header *e)
+{
+	printf("Ethernet:\n\tDestination:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tSource:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tProtocolt: %X\n",
+	       e->dest[0], e->dest[1], e->dest[2], e->dest[3], e->dest[4], e->dest[5],
+	       e->src[0], e->src[1], e->src[2], e->src[3], e->src[4], e->src[5],
+	       e->protocol
+	       );
+}
+
 struct result *modify_packet(char *packet, int size)
 {
 	struct result *myres = malloc(sizeof(struct result));
@@ -44,7 +59,8 @@ void forward_packet(int fd, char *data, int size)
 	list_for_each(lh,&my_conn){
 		conn=list_entry(lh,struct connection,conn_list);
 		if(conn->sock != fd){
-			printf("tb sa trimit lui %d msg=%s\n",conn->sock, data);
+			//printf("tb sa trimit lui %d msg=%s\n",conn->sock, data);
+			dump_eth_header((struct eth_header*)data+sizeof(int));
 			if(send(conn->sock, &size, sizeof(size), 0) < 0 ){
 				perror("error:send:\n");
 				exit(-1);

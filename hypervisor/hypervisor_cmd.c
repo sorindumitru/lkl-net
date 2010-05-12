@@ -23,12 +23,14 @@ int do_create_link(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		device_t *dev = malloc(sizeof(*dev));
-		dev->type = DEV_HUB;
-		dev->port = atoi(params->p[1]);
-		dev->hostname = strdup(params->p[0]);
-		INIT_LIST_HEAD(&dev->list);
-		list_add(&dev->list,&hypervisor->links);
+		if (!params->p[2]) {
+			device_t *dev = malloc(sizeof(*dev));
+			dev->type = DEV_HUB;
+			dev->port = atoi(params->p[1]);
+			dev->hostname = strdup(params->p[0]);
+			INIT_LIST_HEAD(&dev->list);
+			list_add(&dev->list,&hypervisor->links);
+		}
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
@@ -68,12 +70,14 @@ int do_create_router(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		device_t *dev = malloc(sizeof(*dev));
-		dev->type = DEV_ROUTER;
-		dev->config = strdup(params->p[1]);
-		dev->hostname = strdup(params->p[0]);
-		INIT_LIST_HEAD(&dev->list);
-		list_add(&dev->list,&hypervisor->routers);
+		if (!params->p[2]) {
+			device_t *dev = malloc(sizeof(*dev));
+			dev->type = DEV_ROUTER;
+			dev->config = strdup(params->p[1]);
+			dev->hostname = strdup(params->p[0]);
+			INIT_LIST_HEAD(&dev->list);
+			list_add(&dev->list,&hypervisor->routers);
+		}
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
@@ -102,12 +106,14 @@ int do_create_switch(struct params *params)
 	pid = fork();
 
 	if (pid > 0) {
-		device_t *dev = malloc(sizeof(*dev));
-		dev->type = DEV_SWITCH;
-		dev->config = strdup(params->p[1]);
-		dev->hostname = strdup(params->p[0]);
-		INIT_LIST_HEAD(&dev->list);
-		list_add(&dev->list,&hypervisor->switches);
+		if (!params->p[2]) {
+			device_t *dev = malloc(sizeof(*dev));
+			dev->type = DEV_SWITCH;
+			dev->config = strdup(params->p[1]);
+			dev->hostname = strdup(params->p[0]);
+			INIT_LIST_HEAD(&dev->list);
+			list_add(&dev->list,&hypervisor->switches);
+		}
 	} else if (pid == 0) {
 		char *args[] = {
 			"xterm",
@@ -192,39 +198,37 @@ int do_boot_up(struct params *par) {
 	struct list_head *head;
 
 	//starting hubs
-	list_for_each(head, &info->devices){
+	list_for_each(head, &hypervisor->links){
 		device_t *device = list_entry(head, device_t, list);
-		if (device->type == DEV_HUB) {
-			printf("LKL NET :: started %s\n", device->hostname);
-			struct params params;
-			params.p[0] = malloc(8*sizeof(char));
-			sprintf((char*)params.p[0],"%d",device->port);
-			do_create_link(&params);
-			free(params.p[0]);
-		}
+		printf("LKL NET :: started %s\n", device->hostname);
+		struct params params;
+		params.p[1] = malloc(8*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%d",device->port);
+		do_create_link(&params);
+		free(params.p[0]);
 	}
 
-	sleep(1);
-
-	list_for_each(head, &info->devices){
+	list_for_each(head, &hypervisor->switches){
 		device_t *device = list_entry(head, device_t, list);
-		if (device->type != DEV_HUB) {
-			printf("LKL NET :: started %s\n", device->hostname);
-			struct params params;
-			params.p[0] = malloc(256*sizeof(char));
-			sprintf((char*)params.p[0],"%s",device->config);
-			switch(device->type){
-			case DEV_ROUTER:
-				do_create_router(&params);
-				break;
-			case DEV_SWITCH:
-				do_create_switch(&params);
-				break;
-			default:
-				printf("LKL NET :: unknown device %s\n", device->hostname);
-			}
-			free(params.p[0]);
-		}
+		printf("LKL NET :: started %s\n", device->hostname);
+		struct params params;
+		params.p[1] = malloc(8*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%s",device->config);
+		do_create_switch(&params);
+		free(params.p[0]);
+	}
+
+	list_for_each(head, &hypervisor->routers){
+		device_t *device = list_entry(head, device_t, list);
+		printf("LKL NET :: started %s\n", device->hostname);
+		struct params params;
+		params.p[1] = malloc(256*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%s",device->config);
+		do_create_router(&params);
+		free(params.p[0]);
 	}
 
 	return 0;
@@ -251,6 +255,10 @@ static void dump_device(int fd, device_t* device)
 		sprintf(buffer,"\t\tport %d;\n", device->port);
 		write(fd, buffer, strlen(buffer));
 	}
+	memset(buffer,0,128);
+	sprintf(buffer,"\t}\n");
+	write(fd, buffer, strlen(buffer));
+
 }
 
 

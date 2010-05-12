@@ -39,8 +39,8 @@ command show_commands[] = {
 command create_commands[] = {
 #ifdef ISHYPERVISOR
 	{"link", 2, DEVICE_HYPERVISOR, do_create_link, "Create new link", (command*) NULL, "<hub_name> <port>"},
-	{"router", 1, DEVICE_HYPERVISOR, do_create_router, "Create new router", (command*) NULL, "<config file>"},
-	{"switch", 1, DEVICE_HYPERVISOR, do_create_switch, "Create new switch", (command*) NULL, "<config file>"},
+	{"router", 2, DEVICE_HYPERVISOR, do_create_router, "Create new router", (command*) NULL, "<config file>"},
+	{"switch", 2, DEVICE_HYPERVISOR, do_create_switch, "Create new switch", (command*) NULL, "<config file>"},
 #endif
 	{(char *) NULL, -1, DEVICE_ALL, NULL,"Show device information",(command*) NULL, NULL}
 };

@@ -180,10 +180,12 @@ void* device_request_thread(void *params)
 {
 	struct epoll_event event;
 	int req_socket, err, one = 1, epoll_fd;
+	socklen_t addrlen;
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(info->general.port),
 	};
+	struct sockaddr_in raddr;
 	addr.sin_addr.s_addr = INADDR_ANY;
 
 	printf("LKL NET :: started request thread\n");
@@ -221,6 +223,10 @@ void* device_request_thread(void *params)
 		exit(-1);
 	}
 
+	//dump config file
+	getsockname(req_socket, (struct sockaddr*) &raddr, &addrlen);
+	printf("port %d\n", raddr.sin_port);
+	
 	while (1) {
 		struct epoll_event ret_event;
 		err = epoll_wait(epoll_fd, &ret_event, 1, -1);

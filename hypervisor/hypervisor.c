@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 	config_init(info);
 	config_read_file(info, argv[1]);
 	init_hypervisor(hypervisor,info);
-
+	
 	printf("LKL NET :: Hypervisor is starting\n");
 
 	start_request_thread();

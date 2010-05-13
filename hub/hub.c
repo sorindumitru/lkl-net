@@ -62,7 +62,7 @@ static void dump_eth_header(eth_header *e)
 {
 	printf("Ethernet:\n\tDestination:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tSource:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tProtocolt: %X\n",
 	       (unsigned int)e->dest[0], (unsigned int)e->dest[1], (unsigned int)e->dest[2], (unsigned int)e->dest[3], (unsigned int)e->dest[4], (unsigned int)e->dest[5],
-	       (unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],e->protocol);
+	       (unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],(unsigned short) e->protocol);
 }
 
 static void dump_ip_header(ip_header *i)

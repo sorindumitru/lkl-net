@@ -56,21 +56,65 @@ typedef struct ip_header {
 	unsigned int saddr;
 	unsigned int daddr;
 	//unsigned char options[0];
-} ip_header;   	
+} ip_header;   
+
+typedef struct arp_header {
+	unsigned short hdw_type;
+	unsigned short prot_type;
+	unsigned char hdw_addr_len;
+	unsigned char prot_addr_len;
+	unsigned short opcode;
+	unsigned char sender_hdwaddr[6];
+	unsigned int sender_protaddr;
+	unsigned char target_hdwaddr[6];
+	unsigned int target_protaddr;
+} arp_header;	
   
-static void dump_eth_header(eth_header *e)
+static unsigned short dump_eth_header(eth_header *e)
 {
-	printf("Ethernet:\n\tDestination:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tSource:\t%02X:%02X:%02X:%02X:%02X:%02X\n\tProtocolt: %X\n",
-	       (unsigned int)e->dest[0], (unsigned int)e->dest[1], (unsigned int)e->dest[2], (unsigned int)e->dest[3], (unsigned int)e->dest[4], (unsigned int)e->dest[5],
-	       (unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],(unsigned short) e->protocol);
+	printf("Ethernet:\n\
+		\tDestination:\t%02X:%02X:%02X:%02X:%02X:%02X\n\
+		\tSource:\t%02X:%02X:%02X:%02X:%02X:%02X\n\
+		\tProtocolt: %u\n",\
+	(unsigned int)e->dest[0], (unsigned int)e->dest[1], (unsigned int)e->dest[2], (unsigned int)e->dest[3], (unsigned int)e->dest[4], (unsigned int)e->dest[5],\
+	(unsigned int)e->src[0], (unsigned int)e->src[1], (unsigned int)e->src[2], (unsigned int)e->src[3], (unsigned int)e->src[4], (unsigned int)e->src[5],ntohs(e->protocol));
+
+	return ntohs(e->protocol);
 }
 
 static void dump_ip_header(ip_header *i)
 {
-	//if (i->ihl >0){
-		//printf("IP\n\tDestination:\t"NIPQUAD_FMT"\n\tSource:"NIPQUAD_FMT"\n\tTTL=%u\tProtocol=%u version=%u ihl=%u\n",NIPQUAD(i->daddr),NIPQUAD(i->saddr),i->ttl,i->protocol,i->version,i->ihl);
-		printf("IP:\nihl=%u\tversion=%u\ttos=%u\t total_length=%u\tid=%u\nflags=%u\tfragment_offset=%u\tTTL=%u\tprotocol=%u\nDestination:\t"NIPQUAD_FMT"\n\tSource:"NIPQUAD_FMT"\n",i->ihl,i->version,i->tos,i->total_length,i->id,i->flags,i->fragment_offset,i->ttl,i->protocol,NIPQUAD(i->daddr),NIPQUAD(i->saddr));
-	//}
+
+	printf("IP:\n\tihl=%u\tversion=%u\ttos=%u\n\
+	\ttotal_length=%u\tid=%u\tflags=%u\n\
+	\tfragment_offset=%u\tTTL=%u\tprotocol=%u\n\
+	\tDestination:\t"NIPQUAD_FMT"\n\
+	\tSource:"NIPQUAD_FMT"\n",\
+	i->ihl,i->version,i->tos,\
+	ntohs(i->total_length),ntohs(i->id),ntohs(i->flags),\
+	ntohs(i->fragment_offset),i->ttl,i->protocol,\
+	NIPQUAD(i->daddr),NIPQUAD(i->saddr));
+
+}
+
+static void dump_arp_header(arp_header *arp)
+{
+	
+	printf("ARP:\n\thdw_type=%u\t \
+	prot_type=%u\t	\
+	hdw_addr_len=%d\t	\
+	\n\tprot_addr_len=%d\
+	\topcode=%u\t	\
+	\n\tsender_hdwaddr=%02X:%02X:%02X:%02X:%02X:%02X	\
+	\n\tsender_protaddr=" NIPQUAD_FMT"	\
+	\n\ttarget_hdwaddr=%02X:%02X:%02X:%02X:%02X:%02X	\
+	\n\ttarget_protaddr="NIPQUAD_FMT,	\
+	arp->hdw_type, arp->prot_type, arp->hdw_addr_len, \
+	arp->prot_addr_len, arp->opcode,\
+	(unsigned int)arp->sender_hdwaddr[0],(unsigned int)arp->sender_hdwaddr[1],(unsigned int)arp->sender_hdwaddr[2],(unsigned int)arp->sender_hdwaddr[3],(unsigned int)arp->sender_hdwaddr[4],(unsigned int)arp->sender_hdwaddr[5],\
+	NIPQUAD(arp->sender_protaddr),\
+	arp->target_hdwaddr[0],arp->target_hdwaddr[1],arp->target_hdwaddr[2],arp->target_hdwaddr[3],arp->target_hdwaddr[4],arp->target_hdwaddr[5],\
+	NIPQUAD(arp->target_protaddr));
 }
 
 struct result *modify_packet(unsigned char *packet, int size)
@@ -126,6 +170,16 @@ void remove_connection(int fd)
 	}
 	printf("\nNEW DATA::END\n");
 }*/
+void dump_header(unsigned char *buf)
+{
+	unsigned short prot_type;
+	prot_type = dump_eth_header((struct eth_header*)buf);
+	if (prot_type == 2048)//IP header
+		dump_ip_header((struct ip_header*)(buf+14));
+	else if (prot_type ==2054 )//ARP header
+		dump_arp_header((struct arp_header*)(buf+14));	
+	printf("\n===============================================\n");
+}
 
 void wait_for_messages( int port_no )
 {
@@ -211,8 +265,7 @@ void wait_for_messages( int port_no )
 				n=recv(ret_ev.data.fd, buf, size, 0);
 				//print_data_hexa(size,buf);
 				res=modify_packet(buf,size);
-				dump_eth_header((struct eth_header*)buf);
-				dump_ip_header((struct ip_header*)(buf+14));
+				dump_header(buf);
 				forward_packet(ret_ev.data.fd, res->message, res->size);
 				/*if (n<=14){
 					//length packet

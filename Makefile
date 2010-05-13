@@ -141,7 +141,7 @@ HYPERGUI_OBJ=$(patsubst %c,%o,$(HYPERGUI_SRC))
 hypervisor: bin/hypervisor bin/hypergui
 
 hypervisor/hypergui.o: hypervisor/hypergui.c $(CONF_OBJ) $(HYPERGUI_OBJ)
-	$(CC) $(CFLAGS)  $(CONF_OBJ) -c -o hypervisor/hypergui.o $(LDLIBS) -DISHYPERVISOR=1 $(HYPERGUI_OBJ) hypervisor/hypergui.c `pkg-config --cflags gtk+-2.0` `pkg-config --libs gtk+-2.0`	
+	$(CC) $(CFLAGS)  $(CONF_OBJ) -c -o hypervisor/hypergui.o $(LDLIBS) -DISHYPERVISOR=1 $(HYPERGUI_OBJ) hypervisor/hypergui.c `pkg-config --cflags gtk+-2.0 goocanvas` `pkg-config --libs gtk+-2.0 goocanvas`	
 
 bin/hypervisor: $(CONF_OBJ) $(HYPERVISOR_OBJ)
 	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
@@ -151,7 +151,7 @@ bin/hypervisor: $(CONF_OBJ) $(HYPERVISOR_OBJ)
 bin/hypergui: $(CONF_OBJ) $(HYPERVISOR_OBJ) hypervisor/hypergui.o
 	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
 	$(CC) $(CFLAGS) -c interface.c -o interface.o
-	$(CC) $(CFLAGS) -o bin/hypergui $(CONF_OBJ) $(HYPERGUI_OBJ) $(LDLIBS) -DISHYPERVISOR=1 hypervisor/hypergui.o `pkg-config --cflags gtk+-2.0` `pkg-config --libs gtk+-2.0`	
+	$(CC) $(CFLAGS) -o bin/hypergui $(CONF_OBJ) $(HYPERGUI_OBJ) $(LDLIBS) -DISHYPERVISOR=1 hypervisor/hypergui.o `pkg-config --cflags gtk+-2.0 goocanvas` `pkg-config --libs gtk+-2.0 goocanvas`	
 # }
 
 # Test {

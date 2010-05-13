@@ -215,13 +215,14 @@ int do_boot_up(struct params *par) {
 		do_create_link(&params);
 		//free(params.p[0]);
 	}
-
+	
 	sleep(1);
 
 	list_for_each(head, &hypervisor->switches){
 		device_t *device = list_entry(head, device_t, list);
 		printf("LKL NET :: started %s\n", device->hostname);
 		struct params params;
+		params.p[0] = device->hostname;
 		params.p[1] = malloc(8*sizeof(char));
 		params.p[2] = malloc(sizeof(char));
 		sprintf((char*)params.p[1],"%s",device->config);
@@ -233,6 +234,7 @@ int do_boot_up(struct params *par) {
 		device_t *device = list_entry(head, device_t, list);
 		printf("LKL NET :: started %s\n", device->hostname);
 		struct params params;
+		params.p[0] = device->hostname;
 		params.p[1] = malloc(256*sizeof(char));
 		params.p[2] = malloc(sizeof(char));
 		sprintf((char*)params.p[1],"%s",device->config);

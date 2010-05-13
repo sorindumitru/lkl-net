@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <goocanvas.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,8 +14,7 @@
 #include <hypervisor_cmd.h>
 
 GtkWindow *window;
-GtkTreeView *device_list;
-//GooCanvasItem *topology;
+
 /*GtkEntry *command;
 GtkEntryCompletion *command_completion;
 GtkScrolledWindow *output_window;
@@ -24,6 +24,9 @@ GtkTextView *output;*/
 //Device List
 GtkTreeView *device_list;
 GtkListStore *device_store;
+
+//Canvas
+GooCanvasItem *canvas;
 
 //Toolbar
 GtkToolbar *toolbar;
@@ -59,20 +62,29 @@ static void add_device(GtkWidget *list, const gchar *str)
 	gtk_list_store_set(device_store, &iter, LIST_ITEM, str, -1);
 }
 
-
-
-gint callback_boot(GtkWidget *widget, gpointer   callback_data ) {
-	struct params params;
-	do_boot_up(&params);
+gint timeout_boot( gpointer data )
+{
+	do_boot_up(NULL);
+	return FALSE;
 }
 
-gint callback_dev_create(GtkWidget *widget,gpointer callback_data ) {
+void callback_boot(GtkWidget *widget, gpointer   callback_data)
+{
+	gtk_timeout_add(1000, timeout_boot, NULL);
+	//do_boot_up(NULL);
+	g_print("Goodbye cruel world!\n");
+}
+
+void callback_dev_create(GtkWidget *widget, gpointer callback_data )
+{
+	printf("Creating a device\n");
 	dev_entries_t *entry = (dev_entries_t*) callback_data;
-	if (!entry->type == -1) {
+	if (entry->type < 10) {
 		struct params params;
 		params.p[2] = malloc(sizeof(char));
-		params.p[0] = gtk_entry_get_text(entry->name);
-		params.p[1] = gtk_entry_get_text(entry->config);
+		params.p[0] = (char *) gtk_entry_get_text(entry->name);
+		params.p[1] = (char *) gtk_entry_get_text(entry->config);
+		printf("Starting device\n");
 		if( entry->type == 0){
 			do_create_router(&params);
 		} else {
@@ -80,14 +92,13 @@ gint callback_dev_create(GtkWidget *widget,gpointer callback_data ) {
 		}
 	}
 	gtk_widget_destroy(GTK_WIDGET(entry->dialog));
-
-	return 0;
 }
 
-gint callback_create_switch(GtkWidget *widget, GdkEvent  *event, gpointer   callback_data ) {
+void callback_create_switch(GtkWidget *widget, gpointer   callback_data )
+{
 	GtkDialog *dialog = gtk_dialog_new();
-	GtkLabel *name_label = gtk_label_new("Hostname:");
-	GtkLabel *config_label = gtk_label_new("Config file:");
+	GtkLabel *name_label = (GtkLabel*) gtk_label_new("Hostname:");
+	GtkLabel *config_label = (GtkLabel*) gtk_label_new("Config file:");
 	GtkEntry *name = gtk_entry_new();
 	GtkEntry *config = gtk_entry_new();
 	dev_entries_t *ok_entries = malloc(sizeof(*ok_entries));
@@ -96,7 +107,7 @@ gint callback_create_switch(GtkWidget *widget, GdkEvent  *event, gpointer   call
 	ok_entries->name = name;
 	ok_entries->config = config;
 	dev_entries_t *cancel_entries = malloc(sizeof(*cancel_entries));
-	cancel_entries->type = -1;
+	cancel_entries->type = 11;
 	cancel_entries->dialog = dialog;
 	GtkButton *ok_button = gtk_button_new_with_label("Ok");
 	gtk_signal_connect(GTK_WIDGET(ok_button), "clicked", G_CALLBACK(callback_dev_create),(gpointer) ok_entries);
@@ -122,7 +133,8 @@ gint callback_create_switch(GtkWidget *widget, GdkEvent  *event, gpointer   call
 	gtk_dialog_run(dialog);
 }
 
-gint callback_create_router(GtkWidget *widget, GdkEvent  *event, gpointer   callback_data ) {
+void callback_create_router(GtkWidget *widget, gpointer   callback_data )
+{
 	GtkDialog *dialog = gtk_dialog_new();
 	GtkLabel *name_label = gtk_label_new("Hostname:");
 	GtkLabel *config_label = gtk_label_new("Config file:");
@@ -134,7 +146,7 @@ gint callback_create_router(GtkWidget *widget, GdkEvent  *event, gpointer   call
 	ok_entries->name = name;
 	ok_entries->config = config;
 	dev_entries_t *cancel_entries = malloc(sizeof(*cancel_entries));
-	cancel_entries->type = -1;
+	cancel_entries->type = 11;
 	cancel_entries->dialog = dialog;
 	GtkButton *ok_button = gtk_button_new_with_label("Ok");
 	gtk_signal_connect(GTK_WIDGET(ok_button), "clicked", G_CALLBACK(callback_dev_create),(gpointer) ok_entries);
@@ -176,7 +188,7 @@ int init_gui()
 	//gtk_box_pack_start(GTK_CONTAINER(root), GTK_WIDGET(toolbar), FALSE, FALSE, 10);
 	// Boot button
 	boot = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
-	gtk_signal_connect(GTK_WIDGET(boot), "clicked", G_CALLBACK(callback_boot), NULL);
+	gtk_signal_connect(G_OBJECT(boot), "clicked", G_CALLBACK(callback_boot), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), boot, 0);
 	// Router button
 	create_router = gtk_tool_button_new(create_router_label, "New router");
@@ -192,25 +204,34 @@ int init_gui()
 	gtk_toolbar_insert(toolbar, create_switch, 2);
 
 	init_device_list(topology);
+	init_canvas(topology);
 	
-	gtk_container_add(GTK_CONTAINER(root), toolbar);
-	gtk_container_add(GTK_CONTAINER(root), topology);
-	gtk_container_add(GTK_CONTAINER(window), root);
+	gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(toolbar));
+	gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(topology));
+	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(root));
 	return 0;
 }
 
 void init_labels()
 {
-	ok_label = gtk_label_new("Ok");
-	cancel_label = gtk_label_new("Cancel");
+	ok_label = (GtkLabel*) gtk_label_new("Ok");
+	cancel_label = (GtkLabel*) gtk_label_new("Cancel");
 	create_router_label = gtk_label_new("Create router");
 	create_switch_label = gtk_label_new("Create switch");
 }
 
-void  on_changed(GtkWidget *widget, gpointer label) 
+void on_changed(GtkWidget *widget, gpointer label) 
 {
 
+}
 
+void init_canvas(GtkHBox *box)
+{
+        canvas = goo_canvas_new();
+	gtk_widget_set_size_request(canvas, 800, 600);
+	goo_canvas_set_bounds(GOO_CANVAS (canvas), 0, 0, 800, 600);
+	gtk_widget_show(canvas);
+	gtk_container_add(GTK_CONTAINER(box), canvas);
 }
 
 void init_device_list(GtkHBox *box)
@@ -282,6 +303,9 @@ int main(int argc, char **argv)
 	}
 
 	g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), G_OBJECT(window));
+
+	gtk_widget_set_events(GTK_WIDGET(window), GDK_BUTTON_RELEASE_MASK);
+	
 	gtk_widget_show_all(window);
 	gtk_main();
 	

@@ -87,7 +87,7 @@ int do_create_router(struct params *params)
 		char *args[] = {
 			"xterm",
 			"-e",
-			"bin/router", 
+			"bin/router",
 			params->p[1],
 			params->p[0],
 			NULL

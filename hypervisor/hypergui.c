@@ -21,13 +21,143 @@ GtkScrolledWindow *output_window;
 GtkTextBuffer *output_buffer;
 GtkTextView *output;*/
 
+//Device List
+GtkTreeView *device_list;
+GtkListStore *device_store;
+
 //Toolbar
 GtkToolbar *toolbar;
 GtkToolButton *boot;
+GtkToolButton *create_router;
+GtkToolButton *create_switch;
 
-gint callback_boot(GtkWidget *widget, GdkEvent  *event, gpointer   callback_data ) {
+//labels
+GtkLabel *ok_label;
+GtkLabel *cancel_label;
+GtkLabel *create_router_label;
+GtkLabel *create_switch_label;
+
+typedef struct dev_entries {
+	unsigned char type;
+	GtkDialog *dialog;
+	GtkEntry *name;
+	GtkEntry *config;
+	unsigned short port;
+} dev_entries_t;
+
+enum
+{
+  LIST_ITEM = 0,
+  N_COLUMNS
+};
+
+static void add_device(GtkWidget *list, const gchar *str)
+{
+	GtkTreeIter iter;
+	
+	gtk_list_store_append(device_store, &iter);
+	gtk_list_store_set(device_store, &iter, LIST_ITEM, str, -1);
+}
+
+
+
+gint callback_boot(GtkWidget *widget, gpointer   callback_data ) {
 	struct params params;
 	do_boot_up(&params);
+}
+
+gint callback_dev_create(GtkWidget *widget,gpointer callback_data ) {
+	dev_entries_t *entry = (dev_entries_t*) callback_data;
+	if (!entry->type == -1) {
+		struct params params;
+		params.p[2] = malloc(sizeof(char));
+		params.p[0] = gtk_entry_get_text(entry->name);
+		params.p[1] = gtk_entry_get_text(entry->config);
+		if( entry->type == 0){
+			do_create_router(&params);
+		} else {
+			do_create_switch(&params);
+		}
+	}
+	gtk_widget_destroy(GTK_WIDGET(entry->dialog));
+
+	return 0;
+}
+
+gint callback_create_switch(GtkWidget *widget, GdkEvent  *event, gpointer   callback_data ) {
+	GtkDialog *dialog = gtk_dialog_new();
+	GtkLabel *name_label = gtk_label_new("Hostname:");
+	GtkLabel *config_label = gtk_label_new("Config file:");
+	GtkEntry *name = gtk_entry_new();
+	GtkEntry *config = gtk_entry_new();
+	dev_entries_t *ok_entries = malloc(sizeof(*ok_entries));
+	ok_entries->type = 1;
+	ok_entries->dialog = dialog;
+	ok_entries->name = name;
+	ok_entries->config = config;
+	dev_entries_t *cancel_entries = malloc(sizeof(*cancel_entries));
+	cancel_entries->type = -1;
+	cancel_entries->dialog = dialog;
+	GtkButton *ok_button = gtk_button_new_with_label("Ok");
+	gtk_signal_connect(GTK_WIDGET(ok_button), "clicked", G_CALLBACK(callback_dev_create),(gpointer) ok_entries);
+	GtkButton *cancel_button = gtk_button_new_with_label("Cancel");
+	gtk_signal_connect(GTK_WIDGET(cancel_button), "clicked", G_CALLBACK(callback_dev_create), (gpointer) cancel_entries);
+	
+	GtkHBox *name_box = gtk_hbox_new(FALSE, 10);
+	GtkHBox *config_box = gtk_hbox_new(FALSE,10);
+	GtkHBox *buttons = gtk_hbox_new(FALSE, 10);
+
+	
+	gtk_container_add(name_box, name_label);
+	gtk_container_add(name_box, name);
+	gtk_container_add(config_box, config_label);
+	gtk_container_add(config_box, config);
+	gtk_container_add(buttons, ok_button);
+	gtk_container_add(buttons, cancel_button);
+	gtk_container_add(dialog->vbox, name_box);
+	gtk_container_add(dialog->vbox, config_box);
+	gtk_container_add(dialog->vbox, buttons);
+	gtk_window_set_title(dialog, "Create switch");
+	gtk_widget_show_all(dialog->vbox);
+	gtk_dialog_run(dialog);
+}
+
+gint callback_create_router(GtkWidget *widget, GdkEvent  *event, gpointer   callback_data ) {
+	GtkDialog *dialog = gtk_dialog_new();
+	GtkLabel *name_label = gtk_label_new("Hostname:");
+	GtkLabel *config_label = gtk_label_new("Config file:");
+	GtkEntry *name = gtk_entry_new();
+	GtkEntry *config = gtk_entry_new();
+	dev_entries_t *ok_entries = malloc(sizeof(*ok_entries));
+	ok_entries->type = 0;
+	ok_entries->dialog = dialog;
+	ok_entries->name = name;
+	ok_entries->config = config;
+	dev_entries_t *cancel_entries = malloc(sizeof(*cancel_entries));
+	cancel_entries->type = -1;
+	cancel_entries->dialog = dialog;
+	GtkButton *ok_button = gtk_button_new_with_label("Ok");
+	gtk_signal_connect(GTK_WIDGET(ok_button), "clicked", G_CALLBACK(callback_dev_create),(gpointer) ok_entries);
+	GtkButton *cancel_button = gtk_button_new_with_label("Cancel");
+	gtk_signal_connect(GTK_WIDGET(cancel_button), "clicked", G_CALLBACK(callback_dev_create), (gpointer) cancel_entries);
+	
+	GtkHBox *name_box = gtk_hbox_new(FALSE, 10);
+	GtkHBox *config_box = gtk_hbox_new(FALSE,10);
+	GtkHBox *buttons = gtk_hbox_new(FALSE, 10);
+
+	
+	gtk_container_add(name_box, name_label);
+	gtk_container_add(name_box, name);
+	gtk_container_add(config_box, config_label);
+	gtk_container_add(config_box, config);
+	gtk_container_add(buttons, ok_button);
+	gtk_container_add(buttons, cancel_button);
+	gtk_container_add(dialog->vbox, name_box);
+	gtk_container_add(dialog->vbox, config_box);
+	gtk_container_add(dialog->vbox, buttons);
+	gtk_window_set_title(dialog, "Create router");
+	gtk_widget_show_all(dialog->vbox);
+	gtk_dialog_run(dialog);
 }
 
 conf_info_t *info;
@@ -43,39 +173,66 @@ int init_gui()
 
 	//Toolbar
 	toolbar = (GtkToolbar *)gtk_toolbar_new();
-	gtk_box_pack_start(GTK_CONTAINER(root), GTK_WIDGET(toolbar), FALSE, FALSE, 10);
+	//gtk_box_pack_start(GTK_CONTAINER(root), GTK_WIDGET(toolbar), FALSE, FALSE, 10);
+	// Boot button
 	boot = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
 	gtk_signal_connect(GTK_WIDGET(boot), "clicked", G_CALLBACK(callback_boot), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), boot, 0);
+	// Router button
+	create_router = gtk_tool_button_new(create_router_label, "New router");
+	gtk_signal_connect(create_router, "clicked", G_CALLBACK(callback_create_router), NULL);
+	gtk_tool_button_set_icon_widget(create_router, create_router_label);
+	gtk_tool_button_set_label(create_router, "New router");
+	gtk_toolbar_insert(toolbar, create_router, 1);
+	// Switch button
+	create_switch = gtk_tool_button_new(create_switch_label, "New switch");
+	gtk_signal_connect(create_switch, "clicked", G_CALLBACK(callback_create_switch), NULL);
+	gtk_tool_button_set_icon_widget(create_switch, create_switch_label);
+	gtk_tool_button_set_label(create_switch, "New switch");
+	gtk_toolbar_insert(toolbar, create_switch, 2);
+
+	init_device_list(topology);
 	
-	/*// Device list
-	device_list = gtk_tree_view_new();
-	// Input box
-	command = gtk_entry_new();
-	command_completion = gtk_entry_completion_new();
-	gtk_widget_show(command);
-	//output
-	output_buffer = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_insert_at_cursor(output_buffer, "A", 1);
-	output = gtk_text_view_new_with_buffer(output_buffer);
-	gtk_widget_show(output);
-	gtk_text_view_set_editable(output, FALSE);
-	// Scroll window for output 
-	output_window = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(output_window, GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
-	gtk_widget_show(output_window);
-	gtk_scrolled_window_add_with_viewport(output_window, GTK_WIDGET(output));
-	gtk_container_set_border_width(GTK_CONTAINER(output_window), 10);
-	gtk_container_add(com_and_top, output_window);
-	gtk_container_add(com_and_top, command);
-	gtk_container_add(root, com_and_top);
-	gtk_container_add(window, root);
-
-	gtk_widget_show(root);
-	gtk_widget_show(com_and_top);*/
-
+	gtk_container_add(GTK_CONTAINER(root), toolbar);
+	gtk_container_add(GTK_CONTAINER(root), topology);
 	gtk_container_add(GTK_CONTAINER(window), root);
 	return 0;
+}
+
+void init_labels()
+{
+	ok_label = gtk_label_new("Ok");
+	cancel_label = gtk_label_new("Cancel");
+	create_router_label = gtk_label_new("Create router");
+	create_switch_label = gtk_label_new("Create switch");
+}
+
+void  on_changed(GtkWidget *widget, gpointer label) 
+{
+
+
+}
+
+void init_device_list(GtkHBox *box)
+{
+	GtkCellRenderer *renderer;
+	GtkTreeViewColumn *column;
+	GtkTreeSelection *selection;
+
+	device_list = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(device_list), TRUE);
+	gtk_box_pack_start(GTK_BOX(box), device_list, TRUE, TRUE, 10);
+
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Devices", renderer, "text", LIST_ITEM, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(device_list), column);
+	device_store = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING);
+
+	gtk_tree_view_set_model(GTK_TREE_VIEW(device_list), GTK_TREE_MODEL(device_store));
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(device_list));
+
+	g_signal_connect(selection, "changed", G_CALLBACK(on_changed), NULL);
 }
 
 int main(int argc, char **argv)
@@ -94,6 +251,16 @@ int main(int argc, char **argv)
 	initialize_autocomplete();
 	port = info->general.port;
 
+	gtk_set_locale();
+	gtk_init(&argc, &argv);
+
+	init_labels();
+	
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+	gtk_window_maximize(window);
+	init_gui();
+
 	list_for_each_safe(head, temp, &info->devices){
 		device_t *dev = list_entry(head, device_t, list);
 		list_del(head);
@@ -111,14 +278,10 @@ int main(int argc, char **argv)
 		default:
 			break;
 		}
+		add_device(device_list, dev->hostname);
 	}
-	
-	gtk_init(&argc, &argv);
 
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-	gtk_window_maximize(window);
-	init_gui();
+	g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), G_OBJECT(window));
 	gtk_widget_show_all(window);
 	gtk_main();
 	

@@ -151,6 +151,7 @@ int config_read_file(conf_info_t* info, const char* file_name)
 						printf("Config reader :: expecting device name at %d, but found %s\n", num_lines, yytext);
 					}
 					current_interface->dev = (char*) malloc((yyleng+1)*sizeof(char));
+					memset(current_interface->dev, 0, (yyleng+1));
 					strncpy(current_interface->dev, yytext, yyleng);
 				}
 				if ( token == TOK_NETMASK ) {

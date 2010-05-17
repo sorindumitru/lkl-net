@@ -1,0 +1,32 @@
+hypervisor{
+	device {
+		type hub;
+		hostname hub1;
+		port 50001;
+	}
+	device {
+		type hub;
+		hostname hub2;
+		port 50002;
+	}
+	device {
+		type hub;
+		hostname hub3;
+		port 50003;
+	}
+	device {
+		type hub;
+		hostname hub4;
+		port 50004;
+	}
+	device {
+		type router;
+		hostname Gateway;
+		config tests/web/router;
+	}
+	device {
+		type switch;
+		hostname Lan;
+		config tests/web/switch;
+	}
+}

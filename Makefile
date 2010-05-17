@@ -133,16 +133,25 @@ bin/router: $(INC) $(CONF_OBJ) $(ROUTER_OBJ) $(CROSS)lkl/lkl.a
 
 HYPERVISOR_DIR=hypervisor
 HYPERVISOR_SRC=$(HYPERVISOR_DIR)/hypervisor.c $(HYPERVISOR_DIR)/hypervisor_cmd.c $(CONSOLE_SRC) interface.c device.c
+HYPERGUI_SRC=$(HYPERVISOR_DIR)/hypervisor_cmd.c $(CONSOLE_SRC) interface.c device.c
 HYPERVISOR_OBJ=$(patsubst %c,%o,$(HYPERVISOR_SRC))
+HYPERGUI_OBJ=$(patsubst %c,%o,$(HYPERGUI_SRC))
 
 .PHONY: hypervisor
-hypervisor: bin/hypervisor
+hypervisor: bin/hypervisor bin/hypergui
+
+hypervisor/hypergui.o: hypervisor/hypergui.c $(CONF_OBJ) $(HYPERGUI_OBJ)
+	$(CC) $(CFLAGS)  $(CONF_OBJ) -c -o hypervisor/hypergui.o $(LDLIBS) -DISHYPERVISOR=1 $(HYPERGUI_OBJ) hypervisor/hypergui.c `pkg-config --cflags gtk+-2.0 goocanvas` `pkg-config --libs gtk+-2.0 goocanvas`	
 
 bin/hypervisor: $(CONF_OBJ) $(HYPERVISOR_OBJ)
 	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
 	$(CC) $(CFLAGS) -c interface.c -o interface.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(HYPERVISOR_OBJ) -o bin/hypervisor $(LDLIBS) -DISHYPERVISOR=1
 
+bin/hypergui: $(CONF_OBJ) $(HYPERVISOR_OBJ) hypervisor/hypergui.o
+	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
+	$(CC) $(CFLAGS) -c interface.c -o interface.o
+	$(CC) $(CFLAGS) -o bin/hypergui $(CONF_OBJ) $(HYPERGUI_OBJ) $(LDLIBS) -DISHYPERVISOR=1 hypervisor/hypergui.o `pkg-config --cflags gtk+-2.0 goocanvas` `pkg-config --libs gtk+-2.0 goocanvas`	
 # }
 
 # Test {

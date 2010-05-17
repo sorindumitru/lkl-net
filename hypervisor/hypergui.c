@@ -182,6 +182,8 @@ int init_gui()
 {
 	GtkVBox *root = (GtkVBox*) gtk_vbox_new(FALSE, 10);
 	GtkHBox *topology = (GtkHBox *)gtk_hbox_new(FALSE, 10);
+	GtkWidget *image;
+	image = gtk_image_new_from_file ("web.png");
 
 	//Toolbar
 	toolbar = (GtkToolbar *)gtk_toolbar_new();
@@ -204,7 +206,9 @@ int init_gui()
 	gtk_toolbar_insert(toolbar, create_switch, 2);
 
 	init_device_list(topology);
-	init_canvas(topology);
+	//init_canvas(topology);
+	gtk_container_add (GTK_CONTAINER (topology), image);
+
 	
 	gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(toolbar));
 	gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(topology));

@@ -1,0 +1,6 @@
+topology {
+	bridge {
+		port	50004;
+		ipaddress	127.0.0.1;
+	}
+}

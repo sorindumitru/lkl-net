@@ -38,13 +38,13 @@ int do_create_link(struct params *params)
 		}
 	} else if (pid == 0) {
 		char *args[] = {
-			"xterm",
-			"-e",
+			"gnome-terminal",
+			"-x",
 			"bin/hub", 
 			params->p[1],
 			NULL
 		};
-		err = execvp("xterm", args);
+		err = execvp("gnome-terminal", args);
 		if (err < 0) {
 			perror("could not run program");
 		}
@@ -85,14 +85,14 @@ int do_create_router(struct params *params)
 		}
 	} else if (pid == 0) {
 		char *args[] = {
-			"xterm",
-			"-e",
+			"gnome-terminal",
+			"-x",
 			"bin/router",
 			params->p[1],
 			params->p[0],
 			NULL
 		};
-		err = execvp("xterm", args);
+		err = execvp("gnome-terminal", args);
 		if (err < 0) {
 			perror("could not run program");
 		}
@@ -122,14 +122,14 @@ int do_create_switch(struct params *params)
 		}
 	} else if (pid == 0) {
 		char *args[] = {
-			"xterm",
-			"-e",
+			"gnome-terminal",
+			"-x",
 			"bin/switch", 
 			params->p[1],
 			params->p[0],
 			NULL
 		};
-		err = execvp("xterm", args);
+		err = execvp("gnome-terminal", args);
 		if (err < 0) {
 			perror("could not run program");
 		}

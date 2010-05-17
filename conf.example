@@ -7,7 +7,7 @@ interface {
 }
 topology {
 	bridge {
-		port	50002;
+		port	50000;
 		ipaddress	127.0.0.1;
 	}
 }

@@ -84,6 +84,7 @@ int main(int argc, char **argv)
 		perror("init_host_interface:");
 		return -1;
 	}
+	
 	printf("::Initialized TUN/TAP interface %s\n",interface);
 	
 	lkl = socket(AF_INET, SOCK_STREAM, 0);

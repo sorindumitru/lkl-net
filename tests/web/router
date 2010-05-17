@@ -1,4 +1,4 @@
-hostname R1;
+hostname Gateway;
 interface {
 	dev eth0;
 	mac aa:bb:cc:00:01:01;

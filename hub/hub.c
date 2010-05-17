@@ -12,7 +12,7 @@
 #include <config.h>
 
 #define PORT_NO 10000
-#define PACKET_SIZE 8192 
+#define PACKET_SIZE 4096
 
 #define NIPQUAD(addr) \
 	((unsigned char *)&addr)[0], \

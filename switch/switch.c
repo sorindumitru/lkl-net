@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -91,7 +92,7 @@ int main(int argc, const char **argv)
 			NULL
 		}
 	};
-	do_set_stp(&p);
+	//do_set_stp(&p);
 
 	start_device_thread();
 

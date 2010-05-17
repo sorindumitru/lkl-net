@@ -1,7 +1,7 @@
 #ifndef PACKET_CA2K9INK
 #define PACKET_CA2K9INK
 
-#define MAX_PACKET_SIZE 8192
+#define MAX_PACKET_SIZE 1600
 
 typedef struct packet {
 	unsigned int size;

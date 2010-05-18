@@ -194,6 +194,7 @@ clean:
 	-rm bin/hub
 	-rm switch/*.o
 	-rm router/*.o
+	-rm hypervisor/*.o
 
 clean-all: clean
 	-rm -rf lkl

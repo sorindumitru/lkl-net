@@ -24,6 +24,11 @@ void free_packet(packet_t* packet)
 int send_packet(int to, packet_t *packet)
 {
 	int err;
+
+	if (packet->size > MAX_PACKET_SIZE) {
+		packet->size == MAX_PACKET_SIZE;
+		printf("Packet too big!\n");
+	}
 	
 	err = send(to, &packet->size, sizeof(packet->size), 0);
 	if (err < 0) {
@@ -68,6 +73,11 @@ packet_t* recv_packet(int from)
 	err = read(from, data, size);
 	if (err < 0) {
 		return NULL;
+	}
+
+	if (size > MAX_PACKET_SIZE) {
+		printf("Packet to big!\n");
+		size = MAX_PACKET_SIZE;
 	}
 
 	return alloc_packet(size, data);

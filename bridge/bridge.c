@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#define BUFFSIZE 1600
+#define BUFFSIZE 2560
 char buffer[BUFFSIZE];
 char interface[IFNAMSIZ];
 

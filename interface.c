@@ -90,7 +90,7 @@ int lkl_init_interface(const interface_t* interface)
 
 	printf("LKL init :: Adding interface %s\n", interface->dev);
 	
-	if ((ifindex=lkl_add_eth_tun(interface->dev, (char*) interface->mac, 32, td)) < 0) {
+	if ((ifindex=lkl_add_eth_tun(interface->dev, (char*) interface->mac, 64, td)) < 0) {
 		printf("LKL init :: could not bring up interface %s\n",interface->dev);
 		return -1;
 	}

@@ -1,3 +1,4 @@
+
 #include <gtk/gtk.h>
 #include <goocanvas.h>
 
@@ -64,15 +65,14 @@ static void add_device(GtkWidget *list, const gchar *str)
 
 gint timeout_boot( gpointer data )
 {
-	do_boot_up(NULL);
+	struct params params;
+	do_boot_up(&params);
 	return FALSE;
 }
 
 void callback_boot(GtkWidget *widget, gpointer   callback_data)
 {
 	gtk_timeout_add(1000, timeout_boot, NULL);
-	//do_boot_up(NULL);
-	g_print("Goodbye cruel world!\n");
 }
 
 void callback_dev_create(GtkWidget *widget, gpointer callback_data )

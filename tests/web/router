@@ -1,6 +1,6 @@
 hostname Gateway;
-hostname 60002;
 ipaddress 127.0.0.1;
+port 60002;
 interface {
 	dev eth0;
 	mac aa:bb:cc:00:01:01;

@@ -16,7 +16,7 @@ hypervisor{
 	}
 	device {
 		type router;
-		hostname R1;
+		hostname Gateway;
 		config tests/router_switch_topology/router;
 	}
 	device {

@@ -1,0 +1,22 @@
+hostname S1;
+ipaddress 127.0.0.1;
+port 60001;
+interface {
+	dev eth0;
+	mac 00:bb:cc:00:01:01;
+	gateway 127.0.0.1;
+	port 50002;
+	type hub;
+}
+interface {
+	dev eth1;
+	mac 00:bb:cc:00:02:02;
+	gateway 127.0.0.1;
+	port 50001;
+	type hub;
+}
+
+switch {
+	interface eth0;
+	interface eth1;
+}

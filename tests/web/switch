@@ -16,7 +16,7 @@ interface {
 	type hub;
 }
 interface {
-	dev eth4;
+	dev eth2;
 	mac 00:bb:cc:00:01:02;
 	gateway 127.0.0.1;
 	port 50004;
@@ -25,5 +25,5 @@ interface {
 switch {
 	interface eth0;
 	interface eth1;
-	interface eth4;
+	interface eth2;
 }

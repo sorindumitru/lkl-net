@@ -38,7 +38,7 @@ static int dump_info(const char *br, struct bridge_info *bri)
 	lkl_br_show_timer(&bri->forward_delay);
 	printf("\t\t\tbridge forward delay\t");
 	lkl_br_show_timer(&bri->bridge_forward_delay);
-	printf("\n ageing time\t\t");
+	printf("\n aging time\t\t");
 	lkl_br_show_timer(&bri->ageing_time);
 	printf("\n hello timer\t\t");
 	lkl_br_show_timer(&bri->hello_timer_value);

@@ -85,7 +85,7 @@ static unsigned short dump_eth_header(eth_header *e)
 static void dump_ip_header(ip_header *i)
 {
 
-	printf("IP:\n\tihl=%u\tversion=%u\ttos=%u\n\
+	printf("IP:\n\t\tihl=%u\tversion=%u\ttos=%u\n\
 	\ttotal_length=%u\tid=%u\tflags=%u\n\
 	\tfragment_offset=%u\tTTL=%u\tprotocol=%u\n\
 	\tDestination:\t"NIPQUAD_FMT"\n\

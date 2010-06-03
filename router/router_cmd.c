@@ -17,6 +17,7 @@
 
 #include <asm/libnetlink.h>
 #include <asm/eth.h>
+#include <asm/env.h>
 //#include <asm/lkl_router.h>
 
 #include <netdb.h>

@@ -1,5 +1,5 @@
-#ifndef __LIST_H
-#define __LIST_H
+#ifndef _LINUX_LIST_H
+#define _LINUX_LIST_H
 
 /* This file is from Linux Kernel (include/linux/list.h) 
  * and modified by simply removing hardware prefetching of list items. 

@@ -90,7 +90,7 @@ BRIDGE_OBJ=$(patsubst %c,%o,$(BRIDGE_SRC))
 .PHONY: bridge
 bridge: bin/bridge
 
-bin/bridge: $(CONF_OBJ) $(BRIDGE_OBJ)
+bin/bridge: $(INC) $(CONF_OBJ) $(BRIDGE_OBJ)
 	$(CC) $(CFLAGS) -c interface.c -o interface.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(BRIDGE_OBJ) -o bin/bridge $(LDLIBS)
 
@@ -110,6 +110,23 @@ bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 	$(CC) $(CFLAGS) -c autocomplete.c -o autocomplete.o
 	$(CC) $(CFLAGS) -DISLKL -c interface.c -o interface.o
 	$(CC) $(CFLAGS) $(CONF_OBJ) $(SWITCH_OBJ) -o bin/switch lkl/lkl.a $(LDLIBS) -DISLKL
+
+# }
+
+# FIREWALL {
+
+FIREWALL_DIR=firewall
+FIREWALL_SRC=$(FIREWALL_DIR)/firewall.c $(FIREWALL_DIR)/firewall_cmd.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c
+FIREWALL_OBJ=$(patsubst %c,%o,$(FIREWALL_SRC))
+
+.PHONY: firewall
+firewall: bin/firewall
+
+bin/firewall: $(INC) $(CONF_OBJ) $(FIREWALL_OBJ) $(CROSS)lkl/lkl.a
+	$(CC) $(CFLAGS) -c console.c -DISFIREWALL -o console.o
+	$(CC) $(CFLAGS) -c autocomplete.c -o autocomplete.o
+	$(CC) $(CFLAGS) -DISLKL -c interface.c -o interface.o
+	$(CC) $(CFLAGS) $(CONF_OBJ) $(FIREWALL_OBJ) -o bin/firewall lkl/lkl.a $(LDLIBS) -DISLKL
 
 # }
 
@@ -180,6 +197,19 @@ bin/hub: $(HUB_OBJ)
 
 # }
 
+# LibNL {
+
+#LIBNL_DIR=libnl
+#LIBNL_SRC=$(LIBNL_DIR)/libnl.c
+#LIBNL_OBJ=$(patsubst %c,%o, $(LIBNL_SRC))
+
+#.PHONY: libnl
+#libnl: bin/libnl
+#bin/libnl: $(INC) $(LIBNL_OBJ) $(CROSS)lkl/lkl.a
+#	$(CC) $(CFLAGS) $(LIBNL_OBJ) -o bin/libnl lkl/lkl.a pthread -DISLKL	
+
+# }
+
 # Clean up {
 
 .PHONY: clean
@@ -194,6 +224,7 @@ clean:
 	-rm bin/hub
 	-rm switch/*.o
 	-rm router/*.o
+	-rm firewall/*.o
 	-rm hypervisor/*.o
 
 clean-all: clean

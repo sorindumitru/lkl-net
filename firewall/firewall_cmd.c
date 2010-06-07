@@ -25,7 +25,6 @@ int do_list_entries(struct params *params)
 		print_header(this, handle);
 		i = iptc_first_rule(this, handle);
 		num = 0;
-		printf("%p\n", i);
 		while (i) {
 			num++;
 			print_entry(i, handle);
@@ -58,12 +57,15 @@ int do_append_entry(struct params *params)
 	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
 	memcpy(entry->elems, &size, 2);
+	entry->ip.invflags = 0x08;
 	memcpy(entry->elems+2, append, 30);
 	ret = iptc_append_entry(chain, entry, handle);
 	
 	printf("\n%d\n%d\n", ret, iptc_entry_target_size());
 	//iptc_free(handle);
 	//free(entry);
+	ret = iptc_commit(handle);
+	printf("%d %s\n", ret, iptc_strerror(ret));
 	return ret;
 }
 

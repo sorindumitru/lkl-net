@@ -25,12 +25,15 @@ int do_list_entries(struct params *params)
 		print_header(this, handle);
 		i = iptc_first_rule(this, handle);
 		num = 0;
+		printf("%p\n", i);
 		while (i) {
 			num++;
 			print_entry(i, handle);
 			i = iptc_next_rule(i, handle);
 		}
 	}
+
+	//iptc_free(handle);
 	
 	return 0;
 }
@@ -38,19 +41,29 @@ int do_list_entries(struct params *params)
 int do_append_entry(struct params *params)
 {
 	int ret;
+	unsigned short size;
 	char *chain = params->p[0];
 	char *address = params->p[1];
-	struct ipt_entry entry;
+	struct ipt_entry *entry;
 	struct iptc_handle *handle = iptc_init("filter");
+	char *append = malloc(30);
+	memset(append,0,30);
+	memcpy(append, "ACCEPT", strlen("ACCEPT"));
 	
-	//printf("-A %s -s %s -j DROP\n", chain, address);
-
-	memset(&entry, 0, sizeof(entry));
-	entry.ip.src.s_addr = inet_aton(address);
-	entry.ip.smsk.s_addr = inet_aton("255.255.255.0");
-	ret = iptc_append_entry(chain, &entry, handle);
-	printf("\n%d\n", ret);
+	size = sizeof(int) + iptc_entry_target_size();
+	entry = malloc(sizeof(struct ipt_entry)+size);
+	memset(entry, 0, sizeof(struct ipt_entry)+size);
+	entry->ip.src.s_addr = inet_aton(address);
+	entry->ip.smsk.s_addr = inet_aton("255.255.255.0");
+	entry->target_offset = sizeof(struct ipt_entry);
+	entry->next_offset = size+sizeof(struct ipt_entry);
+	memcpy(entry->elems, &size, 2);
+	memcpy(entry->elems+2, append, 30);
+	ret = iptc_append_entry(chain, entry, handle);
 	
+	printf("\n%d\n%d\n", ret, iptc_entry_target_size());
+	//iptc_free(handle);
+	//free(entry);
 	return ret;
 }
 
@@ -65,5 +78,5 @@ static void print_header(const char *chain, struct iptc_handle *handle)
 
 static void print_entry(const struct ipt_entry *entry, struct iptc_handle *handle)
 {
-	printf("AAA");
+	printf("AAA\n\n");
 }

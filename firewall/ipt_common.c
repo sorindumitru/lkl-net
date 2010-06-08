@@ -25,10 +25,11 @@ struct argstruct *get_args(struct params *params)
 {
 	int i;
 	struct argstruct *args = malloc(sizeof(*args));
-	args->argc = params->count;
+	args->argc = params->count+1;
 	args->argv = malloc(args->argc*sizeof(char*));
-	for(i=0;i<args->argc;i++){
-		args->argv[i] = strdup(params->p[i]);
+	args->argv[0] = strdup("filter");
+	for(i=1;i<args->argc;i++){
+		args->argv[i] = strdup(params->p[i-1]);
 	}
 
 	return args;

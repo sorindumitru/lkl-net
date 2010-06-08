@@ -20,9 +20,9 @@ int do_filter(struct params *params)
 	struct iptargs *ipt = malloc(sizeof(*ipt));
 	struct argstruct *args = get_args(params);
 	ipt->table = "filter";
-	printf("%s %s\n", global_options[0].name, args->argv[0]);
-	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:", global_options, NULL)) != -1) {
-		printf("%d %c\n", c, c);
+	optind = 1;
+	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:")) != -1) {
+		printf("CC:%d %c\n", c, c);
 		switch(c) {
 		case 'A':
 			ipt->chain = optarg;
@@ -30,7 +30,7 @@ int do_filter(struct params *params)
 			break;
 		case 'L':
 			if (optarg) {
-				ipt->chain = optarg;
+				ipt->chain = strdup(optarg);
 			}
 			ipt->op = LIST;
 			break;
@@ -47,7 +47,6 @@ int do_filter(struct params *params)
 			break;
 		}
 	}
-	printf("%d %c\n", c);
 	switch (ipt->op) {
 	case APPEND:
 		break;

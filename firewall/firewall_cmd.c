@@ -13,6 +13,21 @@
 #include <netinet/in.h>
 #include <ipt_common.h>
 
+enum TARGET {
+	ACCEPT,
+	DROP,
+	DENY,
+};
+
+struct target {
+	enum TARGET id;
+	char *name;
+	unsigned char inv;
+	unsigned char invflags;
+} targets[] = {
+
+};
+
 int do_filter(struct params *params)
 {
 	int c;
@@ -22,7 +37,6 @@ int do_filter(struct params *params)
 	ipt->table = "filter";
 	optind = 1;
 	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:")) != -1) {
-		printf("CC:%d %c\n", c, c);
 		switch(c) {
 		case 'A':
 			ipt->chain = optarg;
@@ -31,6 +45,8 @@ int do_filter(struct params *params)
 		case 'L':
 			if (optarg) {
 				ipt->chain = strdup(optarg);
+			} else {
+				ipt->chain = NULL;
 			}
 			ipt->op = LIST;
 			break;
@@ -43,7 +59,7 @@ int do_filter(struct params *params)
 		case 'j':
 			ipt->target = malloc(30);
 			memset(ipt->target, 0, 30);
-			strcpy(ipt->target,optarg);
+			memcpy(ipt->target, optarg, strlen(optarg));
 			break;
 		default:
 			printf("Unrecognized option\n");
@@ -74,19 +90,17 @@ int do_filter_append_entry(struct iptargs *ipt)
 	size = sizeof(int) + iptc_entry_target_size();
 	entry = malloc(sizeof(struct ipt_entry)+size);
 	memset(entry, 0, sizeof(struct ipt_entry)+size);
-	entry->ip.src = ipt->src;
+	entry->ip.src.s_addr = ipt->src.s_addr;
 	entry->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
 	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
 	memcpy(entry->elems, &size, 2);
 	entry->ip.invflags = 0x08;
 	memcpy(entry->elems+2, ipt->target, 30);
-	ret = iptc_append_entry(chain, entry, handle);
 	
-	printf("\n%d\n%d\n", ret, iptc_entry_target_size());
-	//iptc_free(handle);
-	//free(entry);
+	ret = iptc_append_entry(chain, entry, handle);
 	ret = iptc_commit(handle);
-	printf("%d %s\n", ret, iptc_strerror(ret));
+	//iptc_free(handle);
+
 	return ret;
 }

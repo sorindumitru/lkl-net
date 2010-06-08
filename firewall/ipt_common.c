@@ -70,17 +70,16 @@ int addr_to_mask(unsigned int mask)
 {
 	int i;
 	unsigned int bits;
-	unsigned int hmask = ntohl(mask);
+	unsigned int hmask = mask;
 	if (mask == 0xFFFFFFFFU) {
 		return 32;
 	}
 
 	i    = 32;
-	bits = 0xFFFFFFFEU;
+	bits = 0x7FFFFFFF;
 	while (--i >= 0 && hmask != bits) {
-		bits <<= 1;
+		bits >>= 1;
 	}
-	
 	return i;
 }
 
@@ -90,14 +89,12 @@ int do_list_entries(struct iptargs *ipt)
 	handle = iptc_init(ipt->table);
 	const char *this;
 
-	if (iptc_is_chain(ipt->chain, handle)) {
-		this = ipt->chain;
-	} else {
-		this = iptc_first_chain(handle);
-	}
-	for (; this; this=iptc_next_chain(handle)) {
+	for (this=iptc_first_chain(handle); this; this=iptc_next_chain(handle)) {
 		const struct ipt_entry *i;
 		unsigned int num;
+
+		if (ipt->chain && strcmp(ipt->chain, this) != 0)
+			continue;
 
 		print_header(this, handle);
 		i = iptc_first_rule(this, handle);
@@ -115,10 +112,13 @@ int do_list_entries(struct iptargs *ipt)
 void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask)
 {
 	char *address = malloc(32);
-	char *netmask = malloc(32);
+	int netmask;
+	memset(address, 0, 32);
+	memset(netmask, 0, 32);
 	address = inet_ntop(AF_INET, (void*) &addr, address, 32);
-	netmask = inet_ntop(AF_INET, (void*) &mask, netmask, 32);
-	printf("-%s %s/%s ", address, netmask);
+	netmask = addr_to_mask(mask.s_addr);
+	
+	printf("-%s %s/%d ", prefix, address, netmask);
 }
 
 void print_header(const char *chain, struct iptc_handle *handle)

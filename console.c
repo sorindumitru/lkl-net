@@ -131,6 +131,7 @@ int execute_line(char *line)
 		memset(parameters, 0, sizeof(*parameters));
 		while ((token=strtok(NULL, " \t"))) {
 			parameters->p[i] = token;
+			parameters->count++;
 			i++;
 		}
 	}

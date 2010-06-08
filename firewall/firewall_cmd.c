@@ -12,6 +12,11 @@
 
 int do_filter(struct params *params)
 {
+	int i=0;
+	for(i=0;i<params->count;i++){
+		printf("%s ", params->p[i]);
+	}
+	printf("\n");
 	return 0;
 }
 

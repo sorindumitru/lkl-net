@@ -3,6 +3,7 @@
 
 #define MAX_PARAM_NO	8
 typedef struct params {
+	int count;
 	void *p[MAX_PARAM_NO];
 } params;
 

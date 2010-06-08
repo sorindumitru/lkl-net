@@ -15,7 +15,7 @@ APR_CONF=$(shell apr-config --includes --cppflags)
 
 EXTRA_FLAGS=-gstabs+
 
-all: bridge hub test switch router hypervisor
+all: bridge hub test switch router hypervisor nat firewall
 
 # Include LKL {
 
@@ -239,10 +239,14 @@ clean:
 	-rm bin/bridge
 	-rm bin/switch
 	-rm bin/hub
+	-rm bin/nat
+	-rm bin/firewall
 	-rm switch/*.o
 	-rm router/*.o
 	-rm firewall/*.o
 	-rm hypervisor/*.o
+	-rm nat/*.o
+	-rm firewall/*.o
 
 clean-all: clean
 	-rm -rf lkl

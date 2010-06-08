@@ -11,6 +11,14 @@
 #include <console.h>
 #include <ipt_common.h>
 
+struct option global_options[] = {
+	{.name = "append",             .has_arg = 1,  .val = "A"},
+	{.name = "list",               .has_arg = 2,  .val = "L"},
+	{.name = "src",                .has_arg = 1,  .val = "s"},
+	{.name = "dst",                .has_arg = 1,  .val = "d"},
+	{.name = "jump",               .has_arg = 1,  .val = "j"},
+};
+
 struct argstruct *get_args(struct params *params)
 {
 	int i;

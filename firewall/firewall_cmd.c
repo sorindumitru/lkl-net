@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
 
 #include <config.h>
 #include <list.h>
@@ -12,12 +14,29 @@
 
 int do_filter(struct params *params)
 {
+	int c;
 	int i=0;
 	struct argstruct *args = get_args(params);
 	for(i=0;i<args->argc;i++){
 		printf("%s ", args->argv[i]);
 	}
-	printf("\n");
+	while ((c = getopt_long(args->argc, args->argv, "-A:L::j:s:d:", global_options, NULL)) != -1) {
+		switch(c) {
+		case 'A':
+			break;
+		case 'L':
+			break;
+		case 's':
+			break;
+		case 'd':
+			break;
+		case 'j':
+			break;
+		default:
+			printf("Unrecognized option\n");
+			break;
+		}
+	}
 	return 0;
 }
 

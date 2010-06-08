@@ -129,6 +129,7 @@ int execute_line(char *line)
 		int i = 0;
 		parameters = malloc(sizeof(struct params));
 		memset(parameters, 0, sizeof(*parameters));
+		parameters->count = 0;
 		while ((token=strtok(NULL, " \t"))) {
 			parameters->p[i] = token;
 			parameters->count++;

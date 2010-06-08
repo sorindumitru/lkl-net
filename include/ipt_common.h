@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 struct ipt_entry;
 struct iptc_handle;
@@ -35,6 +36,11 @@ struct iptargs{
 extern struct option global_options[];
 
 struct argstruct *get_args(struct params *params);
+void parse_ip(struct iptargs *ipt, char dest, char *addr);
+
+int do_list_entries(struct iptargs *ipt);
+
+void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask);
 void print_header(const char *chain, struct iptc_handle *handle);
 void print_entry(const char *chain, const struct ipt_entry *entry, struct iptc_handle *handle);
 

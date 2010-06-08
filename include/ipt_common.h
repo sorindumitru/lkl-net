@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <getopt.h>
+#include <netinet/in.h>
 
 struct ipt_entry;
 struct iptc_handle;
@@ -10,6 +11,25 @@ struct iptc_handle;
 struct argstruct {
 	int argc;
 	char **argv;
+};
+
+enum ipt_ops{
+	APPEND,
+	REPLACE,
+	DELETE,
+	LIST,
+	FLUSH
+};
+
+//filter and nat commands args
+struct iptargs{
+	char *table;
+	char *chain;
+	enum ipt_ops op;
+	struct in_addr src;
+	struct in_addr dst;
+	long src_mask;
+	long dst_mask;	
 };
 
 extern struct option global_options[];

@@ -116,7 +116,7 @@ bin/switch: $(INC) $(CONF_OBJ) $(SWITCH_OBJ) $(CROSS)lkl/lkl.a
 # FIREWALL {
 
 FIREWALL_DIR=firewall
-FIREWALL_SRC=$(FIREWALL_DIR)/firewall.c $(FIREWALL_DIR)/firewall_cmd.c $(FIREWALL_DIR)/ipt_common.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c
+FIREWALL_SRC=$(FIREWALL_DIR)/firewall.c $(FIREWALL_DIR)/firewall_cmd.c ipt_common.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c
 FIREWALL_OBJ=$(patsubst %c,%o,$(FIREWALL_SRC))
 
 .PHONY: firewall
@@ -133,7 +133,7 @@ bin/firewall: $(INC) $(CONF_OBJ) $(FIREWALL_OBJ) $(CROSS)lkl/lkl.a
 # NAT {
 
 NAT_DIR=nat
-NAT_SRC=$(NAT_DIR)/nat.c $(NAT_DIR)/nat_cmd.c $(FIREWALL_DIR)/ipt_common.c $(FIREWALL_DIR)/firewall_cmd.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c
+NAT_SRC=$(NAT_DIR)/nat.c $(NAT_DIR)/nat_cmd.c ipt_common.c $(FIREWALL_DIR)/firewall_cmd.c interface.c topology.c $(CONSOLE_SRC) switch/switch_cmd.c router/router_cmd.c device.c
 NAT_OBJ=$(patsubst %c,%o,$(NAT_SRC))
 
 .PHONY: nat

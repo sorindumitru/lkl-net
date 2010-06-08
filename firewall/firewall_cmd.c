@@ -31,7 +31,6 @@ struct target {
 int do_filter(struct params *params)
 {
 	int c;
-	int i=0;
 	struct iptargs *ipt = malloc(sizeof(*ipt));
 	struct argstruct *args = get_args(params);
 	ipt->table = "filter";
@@ -52,6 +51,7 @@ int do_filter(struct params *params)
 			break;
 		case 's':
 			parse_ip(ipt, 's', optarg);
+			ipt->flags &= SRC_F;
 			break;
 		case 'd':
 			parse_ip(ipt, 'd', optarg); 

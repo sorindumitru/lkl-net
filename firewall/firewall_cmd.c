@@ -41,6 +41,9 @@ int do_filter(struct params *params)
 			parse_ip(ipt, 'd', optarg); 
 			break;
 		case 'j':
+			ipt->target = malloc(30);
+			memset(ipt->target, 0, 30);
+			strcpy(ipt->target,optarg);
 			break;
 		default:
 			printf("Unrecognized option\n");
@@ -49,6 +52,7 @@ int do_filter(struct params *params)
 	}
 	switch (ipt->op) {
 	case APPEND:
+		do_filter_append_entry(ipt);
 		break;
 	case LIST:
 		do_list_entries(ipt);
@@ -59,28 +63,24 @@ int do_filter(struct params *params)
 	return 0;
 }
 
-int do_append_entry(struct params *params)
+int do_filter_append_entry(struct iptargs *ipt)
 {
 	int ret;
 	unsigned short size;
-	char *chain = params->p[0];
-	char *address = params->p[1];
+	char *chain = ipt->chain;
 	struct ipt_entry *entry;
 	struct iptc_handle *handle = iptc_init("filter");
-	char *append = malloc(30);
-	memset(append,0,30);
-	memcpy(append, "ACCEPT", strlen("ACCEPT"));
 	
 	size = sizeof(int) + iptc_entry_target_size();
 	entry = malloc(sizeof(struct ipt_entry)+size);
 	memset(entry, 0, sizeof(struct ipt_entry)+size);
-	//entry->ip.src.s_addr = inet_aton(address, &entry->ip.src);
-	//entry->ip.smsk.s_addr = inet_aton("255.255.255.0", &entry->ip.smsk);
+	entry->ip.src = ipt->src;
+	entry->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
 	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
 	memcpy(entry->elems, &size, 2);
 	entry->ip.invflags = 0x08;
-	memcpy(entry->elems+2, append, 30);
+	memcpy(entry->elems+2, ipt->target, 30);
 	ret = iptc_append_entry(chain, entry, handle);
 	
 	printf("\n%d\n%d\n", ret, iptc_entry_target_size());

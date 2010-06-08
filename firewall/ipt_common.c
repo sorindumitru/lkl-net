@@ -48,13 +48,52 @@ void parse_ip(struct iptargs *ipt, char dest, char *addr)
 	}
 }
 
+unsigned int mask_to_addr(int mask)
+{
+	int i=1;
+	unsigned int addr = 1;
+
+	if (mask == 32) {
+		return 0xFFFFFFFFU;
+	}
+
+	for(i=1;i<=mask;i++){
+		addr *= 2;
+	}
+
+	return addr-1;
+}
+
+int addr_to_mask(unsigned int mask)
+{
+	int i;
+	unsigned int bits;
+	unsigned int hmask = ntohl(mask);
+	if (mask == 0xFFFFFFFFU) {
+		return 32;
+	}
+
+	i    = 32;
+	bits = 0xFFFFFFFEU;
+	while (--i >= 0 && hmask != bits) {
+		bits <<= 1;
+	}
+	
+	return i;
+}
+
 int do_list_entries(struct iptargs *ipt)
 {
 	struct iptc_handle *handle;
 	handle = iptc_init(ipt->table);
 	const char *this;
 
-	for (this=iptc_first_chain(handle); this; this=iptc_next_chain(handle)) {
+	if (iptc_is_chain(ipt->chain, handle)) {
+		this = ipt->chain;
+	} else {
+		this = iptc_first_chain(handle);
+	}
+	for (; this; this=iptc_next_chain(handle)) {
 		const struct ipt_entry *i;
 		unsigned int num;
 

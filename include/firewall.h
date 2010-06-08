@@ -3,7 +3,9 @@
 
 #include <params.h>
 
+struct iptargs;
+
 int do_filter(struct params *params);
-int do_append_entry(struct params *params);
+int do_filter_append_entry(struct iptargs *ipt);
 
 #endif /* LKL_NET_FIREWALL_H_ */

@@ -26,6 +26,7 @@ enum ipt_ops{
 struct iptargs{
 	char *table;
 	char *chain;
+	char *target;
 	enum ipt_ops op;
 	struct in_addr src;
 	struct in_addr dst;
@@ -37,7 +38,9 @@ extern struct option global_options[];
 
 struct argstruct *get_args(struct params *params);
 void parse_ip(struct iptargs *ipt, char dest, char *addr);
-
+int addr_to_mask(unsigned int mask);
+unsigned int mask_to_addr(int mask);
+	
 int do_list_entries(struct iptargs *ipt);
 
 void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask);

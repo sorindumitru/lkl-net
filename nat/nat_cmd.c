@@ -15,6 +15,9 @@
 #include <ipt_common.h>
 #include <nat.h>
 
+
+int do_append_nat_entry(struct iptargs *ipt);
+
 //check validity of command
 static int check_ipt_command(struct iptargs *ipt)
 {
@@ -47,7 +50,7 @@ static int check_ipt_command(struct iptargs *ipt)
 	}
 
 	//TODO check other stuff
-	printf("eop\n");
+
 	return 0;
 }
 
@@ -67,23 +70,28 @@ int do_nat(struct params *params)
 		switch(c) {
 		case 'A':
 			ipt->chain = strdup(optarg);
-			printf("Here\n");
 			ipt->op = APPEND;
 			break;
 		case 'L':
 			if (optarg) {
-				printf("parameter for list\n");
 				ipt->chain = strdup(optarg);
 			}
 			ipt->op = LIST;
 			break;
 		case 's':
+			ipt->flags|=SRC_F;
 			parse_ip(ipt, 's', optarg);
 			break;
 		case 'd':
+			ipt->flags|=DST_F;
 			parse_ip(ipt, 'd', optarg); 
 			break;
 		case 'j':
+			if (!optarg){
+				printf("Must specify target\n");
+				return 1;
+			}
+			ipt->target = strdup(optarg);
 			break;
 		default:
 			printf("Unrecognized option\n");

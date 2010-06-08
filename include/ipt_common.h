@@ -24,8 +24,12 @@ enum ipt_ops{
 
 extern char *ipt_ops_to_name[];
 
+#define SRC_F	1<<1
+#define DST_F	1<<2	
+
 //filter and nat commands args
 struct iptargs{
+	unsigned int flags;
 	char *table;
 	char *chain;
 	char *target;

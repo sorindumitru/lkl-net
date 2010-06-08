@@ -57,21 +57,6 @@ command interface_commands[] = {
 #endif
 };
 
-command filter_commands[] = {
-#ifdef ISFIREWALL
-	{ "list", 0, DEVICE_ALL, do_list_entries, "List firewall rules", (command*) NULL, " "},
-	{ "append", 2, DEVICE_ALL, do_append_entry, "Append entry to chain", (command*) NULL, "<chain>"},
-	{(char *) NULL, -1, DEVICE_ROUTER, NULL,"Interface information",(command*) NULL, NULL}
-#endif
-};
-
-command ip_commands[] = {
-#ifdef ISFIREWALL
-	{ "filter", -1, DEVICE_ALL, NULL, "Firewall commands", filter_commands, NULL},
-	{(char *) NULL, -1, DEVICE_ROUTER, NULL,"Interface information",(command*) NULL, NULL}
-#endif
-};
-
 command root[] = {
 #ifdef ISSWITCH
 	{"stp", 2, DEVICE_SWITCH, do_set_stp, "Set STP ON/OFF", NULL, "<on/off> <switch_name>"},
@@ -89,7 +74,12 @@ command root[] = {
 	{"boot", 0, DEVICE_HYPERVISOR, do_boot_up, "Boot up devices", (command*) NULL, ""},
 	{"dump", 1, DEVICE_ALL, do_dump_hyper_config, "Dump configuration", (command *) NULL, "<file>"},
 #endif
-	{"ip", -1, DEVICE_ALL, NULL, "Ip", ip_commands, NULL},
+#ifdef ISFIREWALL
+	{ "filter", -2, DEVICE_ALL, do_filter, "Firewall rules", NULL, "<-A chain -j TARGET>" },
+#endif
+#ifdef ISNAT	
+	{ "nat", -2, DEVICE_ALL, do_nat, "NAT rules", NULL, "<-A chain -j TARGET>" },
+#endif
 	{"show", -1, DEVICE_ALL, NULL, "Show device information", show_commands, NULL},
 	{"exit", 0, DEVICE_ALL, do_exit_cmd, "Exit", (command*) NULL, NULL},
 	{"test", 1, DEVICE_ALL, do_test, "Test", (command*) NULL, "<device_name>"},
@@ -133,6 +123,15 @@ int execute_line(char *line)
 				return -1;
 			}
 			parameters->p[i] = token;
+		}
+	}
+	if (com->parameters_no == -2) {
+		int i = 0;
+		parameters = malloc(sizeof(struct params));
+		memset(parameters, 0, sizeof(*parameters));
+		while ((token=strtok(NULL, " \t"))) {
+			parameters->p[i] = token;
+			i++;
 		}
 	}
 

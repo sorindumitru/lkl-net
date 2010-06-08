@@ -8,14 +8,17 @@
 #include <asm/eth.h>
 #include <asm/libiptc.h>
 #include <console.h>
+#include <ipt_common.h>
 
-static void print_header(const char *chain, struct iptc_handle *handle);
-static void print_entry(const char *chain, const struct ipt_entry *entry, struct iptc_handle *handle);
+int do_filter(struct params *params)
+{
+	return 0;
+}
 
-int do_list_entries(struct params *params)
+int do_list_entries(const char* table, struct params *params)
 {
 	struct iptc_handle *handle;
-	handle = iptc_init("filter");
+	handle = iptc_init(table);
 	const char *this;
 
 	for (this=iptc_first_chain(handle); this; this=iptc_next_chain(handle)) {
@@ -31,8 +34,6 @@ int do_list_entries(struct params *params)
 			i = iptc_next_rule(i, handle);
 		}
 	}
-
-	//iptc_free(handle);
 	
 	return 0;
 }
@@ -67,22 +68,4 @@ int do_append_entry(struct params *params)
 	ret = iptc_commit(handle);
 	printf("%d %s\n", ret, iptc_strerror(ret));
 	return ret;
-}
-
-static void print_header(const char *chain, struct iptc_handle *handle)
-{
-	struct ipt_counters counters;
-	const char *pol = iptc_get_policy(chain, &counters, handle);
-	printf("Chain %s", chain);
-	printf(" (policy %s", pol);
-	printf(" %ld packets, %ld bytes)\n", (long int) counters.pcnt, (long int) counters.bcnt);
-}
-
-static void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_handle *handle)
-{
-	const char *target;
-	printf("-A %s ", chain);
-	target = iptc_get_target(entry, handle);
-	printf("-j %s", target); 
-	printf("\n");
 }

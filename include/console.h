@@ -8,6 +8,8 @@
 #include <switch_cmd.h>
 #include <router_cmd.h>
 #include <firewall.h>
+#include <ipt_common.h>
+#include <nat.h>
 #include <hypervisor_cmd.h>
 
 #define MAX_COMMAND_NO 20

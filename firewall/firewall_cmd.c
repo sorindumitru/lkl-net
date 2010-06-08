@@ -10,7 +10,7 @@
 #include <console.h>
 
 static void print_header(const char *chain, struct iptc_handle *handle);
-static void print_entry(const struct ipt_entry *entry, struct iptc_handle *handle);
+static void print_entry(const char *chain, const struct ipt_entry *entry, struct iptc_handle *handle);
 
 int do_list_entries(struct params *params)
 {
@@ -27,7 +27,7 @@ int do_list_entries(struct params *params)
 		num = 0;
 		while (i) {
 			num++;
-			print_entry(i, handle);
+			print_entry(this, i, handle);
 			i = iptc_next_rule(i, handle);
 		}
 	}
@@ -78,7 +78,11 @@ static void print_header(const char *chain, struct iptc_handle *handle)
 	printf(" %ld packets, %ld bytes)\n", (long int) counters.pcnt, (long int) counters.bcnt);
 }
 
-static void print_entry(const struct ipt_entry *entry, struct iptc_handle *handle)
+static void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_handle *handle)
 {
-	printf("AAA\n\n");
+	const char *target;
+	printf("-A %s ", chain);
+	target = iptc_get_target(entry, handle);
+	printf("-j %s", target); 
+	printf("\n");
 }

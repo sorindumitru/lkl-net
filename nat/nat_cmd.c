@@ -1,6 +1,7 @@
 #include <nat.h>
 
-void do_nat(struct params params)
+int do_nat(struct params params)
 {
 	printf("NAT\n");
+	return 0;
 }

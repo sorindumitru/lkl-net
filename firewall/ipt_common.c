@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <config.h>
 #include <list.h>
@@ -9,6 +10,19 @@
 #include <asm/libiptc.h>
 #include <console.h>
 #include <ipt_common.h>
+
+struct argstruct *get_args(struct params *params)
+{
+	int i;
+	struct argstruct *args = malloc(sizeof(*args));
+	args->argc = params->count;
+	args->argv = malloc(args->argc*sizeof(char*));
+	for(i=0;i<args->argc;i++){
+		args->argv[i] = strdup(params->p[i]);
+	}
+
+	return args;
+}
 
 void print_header(const char *chain, struct iptc_handle *handle)
 {

@@ -13,8 +13,9 @@
 int do_filter(struct params *params)
 {
 	int i=0;
-	for(i=0;i<params->count;i++){
-		printf("%s ", params->p[i]);
+	struct argstruct *args = get_args(params);
+	for(i=0;i<args->argc;i++){
+		printf("%s ", args->argv[i]);
 	}
 	printf("\n");
 	return 0;

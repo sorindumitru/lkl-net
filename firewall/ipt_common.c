@@ -21,6 +21,8 @@ struct option global_options[] = {
 	{NULL},
 };
 
+char *ipt_ops_to_name[] = {"APPEND","REPLACE","DELETE","LIST","FLUSH"};
+
 struct argstruct *get_args(struct params *params)
 {
 	int i;

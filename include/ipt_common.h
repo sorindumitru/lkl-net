@@ -22,6 +22,8 @@ enum ipt_ops{
 	FLUSH
 };
 
+extern char *ipt_ops_to_name[];
+
 //filter and nat commands args
 struct iptargs{
 	char *table;

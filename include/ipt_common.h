@@ -44,7 +44,7 @@ struct iptargs{
 	char *in_if;
 	char *in_if_mask;
 	char *out_if;
-	char *out_if_msk;
+	char *out_if_mask;
 };
 
 struct iptc_target {
@@ -65,6 +65,7 @@ int do_flush_entries(struct iptargs *ipt);
 void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask);
 void print_header(const char *chain, struct iptc_handle *handle);
 void print_entry(const char *chain, const struct ipt_entry *entry, struct iptc_handle *handle);
-int ipt_parse_interface(char *arg, char *vianame, char *mask)
+int ipt_parse_interface(char *arg, char *vianame, char *mask);
+struct ipt_entry* iptargs_to_ipt_entry(struct iptargs *ipt);
 
 #endif /* IPT_COMMON_H_ */

@@ -70,7 +70,6 @@ int do_nat(struct params *params)
 	ipt->table = "nat";
 	ipt->chain = NULL;
 	optind = 1;
-	 struct xt_entry_target *
 	
 	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:o:i:")) != -1) {
 		printf("CC:%d %c\n", c, c);

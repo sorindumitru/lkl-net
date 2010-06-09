@@ -47,7 +47,7 @@ struct iptargs{
 	char *out_if_mask;
 };
 
-struct iptc_target {
+struct iptc_entry_match {//the struct xt_entry_match equivalent
 	unsigned short target_size;
 	char name[XT_FUNCTION_MAXNAMELEN];
 	unsigned char data[0];

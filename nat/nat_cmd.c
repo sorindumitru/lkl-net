@@ -108,8 +108,7 @@ int do_nat(struct params *params)
 				return 1;
 			break;
 		default:
-			
-			printf("Unrecognized option\n");
+			printf("Other option\n");
 			break;
 		}
 	}
@@ -119,7 +118,7 @@ int do_nat(struct params *params)
 	
 	switch (ipt->op) {
 	case APPEND:
-		//do_append_nat_entry(ipt);
+		do_append_nat_entry(ipt);
 		break;
 	case LIST:
 		do_list_entries(ipt);

@@ -45,7 +45,7 @@ void parse_ip(struct iptargs *ipt, char dest, char *addr)
 		inet_pton(AF_INET, address, &ipt->src);
 		ipt->src_mask = netmask;
 	} else {
-		inet_pton(AF_INET, address, &ipt->src);
+		inet_pton(AF_INET, address, &ipt->dst);
 		ipt->dst_mask = netmask;
 	}
 }
@@ -105,6 +105,8 @@ int do_list_entries(struct iptargs *ipt)
 			i = iptc_next_rule(i, handle);
 		}
 	}
+
+	iptc_free(handle);
 	
 	return 0;
 }
@@ -114,11 +116,12 @@ void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask)
 	char *address = malloc(32);
 	int netmask;
 	memset(address, 0, 32);
-	memset(netmask, 0, 32);
 	address = inet_ntop(AF_INET, (void*) &addr, address, 32);
 	netmask = addr_to_mask(mask.s_addr);
 	
 	printf("-%s %s/%d ", prefix, address, netmask);
+
+	free(address);
 }
 
 void print_header(const char *chain, struct iptc_handle *handle)
@@ -136,6 +139,7 @@ void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_h
 	printf("-A %s ", chain);
 	target = iptc_get_target(entry, handle);
 	print_ip("s", entry->ip.src, entry->ip.smsk);
+	print_ip("d", entry->ip.dst, entry->ip.dmsk);
 	printf("-j %s", target); 
 	printf("\n");
 }

@@ -34,6 +34,7 @@ int do_filter(struct params *params)
 	struct iptargs *ipt = malloc(sizeof(*ipt));
 	struct argstruct *args = get_args(params);
 	ipt->table = "filter";
+	ipt->flags = 0;
 	optind = 1;
 	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:")) != -1) {
 		switch(c) {
@@ -51,10 +52,11 @@ int do_filter(struct params *params)
 			break;
 		case 's':
 			parse_ip(ipt, 's', optarg);
-			ipt->flags &= SRC_F;
+			ipt->flags |= SRC_F;
 			break;
 		case 'd':
-			parse_ip(ipt, 'd', optarg); 
+			parse_ip(ipt, 'd', optarg);
+			ipt->flags |= DST_F;
 			break;
 		case 'j':
 			ipt->target = malloc(30);
@@ -86,12 +88,24 @@ int do_filter_append_entry(struct iptargs *ipt)
 	char *chain = ipt->chain;
 	struct ipt_entry *entry;
 	struct iptc_handle *handle = iptc_init("filter");
-	
+
 	size = sizeof(int) + iptc_entry_target_size();
 	entry = malloc(sizeof(struct ipt_entry)+size);
 	memset(entry, 0, sizeof(struct ipt_entry)+size);
-	entry->ip.src.s_addr = ipt->src.s_addr;
-	entry->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
+	if (ipt->flags & SRC_F) {
+		entry->ip.src.s_addr = ipt->src.s_addr;
+		entry->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
+	} else {
+		inet_pton(AF_INET,"0.0.0.0", &entry->ip.src);
+		inet_pton(AF_INET,"0.0.0.0", &entry->ip.smsk);
+	}
+	if (ipt->flags & DST_F) {
+		entry->ip.dst.s_addr = ipt->dst.s_addr;
+		entry->ip.dmsk.s_addr = mask_to_addr(ipt->dst_mask);
+	} else {
+		inet_pton(AF_INET,"0.0.0.0", &entry->ip.dst);
+		inet_pton(AF_INET,"0.0.0.0", &entry->ip.dmsk);
+	}
 	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
 	memcpy(entry->elems, &size, 2);
@@ -100,7 +114,6 @@ int do_filter_append_entry(struct iptargs *ipt)
 	
 	ret = iptc_append_entry(chain, entry, handle);
 	ret = iptc_commit(handle);
-	//iptc_free(handle);
-
+	iptc_free(handle);
 	return ret;
 }

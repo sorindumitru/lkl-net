@@ -50,6 +50,8 @@ unsigned int mask_to_addr(int mask);
 	
 int do_list_entries(struct iptargs *ipt);
 int do_flush_entries(struct iptargs *ipt);
+int do_delete_entry(struct iptargs *ipt);
+
 void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask);
 void print_header(const char *chain, struct iptc_handle *handle);
 void print_entry(const char *chain, const struct ipt_entry *entry, struct iptc_handle *handle);

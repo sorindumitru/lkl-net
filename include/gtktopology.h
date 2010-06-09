@@ -1,10 +1,9 @@
 #ifndef GTK_TOPOLOGY_H_
 #define GTK_TOPOLOGY_H_
 
-#include <list.h>
 #include <gtk/gtk.h>
 
-typedef struct _GtkTopology                 GtkTopolgy;
+typedef struct _GtkTopology                 GtkTopology;
 typedef struct _GtkTopologyClass            GtkTopologyClass;
 
 struct _GtkTopology {

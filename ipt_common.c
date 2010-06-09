@@ -11,6 +11,7 @@
 #include <console.h>
 #include <arpa/inet.h>
 #include <ipt_common.h>
+#include <linux/if.h>
 
 struct option global_options[] = {
 	{.name = "append",     .flag = NULL,        .has_arg = 1,  .val = 'A'},
@@ -170,4 +171,29 @@ void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_h
 	print_ip("d", entry->ip.dst, entry->ip.dmsk);
 	printf("-j %s", target); 
 	printf("\n");
+}
+
+int ipt_parse_interface(char *arg, char *vianame, char *mask)
+{
+	unsigned int vialen = strlen(arg);
+
+	mask = (char*)malloc(IFNAMSIZ);
+	vianame = (char*)malloc(IFNAMSIZ);
+	
+	memset(mask, 0, IFNAMSIZ);
+	memset(vianame, 0, IFNAMSIZ);
+	
+	if (vialen + 1 > IFNAMSIZ){
+		printf("Wrong name for via Interface\n");
+		return 1;
+	}
+	
+	strcpy(vianame, arg);
+	if (vialen == 0)
+		memset(mask, 0, IFNAMSIZ);
+	
+	memset(mask, 0xFF, vialen + 1);
+	memset(mask + vialen + 1, 0, IFNAMSIZ - vialen - 1);
+
+	return 0;
 }

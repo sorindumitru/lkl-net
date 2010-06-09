@@ -101,6 +101,7 @@ int do_list_entries(struct iptargs *ipt)
 		num = 0;
 		while (i) {
 			num++;
+			printf("%d\t | ", num);
 			print_entry(this, i, handle);
 			i = iptc_next_rule(i, handle);
 		}
@@ -108,6 +109,31 @@ int do_list_entries(struct iptargs *ipt)
 
 	iptc_free(handle);
 	
+	return 0;
+}
+
+int do_flush_entries(struct iptargs *ipt)
+{
+	struct iptc_handle *handle;
+	handle = iptc_init(ipt->table);
+	if (!ipt->chain){
+		char *this;
+		for (this=iptc_first_chain(handle); this; this=iptc_next_chain(handle)) {
+			iptc_flush_entries(this, handle);
+		}
+	} else {
+		iptc_flush_entries(ipt->chain, handle);
+	}
+
+	iptc_commit(handle);
+	iptc_free(handle);
+	 
+	return 0;
+}
+
+int do_delete_entry(struct iptargs *ipt)
+{
+	struct iptc_handle *handle;
 	return 0;
 }
 

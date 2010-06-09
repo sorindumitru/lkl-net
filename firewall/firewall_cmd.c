@@ -34,19 +34,29 @@ int do_filter(struct params *params)
 	struct iptargs *ipt = malloc(sizeof(*ipt));
 	struct argstruct *args = get_args(params);
 	ipt->table = "filter";
+	ipt->chain = NULL;
 	ipt->flags = 0;
 	optind = 1;
-	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:")) != -1) {
+	while ((c = getopt(args->argc, args->argv, "-A:F::D:L::s:d:j:")) != -1) {
 		switch(c) {
 		case 'A':
 			ipt->chain = optarg;
 			ipt->op = APPEND;
 			break;
+		case 'F':
+			if (optarg) {
+				ipt->chain = optarg;
+			}
+			ipt->op = FLUSH;
+			break;
+		case 'D':
+			ipt->chain = optarg;
+			ipt->rulenum = strtoul(argv[optind++], NULL, 10);
+			ipt->op = DELETE;
+			break;
 		case 'L':
 			if (optarg) {
 				ipt->chain = strdup(optarg);
-			} else {
-				ipt->chain = NULL;
 			}
 			ipt->op = LIST;
 			break;
@@ -71,6 +81,12 @@ int do_filter(struct params *params)
 	switch (ipt->op) {
 	case APPEND:
 		do_filter_append_entry(ipt);
+		break;
+	case DELETE:
+		do_delete_entry(ipt);
+		break;
+	case FLUSH:
+		do_flush_entries(ipt);
 		break;
 	case LIST:
 		do_list_entries(ipt);

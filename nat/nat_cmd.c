@@ -15,6 +15,12 @@
 #include <ipt_common.h>
 #include <nat.h>
 
+#define IPT_SNAT_OPT_SOURCE 0x01
+
+static const struct option NAT_opts[] = {
+	{ "to-source", 1, NULL, '1' },
+	{ "to-destination", 1, NULL, '2' },
+};
 
 int do_append_nat_entry(struct iptargs *ipt);
 
@@ -65,7 +71,7 @@ int do_nat(struct params *params)
 	ipt->chain = NULL;
 	optind = 1;
 	
-	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:")) != -1) {
+	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:o:i:")) != -1) {
 		printf("CC:%d %c\n", c, c);
 		switch(c) {
 		case 'A':
@@ -93,7 +99,16 @@ int do_nat(struct params *params)
 			}
 			ipt->target = strdup(optarg);
 			break;
+		case 'o':
+			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
+				return 1;
+			break;
+		case 'i':
+			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
+				return 1;
+			break;
 		default:
+			
 			printf("Unrecognized option\n");
 			break;
 		}

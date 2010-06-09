@@ -11,6 +11,7 @@
 #include <console.h>
 #include <arpa/inet.h>
 #include <ipt_common.h>
+#include <linux/if.h>
 
 struct option global_options[] = {
 	{.name = "append",     .flag = NULL,        .has_arg = 1,  .val = 'A'},
@@ -18,6 +19,8 @@ struct option global_options[] = {
 	{.name = "src",        .flag = NULL,        .has_arg = 1,  .val = 's'},
 	{.name = "dst",        .flag = NULL,        .has_arg = 1,  .val = 'd'},
 	{.name = "jump",       .flag = NULL,        .has_arg = 1,  .val = 'j'},
+	{.name = "in_if",      .flag = NULL,        .has_arg = 1,  .val = 'i'},
+	{.name = "out_if",     .flag = NULL,        .has_arg = 1,  .val = '0'}, 	
 	{NULL},
 };
 
@@ -169,3 +172,43 @@ void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_h
 	printf("-j %s", target); 
 	printf("\n");
 }
+
+int ipt_parse_interface(char *arg, char *vianame, char *mask)
+{
+	unsigned int vialen = strlen(arg);
+
+	mask = (char*)malloc(IFNAMSIZ);
+	vianame = (char*)malloc(IFNAMSIZ);
+	
+	memset(mask, 0, IFNAMSIZ);
+	memset(vianame, 0, IFNAMSIZ);
+	
+	if (vialen + 1 > IFNAMSIZ){
+		printf("Wrong name for via Interface\n");
+		return 1;
+	}
+	
+	strcpy(vianame, arg);
+	if (vialen == 0)
+		memset(mask, 0, IFNAMSIZ);
+	
+	memset(mask, 0xFF, vialen + 1);
+	memset(mask + vialen + 1, 0, IFNAMSIZ - vialen - 1);
+
+	return 0;
+}
+
+struct ipt_entry* iptargs_to_ipt_entry(struct iptargs *ipt)
+{
+	struct ipt_entry *e = malloc(sizeof(struct ipt_entry));
+	memset(e,0,sizeof(struct ipt_entry));
+	e->ip.src = ipt->src;
+	e->ip.dst = ipt->dst;
+	e->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
+	e->ip.dmsk.s_addr = mask_to_addr(ipt->dst_mask);
+	memcpy(e->ip.iniface,ipt->in_if,IFNAMSIZ);
+	memcpy(e->ip.outiface,ipt->out_if,IFNAMSIZ);
+	memcpy(e->ip.iniface_mask,ipt->in_if_mask,IFNAMSIZ);
+	memcpy(e->ip.outiface_mask,ipt->out_if_mask,IFNAMSIZ);
+	return e;
+} 

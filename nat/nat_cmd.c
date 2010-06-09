@@ -62,16 +62,16 @@ static int check_ipt_command(struct iptargs *ipt)
 
 int do_nat(struct params *params)
 {
-	int c;
+	int c,optindex;
 	int i=0;
-	struct iptargs *ipt = malloc(sizeof(*ipt));
+	struct iptargs *ipt = malloc(sizeof(struct iptargs));
 	struct argstruct *args = get_args(params);
-	memset(ipt,0,sizeof(ipt));
+	memset(ipt,0,sizeof(struct iptargs));
 	ipt->table = "nat";
 	ipt->chain = NULL;
 	optind = 1;
 	
-	while ((c = getopt(args->argc, args->argv, "-A:L::s:d:j:o:i:")) != -1) {
+	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:o:i:",global_options,&optindex)) != -1) {
 		printf("CC:%d %c\n", c, c);
 		switch(c) {
 		case 'A':
@@ -119,7 +119,7 @@ int do_nat(struct params *params)
 	
 	switch (ipt->op) {
 	case APPEND:
-		do_append_nat_entry(ipt);
+		//do_append_nat_entry(ipt);
 		break;
 	case LIST:
 		do_list_entries(ipt);

@@ -11,7 +11,10 @@
 #include <console.h>
 #include <arpa/inet.h>
 #include <ipt_common.h>
-#include <linux/if.h>
+
+#ifndef IFNAMSIZ
+#define IFNAMSIZ	16
+#endif
 
 struct option global_options[] = {
 	{.name = "append",     .flag = NULL,        .has_arg = 1,  .val = 'A'},

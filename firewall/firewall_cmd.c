@@ -51,7 +51,7 @@ int do_filter(struct params *params)
 			break;
 		case 'D':
 			ipt->chain = optarg;
-			ipt->rulenum = strtoul(argv[optind++], NULL, 10);
+			ipt->rulenum = strtoul(args->argv[optind++], NULL, 10);
 			ipt->op = DELETE;
 			break;
 		case 'L':

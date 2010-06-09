@@ -38,7 +38,9 @@ struct iptargs{
 	struct in_addr src;
 	struct in_addr dst;
 	long src_mask;
-	long dst_mask;	
+	long dst_mask;
+	char *in_if;
+	char *out_if;	
 };
 
 extern struct option global_options[];

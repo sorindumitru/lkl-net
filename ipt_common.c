@@ -18,6 +18,8 @@ struct option global_options[] = {
 	{.name = "src",        .flag = NULL,        .has_arg = 1,  .val = 's'},
 	{.name = "dst",        .flag = NULL,        .has_arg = 1,  .val = 'd'},
 	{.name = "jump",       .flag = NULL,        .has_arg = 1,  .val = 'j'},
+	{.name = "in_if",      .flag = NULL,        .has_arg = 1,  .val = 'i'},
+	{.name = "out_if",     .flag = NULL,        .has_arg = 1,  .val = '0'}, 	
 	{NULL},
 };
 

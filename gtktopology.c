@@ -118,7 +118,7 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 	cairo_select_font_face(cairo, "Monospace",
 			       CAIRO_FONT_SLANT_NORMAL,
 			       CAIRO_FONT_WEIGHT_BOLD);
-	cairo_move_to(cairo, device->x - 24, device->y + 48);
+	cairo_move_to(cairo, device->x - 28, device->y + 5);
 	if (device->hostname) {
 		cairo_show_text(cairo, device->hostname);
 	} else {

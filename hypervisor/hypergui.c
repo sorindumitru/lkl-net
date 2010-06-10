@@ -187,8 +187,7 @@ int init_gui()
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
 
 	//Toolbar
-	toolbar = gtk_toolbar_new();
-	//gtk_box_pack_start(GTK_CONTAINER(root), GTK_WIDGET(toolbar), FALSE, FALSE, 10);
+	toolbar = gtk_toolbar_new();	//gtk_box_pack_start(GTK_CONTAINER(root), GTK_WIDGET(toolbar), FALSE, FALSE, 10);
 	// Boot button
 	boot = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
 	gtk_signal_connect(GTK_OBJECT(boot), "clicked", G_CALLBACK(callback_boot), NULL);

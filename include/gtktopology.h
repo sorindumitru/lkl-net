@@ -9,12 +9,26 @@ typedef struct _GtkTopologyClass            GtkTopologyClass;
 typedef struct _GtkTopologyDevice           GtkTopologyDevice;
 typedef struct _GtkTopologyLink             GtkTopologyLink;
 
+#define QUAD_TREE_NODE_THRESHOLD            8 // maximum elements in node;
+
+/**
+ * Quad tree data structure for easy finding
+ * of devices on click or mouse move
+ */
+typedef struct quad_tree {
+	unsigned int count;
+	struct list_head elements;
+	struct quad_tree *children[4];
+} QuadTree;
+
 struct _GtkTopology {
 	GtkDrawingArea parent;
 
 	/**
 	 * Devices that are to be shown on the topology
+	 * Held both as quad_tree and as list for easy access
 	 */
+	QuadTree *device_tree;
 	struct list_head devices;
 };
 

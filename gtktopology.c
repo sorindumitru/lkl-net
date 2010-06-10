@@ -1,5 +1,7 @@
 #include <gtktopology.h>
 
+#define GRID_SPACING          16
+
 G_DEFINE_TYPE (GtkTopology, gtk_topology, GTK_TYPE_DRAWING_AREA);
 
 static gboolean gtk_topology_expose (GtkWidget *topology, GdkEventExpose *event);
@@ -25,22 +27,48 @@ GtkWidget* gtk_topology_new(void)
 
 static void draw(GtkWidget* topology, cairo_t *cairo)
 {
+	int i, max;
 	int width = topology->allocation.width;
 	int height = topology->allocation.height;
-	cairo_set_source_rgb(cairo, 1, 1, 1);
+	cairo_set_source_rgb(cairo, 0.9, 0.95, 1);
 	cairo_rectangle(cairo, 0, 0, width, height);
 	cairo_fill(cairo);
+
+	max = width < height ? height : width;
+	cairo_set_line_width (cairo, 0.5);
+	cairo_set_source_rgb(cairo, 0, 0, 0);
+	for (i=0;i<max;i+= GRID_SPACING) {
+		if (i < width) {
+			cairo_move_to(cairo, i, 0);
+			cairo_line_to(cairo, i, height);
+		}
+
+		if (i < height) {
+			cairo_move_to(cairo, 0, i);
+			cairo_line_to(cairo, width, i);
+		}
+	}
+	cairo_stroke(cairo);
 }
 
-static gboolean gtk_topology_expose(GtkWidget *topology, GdkEventExpose *event)
+static gboolean gtk_topology_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	cairo_t *cairo;
+	struct list_head *head;
+	GtkTopology *topology = GTK_TOPOLOGY(widget);
 
-	cairo =  gdk_cairo_create(topology->window);
+	cairo =  gdk_cairo_create(widget->window);
 
 	draw(topology, cairo);
 
 	cairo_destroy(cairo);
+
+	list_for_each(head, &topology->devices) {
+		GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, list);
+		if (device->draw) {
+			device->draw(device, topology, cairo);
+		}
+	}
 	
 	return FALSE;
 }

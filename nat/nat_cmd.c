@@ -103,7 +103,7 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 		printf("interval\n");
 		*dash = '\0';
 	}
-
+	printf("i'm here1\n");
 	ip->s_addr =inet_addr(arg);
 	printf("i'm here\n");
 	if (!ip)

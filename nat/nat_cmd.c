@@ -237,13 +237,15 @@ int do_append_nat_entry(struct iptargs *ipt,struct iptc_xtables_target *target)
 	struct iptc_handle *handle = iptc_init(ipt->table);
 	size = sizeof(struct iptc_entry_match)+sizeof(struct iptc_nf_nat_multi_range);
 	entry = malloc(sizeof(struct ipt_entry)+size);
-	entry->target_offset = sizeof(struct ipt_entry)+sizeof(struct iptc_entry_match);
+	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
-	memcpy(entry->elems, target->t, sizeof(*target->t));
+	memcpy(entry->elems, target->t, size);
 	entry->ip.invflags = 0x77;
 	
 	ret = iptc_append_entry(chain, entry, handle);
+	printf("ERROR %d %s\n", ret, iptc_strerror(0));
 	ret = iptc_commit(handle);
+	printf("ERROR %d %s\n", ret, iptc_strerror(0));
 	iptc_free(handle);
 	return ret;
 }

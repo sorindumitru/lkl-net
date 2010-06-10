@@ -182,6 +182,7 @@ unsigned int port;
 
 int init_gui()
 {
+	GtkWidget *table = gtk_table_new(12, 6, TRUE);;
 	GtkWidget *root = gtk_vbox_new(FALSE, 10);
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
 
@@ -207,10 +208,12 @@ int init_gui()
 
 	init_device_list(topology);
 	init_canvas(topology);
-	
-	gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(toolbar));
-	gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(topology));
-	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(root));
+
+	gtk_table_attach(GTK_TABLE(table), toolbar, 0, 6, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+	//gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(toolbar));
+	gtk_table_attach(GTK_TABLE(table), topology, 0, 6, 1, 12, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+	//gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(topology));
+	gtk_container_add(GTK_CONTAINER(window), table);
 	return 0;
 }
 

@@ -229,8 +229,13 @@ void on_changed(GtkWidget *widget, gpointer label)
 
 void init_canvas(GtkWidget *box)
 {
+	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(scrolled_window), 10);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
         topology = gtk_topology_new();
-	gtk_container_add(GTK_CONTAINER(box), topology);
+	gtk_widget_set_size_request(topology,800,600);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), topology);
+	gtk_container_add(GTK_CONTAINER(box), scrolled_window);
 }
 
 void init_device_list(GtkWidget *box)

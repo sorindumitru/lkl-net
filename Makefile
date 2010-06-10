@@ -185,7 +185,8 @@ bin/hypervisor: $(CONF_OBJ) $(HYPERVISOR_OBJ)
 bin/hypergui: $(CONF_OBJ) $(HYPERVISOR_OBJ) hypervisor/hypergui.o
 	$(CC) $(CFLAGS) -c console.c -DISHYPERVISOR -o console.o
 	$(CC) $(CFLAGS) -c interface.c -o interface.o
-	$(CC) $(CFLAGS) -o bin/hypergui $(CONF_OBJ) $(HYPERGUI_OBJ) $(LDLIBS) -DISHYPERVISOR=1 hypervisor/hypergui.o `pkg-config --cflags gtk+-2.0 goocanvas` `pkg-config --libs gtk+-2.0 goocanvas`	
+	$(CC) $(CFLAGS) -c gtktopology.c -o gtktopology.o `pkg-config --cflags gtk+-2.0` `pkg-config --libs gtk+-2.0`
+	$(CC) $(CFLAGS) -o bin/hypergui $(CONF_OBJ) $(HYPERGUI_OBJ) $(LDLIBS) gtktopology.o -DISHYPERVISOR=1 hypervisor/hypergui.o `pkg-config --cflags gtk+-2.0 goocanvas` `pkg-config --libs gtk+-2.0 goocanvas`	
 # }
 
 # Test {

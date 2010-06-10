@@ -6,8 +6,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define XT_FUNCTION_MAXNAMELEN 30
-#define VERSION "1.0"
+#ifndef IFNAMSIZ
+#define IFNAMSIZ   16
+#endif
 
 struct ipt_entry;
 struct iptc_handle;
@@ -42,79 +43,10 @@ struct iptargs{
 	struct in_addr dst;
 	long src_mask;
 	long dst_mask;
-	char *in_if;
-	char *in_if_mask;
-	char *out_if;
-	char *out_if_mask;
-};
-
-struct iptc_entry_match {//the struct xt_entry_match& struct xt_entry_target equivalent
-	unsigned short target_size;
-	char name[XT_FUNCTION_MAXNAMELEN];
-	unsigned char data[0];
-};
-
-union iptc_nf_conntrack_man_proto
-{
-	/* Add other protocols here. */
-	unsigned short all;
-	struct {
-		unsigned short port;
-	} tcp;
-	struct {
-		unsigned short port;
-	} udp;
-	struct {
-		unsigned short id;
-	} icmp;
-	struct {
-		unsigned short port;
-	} dccp;
-	struct {
-		unsigned short port;
-	} sctp;
-	struct {
-		unsigned short key;	/* GRE key is 32bit, PPtP only uses 16bit */
-	} gre;
-};
-
-struct iptc_nf_nat_range //nf_nat_range
-{
-	/* Set to OR of flags above. */
-	unsigned int flags;
-
-	/* Inclusive: network order. */
-	unsigned int min_ip, max_ip;
-
-	/* Inclusive: network order */
-	union iptc_nf_conntrack_man_proto min, max;
-};
-
-struct iptc_xtables_target{
-	char *version;
-	struct iptc_xtables_target *next;
-	char *name;
-	size_t size;/* Size of target data. */
-	size_t userspacesize;/* Size of target data relevent for userspace comparison purposes */
-	unsigned int option_offset;
-	struct iptc_entry_match *t; //xt_entry_target *t;
-	unsigned int tflags;
-	unsigned int used;
-	//unsigned int loaded; /* simulate loading so options are merged properly */
-};
-
-struct iptc_nf_nat_multi_range
-{
-	unsigned int rangesize; /* Must be 1. */
-
-	/* hangs off end. */
-	struct iptc_nf_nat_range range[1];
-};
-
-struct iptc_ipt_natinfo
-{
-	struct iptc_entry_match t;
-	struct iptc_nf_nat_multi_range mr;
+	char in_if[IFNAMSIZ];
+	char in_if_mask[IFNAMSIZ];
+	char out_if[IFNAMSIZ];
+	char out_if_mask[IFNAMSIZ];
 };
 
 extern struct option global_options[];

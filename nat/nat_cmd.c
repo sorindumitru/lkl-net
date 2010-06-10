@@ -23,19 +23,17 @@ struct _xt_align {
 };
 #define XT_ALIGN(s) (((s) + (__alignof__(struct _xt_align)-1)) 	\
 			& ~(__alignof__(struct _xt_align)-1))
+
 #define IP_NAT_RANGE_MAP_IPS 3
 #define IP_NAT_RANGE_PROTO_SPECIFIED 5
-
 #define IPT_SNAT_OPT_SOURCE 0x01
 
-#define XT_ALIGN(s) (((s) + (__alignof__(struct _xt_align)-1)) 	\
-			& ~(__alignof__(struct _xt_align)-1))
 static const struct option NAT_opts[] = {
 	{ "to-source", 1, NULL, 'S' },
 	{ "to-destination", 1, NULL, 'D' },
 };
 
-int do_append_nat_entry(struct iptargs *ipt,struct iptc_xtables_target *target);
+int do_append_nat_entry(struct iptargs *ipt,struct nat_xt_entry_target *target);
 
 //check validity of command
 static int check_ipt_command(struct iptargs *ipt)
@@ -73,7 +71,7 @@ static int check_ipt_command(struct iptargs *ipt)
 	return 0;
 }
 
-static struct iptc_ipt_natinfo *append_range(struct iptc_ipt_natinfo *info, const struct iptc_nf_nat_range *range)
+static struct nat_ipt_natinfo *append_range(struct nat_ipt_natinfo *info, const struct nat_nf_nat_range *range)
 {
 	unsigned int size;
 
@@ -90,19 +88,20 @@ static struct iptc_ipt_natinfo *append_range(struct iptc_ipt_natinfo *info, cons
 	return info;
 }
 
-static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_natinfo *info)
+static struct nat_xt_entry_target *parse_to(char *arg,struct nat_ipt_natinfo *info)
 {
-	struct iptc_nf_nat_range range;
+	struct nat_nf_nat_range range;
 	char *dash, *error;
 	struct in_addr *ip = (struct in_addr*)malloc(sizeof(struct in_addr));
 	char *addr,*addr1;
+
 	memset(&range, 0, sizeof(range));
 	
 	range.flags |= IP_NAT_RANGE_MAP_IPS;
 	dash = strchr(arg, '-');
 	if (dash){
 		addr = strdup(strtok(arg,"-"));
-		addr1 = strdup(strtok(arg,NULL));
+		addr1 = strdup(strtok(NULL,"\0"));
 	}else
 		addr = strdup(arg);
 	
@@ -117,19 +116,21 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 		range.max_ip = ip->s_addr;
 	} else
 		range.max_ip = range.min_ip;
+
 	free(addr);
 	if (dash)
 		free(addr1);
+
 	return &(append_range(info, &range)->t);
 }
 
-static int NAT_target_parse(char c,char *to_address,struct iptc_entry_match **target)
+static int NAT_target_parse(char c,char *to_address,struct nat_xt_entry_target **target)
 {
-	struct iptc_ipt_natinfo *info = (void *)*target;
-	int portok = 1;
+	struct nat_ipt_natinfo *info = (void *)*target;
+
 	switch (c) {
 		case 'S':
-			*target = parse_to(to_address, portok, info);
+			*target = parse_to(to_address, info);
 			return 1;
 		default:
 			return 0;
@@ -142,7 +143,8 @@ int do_nat(struct params *params)
 	int i=0;
 	struct iptargs *ipt = malloc(sizeof(struct iptargs));
 	struct argstruct *args = get_args(params);
-	struct iptc_xtables_target *target;
+	struct nat_xt_entry_target *target;
+
 	struct ipt_entry *fw,*e=NULL;
 	memset(ipt,0,sizeof(struct iptargs));
 	ipt->table = "nat";
@@ -181,14 +183,11 @@ int do_nat(struct params *params)
 			ipt->target = strdup(optarg);
 			if ((optarg)&&(strcmp(optarg,"SNAT")==0||strcmp(optarg,"DNAT")==0)){
 				size_t size;
-				target = malloc(sizeof(struct iptc_xtables_target));
-				memset(target,0,sizeof(struct iptc_xtables_target));
-				target->name = strdup(optarg);
-				target->version = strdup(VERSION);
-				target->size = IPT_ALIGN(sizeof(struct iptc_nf_nat_range));
-
-				size = IPT_ALIGN(sizeof(struct iptc_entry_match))+ target->size;
-				target->t = calloc(1, size);
+				target = malloc(sizeof(struct nat_xt_entry_target));
+				memset(target,0,sizeof(struct nat_xt_entry_target));
+				if ( strlen(optarg)<XT_FUNCTION_MAXNAMELEN-1)
+					memcpy(target->name,optarg,strlen(optarg));
+				//TODO fill size & data
 			}
 			break;
 		case 'o':
@@ -201,7 +200,8 @@ int do_nat(struct params *params)
 			break;
 		case 'S' :
 			printf("SNAT c=%c,optarg=%s\n",c,optarg);
-			NAT_target_parse(c,optarg,&target->t);
+			if(!NAT_target_parse(c,optarg,&target))
+				printf(">>>>>>NAT_target_parse error\n");
 			break;
 		case 'D' :
 			printf("DNAT\n");
@@ -228,24 +228,33 @@ int do_nat(struct params *params)
 	return 0;
 }
 
-int do_append_nat_entry(struct iptargs *ipt,struct iptc_xtables_target *target)
+int do_append_nat_entry(struct iptargs *ipt,struct nat_xt_entry_target *target)
 {
 	int ret;
 	unsigned short size;
+
 	char *chain = ipt->chain;
+
 	struct ipt_entry *entry;
 	struct iptc_handle *handle = iptc_init(ipt->table);
-	size = sizeof(struct iptc_entry_match)+sizeof(struct iptc_nf_nat_multi_range);
+	size = sizeof(*target);
+
 	entry = malloc(sizeof(struct ipt_entry)+size);
+	iptargs_to_ipt_entry(ipt,entry);
 	entry->target_offset = sizeof(struct ipt_entry);
-	entry->next_offset = size+sizeof(struct ipt_entry);
-	memcpy(entry->elems, target->t, size);
-	entry->ip.invflags = 0x77;
-	
+	//entry->next_offset = size+sizeof(struct ipt_entry);
+	memcpy(entry->elems, target, size);
+	entry->ip.invflags = 0x08;
 	ret = iptc_append_entry(chain, entry, handle);
-	printf("ERROR %d %s\n", ret, iptc_strerror(0));
+	if (ret)
+		printf("Append successfully\n");
+	else 
+		printf("ERROR %d %s\n", ret, iptc_strerror(ret));
 	ret = iptc_commit(handle);
-	printf("ERROR %d %s\n", ret, iptc_strerror(0));
+	if (ret)
+		printf("Commit successfully\n");
+	else 
+		printf("ERROR %d %s\n", ret, iptc_strerror(ret));
 	iptc_free(handle);
 	return ret;
 }

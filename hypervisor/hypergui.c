@@ -182,8 +182,8 @@ unsigned int port;
 
 int init_gui()
 {
-	GtkWidget *table = gtk_table_new(12, 6, TRUE);;
-	GtkWidget *root = gtk_vbox_new(FALSE, 10);
+	GtkWidget *table = gtk_table_new(12, 12, TRUE);
+	GtkWidget *root = gtk_hpaned_new();
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
 
 	//Toolbar
@@ -209,10 +209,9 @@ int init_gui()
 	init_device_list(topology);
 	init_canvas(topology);
 
-	gtk_table_attach(GTK_TABLE(table), toolbar, 0, 6, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
-	//gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(toolbar));
-	gtk_table_attach(GTK_TABLE(table), topology, 0, 6, 1, 12, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-	//gtk_container_add(GTK_CONTAINER(root), GTK_WIDGET(topology));
+	gtk_table_attach(GTK_TABLE(table), toolbar, 0, 12, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), topology, 2, 10, 1, 12, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), device_list, 10, 12, 1, 12, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 	gtk_container_add(GTK_CONTAINER(window), table);
 	return 0;
 }
@@ -236,9 +235,10 @@ void init_canvas(GtkWidget *box)
 	gtk_container_set_border_width(GTK_CONTAINER(scrolled_window), 10);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
         topology = gtk_topology_new();
-	gtk_widget_set_size_request(topology,800,600);
+	gtk_widget_set_size_request(topology,2560,2048);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), topology);
 	gtk_container_add(GTK_CONTAINER(box), scrolled_window);
+	gtk_topology_add_device(GTK_TOPOLOGY(topology), gtk_topology_new_router());
 }
 
 void init_device_list(GtkWidget *box)
@@ -249,7 +249,6 @@ void init_device_list(GtkWidget *box)
 
 	device_list = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(device_list), TRUE);
-	gtk_box_pack_start(GTK_BOX(box), device_list, TRUE, TRUE, 10);
 
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("Devices", renderer, "text", LIST_ITEM, NULL);

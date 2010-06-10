@@ -1,7 +1,7 @@
 CC=gcc
 FLEX=flex
 CFLAGS=-g -Wall -Ilklinclude -Iinclude
-LDLIBS=-pthread -lreadline
+LDLIBS=-pthread -lreadline -lm
 
 # Environment {
 

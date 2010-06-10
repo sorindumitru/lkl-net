@@ -201,10 +201,9 @@ int ipt_parse_interface(char *arg, char *vianame, char *mask)
 	return 0;
 }
 
-struct ipt_entry* iptargs_to_ipt_entry(struct iptargs *ipt)
+void iptargs_to_ipt_entry(struct iptargs *ipt,struct ipt_entry *e)
 {
-	struct ipt_entry *e = malloc(sizeof(struct ipt_entry));
-	memset(e,0,sizeof(struct ipt_entry));
+	memset(e,0,sizeof(*e));
 	e->ip.src = ipt->src;
 	e->ip.dst = ipt->dst;
 	e->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
@@ -213,5 +212,4 @@ struct ipt_entry* iptargs_to_ipt_entry(struct iptargs *ipt)
 	memcpy(e->ip.outiface,ipt->out_if,IFNAMSIZ);
 	memcpy(e->ip.iniface_mask,ipt->in_if_mask,IFNAMSIZ);
 	memcpy(e->ip.outiface_mask,ipt->out_if_mask,IFNAMSIZ);
-	return e;
 } 

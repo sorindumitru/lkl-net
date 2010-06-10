@@ -183,8 +183,9 @@ int do_nat(struct params *params)
 			ipt->target = strdup(optarg);
 			if ((optarg)&&(strcmp(optarg,"SNAT")==0||strcmp(optarg,"DNAT")==0)){
 				size_t size;
-				target = malloc(sizeof(struct nat_xt_entry_target));
-				memset(target,0,sizeof(struct nat_xt_entry_target));
+				size = IPT_ALIGN(sizeof(struct nat_xt_entry_target));
+				target = malloc(size);
+				memset(target,0,size);
 				if ( strlen(optarg)<XT_FUNCTION_MAXNAMELEN-1)
 					memcpy(target->name,optarg,strlen(optarg));
 				//TODO fill size & data
@@ -239,12 +240,14 @@ int do_append_nat_entry(struct iptargs *ipt,struct nat_xt_entry_target *target)
 	struct iptc_handle *handle = iptc_init(ipt->table);
 	size = sizeof(*target);
 
-	entry = malloc(sizeof(struct ipt_entry)+size);
+	entry = malloc(sizeof(struct ipt_entry)+size+sizeof(unsigned short));
 	iptargs_to_ipt_entry(ipt,entry);
-	entry->target_offset = sizeof(struct ipt_entry);
-	//entry->next_offset = size+sizeof(struct ipt_entry);
-	memcpy(entry->elems, target, size);
-	entry->ip.invflags = 0x08;
+	memcpy(entry->elems, &size, sizeof(unsigned short));
+	memcpy(entry->elems+sizeof(unsigned short), target, size);
+	
+	entry->target_offset = sizeof(struct ipt_entry)+sizeof(unsigned short);
+	entry->next_offset = entry->target_offset + sizeof(*target);
+	//entry->ip.invflags = 0x08;
 	ret = iptc_append_entry(chain, entry, handle);
 	if (ret)
 		printf("Append successfully\n");

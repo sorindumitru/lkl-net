@@ -95,16 +95,17 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 	struct iptc_nf_nat_range range;
 	char *dash, *error;
 	struct in_addr *ip;
-
 	memset(&range, 0, sizeof(range));
-
+	
 	range.flags |= IP_NAT_RANGE_MAP_IPS;
 	dash = strchr(arg, '-');
-
-	if (dash)
+	if (dash){
+		printf("interval\n");
 		*dash = '\0';
+	}
 
 	ip->s_addr =inet_addr(arg);
+	printf("i'm here\n");
 	if (!ip)
 		printf("Wrong source address\n");
 	range.min_ip = ip->s_addr;
@@ -119,16 +120,13 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 	return &(append_range(info, &range)->t);
 }
 
-static int NAT_target_parse(int c, struct iptc_entry_match **target,char *to_address)
+static int NAT_target_parse(char c,char *to_address,struct iptc_entry_match **target)
 {
-	//struct iptc_ipt_natinfo *info = (void *)*target;
+	struct iptc_ipt_natinfo *info = (void *)*target;
 	int portok = 1;
-	printf(">>>>>>>>>>>target c=%s<<<<<<<<<<<<<\n",c);
-	
 	switch (c) {
 		case 'S':
-			printf(">>>>>>>>>>>SNAT target<<<<<<<<<<<<<\n");
-			//*target = parse_to(optarg, portok, info);
+			*target = parse_to(to_address, portok, info);
 			return 1;
 		default:
 			return 0;
@@ -189,6 +187,7 @@ int do_nat(struct params *params)
 				size = IPT_ALIGN(sizeof(struct iptc_entry_match))+ target->size;
 				target->t = calloc(1, size);
 			}
+			printf("out of target\n");
 			break;
 		case 'o':
 			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
@@ -199,14 +198,14 @@ int do_nat(struct params *params)
 				return 1;
 			break;
 		case 'S' :
-			printf("SNAT c=%c\n");
-			NAT_target_parse(c,&target->t,optarg);
+			printf("SNAT c=%c,optarg=%s\n",c,optarg);
+			NAT_target_parse(c,optarg,&target->t);
 			break;
 		case 'D' :
 			printf("DNAT\n");
 			break;
 		default:
-			printf("not recognized\n");
+			printf("not recognized\n");NAT_target_parse(c,optarg,&target->t);
 			break;
 		}
 	}
@@ -216,6 +215,7 @@ int do_nat(struct params *params)
 	
 	switch (ipt->op) {
 	case APPEND:
+		printf("here\n");
 		do_append_nat_entry(ipt,target);
 		break;
 	case LIST:

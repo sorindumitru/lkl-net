@@ -48,7 +48,14 @@ struct argstruct *get_args(struct params *params)
 void parse_ip(struct iptargs *ipt, char dest, char *addr)
 {
 	char *address = strtok(addr,"/");
-	int netmask = atoi(strtok(NULL, "/"));
+	int netmask;
+	printf("address=%s\n",address);
+	if (strlen(address) == strlen(addr))
+		netmask = 32;
+	else
+		netmask = atoi(strtok(NULL, "/"));
+
+	printf("netmask=%d\n",netmask);
 	if (dest == 's') {
 		inet_pton(AF_INET, address, &ipt->src);
 		ipt->src_mask = netmask;
@@ -199,7 +206,6 @@ int ipt_parse_interface(char *arg, char *vianame, char *mask)
 	
 	memset(mask, 0xFF, vialen + 1);
 	memset(mask + vialen + 1, 0, IFNAMSIZ - vialen - 1);
-
 	return 0;
 }
 

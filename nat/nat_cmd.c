@@ -94,23 +94,24 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 {
 	struct iptc_nf_nat_range range;
 	char *dash, *error;
-	struct in_addr *ip;
+	struct in_addr *ip = (struct in_addr*)malloc(sizeof(struct in_addr));
+	char *addr,*addr1;
 	memset(&range, 0, sizeof(range));
 	
 	range.flags |= IP_NAT_RANGE_MAP_IPS;
 	dash = strchr(arg, '-');
 	if (dash){
-		printf("interval\n");
-		*dash = '\0';
-	}
-	printf("i'm here1\n");
-	ip->s_addr =inet_addr(arg);
-	printf("i'm here\n");
+		addr = strdup(strtok(arg,"-"));
+		addr1 = strdup(strtok(arg,NULL));
+	}else
+		addr = strdup(arg);
+	
+	ip->s_addr =inet_addr(addr);
 	if (!ip)
 		printf("Wrong source address\n");
 	range.min_ip = ip->s_addr;
 	if (dash) {
-		ip = inet_addr(dash+1);
+		ip = inet_addr(addr1);
 		if (!ip)
 			printf("Wrong source address\n");
 		range.max_ip = ip->s_addr;
@@ -187,7 +188,6 @@ int do_nat(struct params *params)
 				size = IPT_ALIGN(sizeof(struct iptc_entry_match))+ target->size;
 				target->t = calloc(1, size);
 			}
-			printf("out of target\n");
 			break;
 		case 'o':
 			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
@@ -215,7 +215,6 @@ int do_nat(struct params *params)
 	
 	switch (ipt->op) {
 	case APPEND:
-		printf("here\n");
 		do_append_nat_entry(ipt,target);
 		break;
 	case LIST:

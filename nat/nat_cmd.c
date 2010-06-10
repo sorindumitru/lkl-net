@@ -31,8 +31,8 @@ struct _xt_align {
 #define XT_ALIGN(s) (((s) + (__alignof__(struct _xt_align)-1)) 	\
 			& ~(__alignof__(struct _xt_align)-1))
 static const struct option NAT_opts[] = {
-	{ "to-source", 1, NULL, '1' },
-	{ "to-destination", 1, NULL, '2' },
+	{ "to-source", 1, NULL, 'S' },
+	{ "to-destination", 1, NULL, 'D' },
 };
 
 int do_append_nat_entry(struct iptargs *ipt,struct iptc_xtables_target *target);
@@ -119,14 +119,16 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 	return &(append_range(info, &range)->t);
 }
 
-static int NAT_target_parse(int c, struct iptc_entry_match **target)
+static int NAT_target_parse(int c, struct iptc_entry_match **target,char *to_address)
 {
-	struct iptc_ipt_natinfo *info = (void *)*target;
+	//struct iptc_ipt_natinfo *info = (void *)*target;
 	int portok = 1;
-
+	printf(">>>>>>>>>>>target c=%s<<<<<<<<<<<<<\n",c);
+	
 	switch (c) {
-		case '1':
-			*target = parse_to(optarg, portok, info);
+		case 'S':
+			printf(">>>>>>>>>>>SNAT target<<<<<<<<<<<<<\n");
+			//*target = parse_to(optarg, portok, info);
 			return 1;
 		default:
 			return 0;
@@ -148,11 +150,12 @@ int do_nat(struct params *params)
 
 	memset(&fw, 0, sizeof(fw));
 	
-	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:o:i:",global_options,&optindex)) != -1) {
-		printf("CC:%d %c\n", c, c);
+	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:o:i:S:D:",global_options,&optindex)) != -1) {
+		printf("#CC:%d %c#\n", c, c);
 		switch(c) {
 		case 'A':
 			ipt->chain = strdup(optarg);
+			printf("chain=%s\n",ipt->chain);
 			ipt->op = APPEND;
 			break;
 		case 'L':
@@ -175,7 +178,7 @@ int do_nat(struct params *params)
 				return 1;
 			}
 			ipt->target = strdup(optarg);
-			if (strcmp(optarg,"SNAT")==0||strcmp(optarg,"DNAT")==0){
+			if ((optarg)&&(strcmp(optarg,"SNAT")==0||strcmp(optarg,"DNAT")==0)){
 				size_t size;
 				target = malloc(sizeof(struct iptc_xtables_target));
 				memset(target,0,sizeof(struct iptc_xtables_target));
@@ -195,9 +198,15 @@ int do_nat(struct params *params)
 			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
 				return 1;
 			break;
+		case 'S' :
+			printf("SNAT c=%c\n");
+			NAT_target_parse(c,&target->t,optarg);
+			break;
+		case 'D' :
+			printf("DNAT\n");
+			break;
 		default:
-			printf("Option=%s\n",optarg);
-			NAT_target_parse(c,&target->t);
+			printf("not recognized\n");
 			break;
 		}
 	}
@@ -225,14 +234,12 @@ int do_append_nat_entry(struct iptargs *ipt,struct iptc_xtables_target *target)
 	char *chain = ipt->chain;
 	struct ipt_entry *entry;
 	struct iptc_handle *handle = iptc_init(ipt->table);
-	printf("\n\nI'm here!!!!\n");
 	size = sizeof(struct iptc_entry_match)+sizeof(struct iptc_nf_nat_multi_range);
 	entry = malloc(sizeof(struct ipt_entry)+size);
 	entry->target_offset = sizeof(struct ipt_entry)+sizeof(struct iptc_entry_match);
 	entry->next_offset = size+sizeof(struct ipt_entry);
-	printf("\n\nI'm here?????????!!!!\n");
 	memcpy(entry->elems, target->t, sizeof(*target->t));
-	entry->ip.invflags = 0x08;
+	entry->ip.invflags = 0x77;
 	
 	ret = iptc_append_entry(chain, entry, handle);
 	ret = iptc_commit(handle);

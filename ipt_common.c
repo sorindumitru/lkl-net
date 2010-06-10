@@ -23,7 +23,9 @@ struct option global_options[] = {
 	{.name = "dst",        .flag = NULL,        .has_arg = 1,  .val = 'd'},
 	{.name = "jump",       .flag = NULL,        .has_arg = 1,  .val = 'j'},
 	{.name = "in_if",      .flag = NULL,        .has_arg = 1,  .val = 'i'},
-	{.name = "out_if",     .flag = NULL,        .has_arg = 1,  .val = '0'}, 	
+	{.name = "out_if",     .flag = NULL,        .has_arg = 1,  .val = '0'}, 
+	{.name = "to-source",  .flag = NULL,        .has_arg = 1,  .val = 'S'},
+	{.name = "to-destination",  .flag = NULL,        .has_arg = 1,  .val = 'D'},	
 	{NULL},
 };
 

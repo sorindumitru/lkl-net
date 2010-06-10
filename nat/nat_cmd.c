@@ -106,18 +106,20 @@ static struct iptc_entry_match *parse_to(char *arg, int portok, struct iptc_ipt_
 	}else
 		addr = strdup(arg);
 	
-	ip->s_addr =inet_addr(addr);
+	ip->s_addr =htonl(inet_addr(addr));
 	if (!ip)
 		printf("Wrong source address\n");
 	range.min_ip = ip->s_addr;
 	if (dash) {
-		ip = inet_addr(addr1);
+		ip = htonl(inet_addr(addr1));
 		if (!ip)
 			printf("Wrong source address\n");
 		range.max_ip = ip->s_addr;
 	} else
 		range.max_ip = range.min_ip;
-
+	free(addr);
+	if (dash)
+		free(addr1);
 	return &(append_range(info, &range)->t);
 }
 
@@ -205,7 +207,7 @@ int do_nat(struct params *params)
 			printf("DNAT\n");
 			break;
 		default:
-			printf("not recognized\n");NAT_target_parse(c,optarg,&target->t);
+			printf("not recognized\n");
 			break;
 		}
 	}

@@ -232,7 +232,7 @@ void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_h
 		if (strcmp(target,"DNAT")==0){
 			printf("--to-destination\n ");
 		}
-		nat_target = (struct ipt_natinfo *)(entry+entry->target_offset);
+		nat_target = (struct ipt_natinfo *)(((char *)entry)+entry->target_offset);
 		printf("entry->offset=%d target size=%d\n",entry->target_offset,get_target_size());
 		printf("ip1=%d ip2=%d",nat_target->mr.range[0].min_ip,nat_target->mr.range[0].max_ip);
 		print_nat_address(nat_target->mr.range[0].min_ip);

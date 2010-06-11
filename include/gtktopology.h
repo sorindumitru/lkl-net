@@ -16,6 +16,8 @@ typedef struct _GtkTopologyLink             GtkTopologyLink;
  * of devices on click or mouse move
  */
 typedef struct quad_tree {
+	unsigned int xlow, ylow;
+	unsigned int xhigh, yhigh;
 	unsigned int count;
 	struct list_head devices;
 	struct quad_tree *children[4];
@@ -37,8 +39,9 @@ struct _GtkTopologyClass {
 };
 
 struct _GtkTopologyDevice {
-	unsigned int x;
-	unsigned int y;
+	unsigned int x, y;
+	unsigned int xlow, ylow;
+	unsigned int xhigh, yhigh;
 	char *hostname;
 	struct list_head links;
 	/**
@@ -49,8 +52,8 @@ struct _GtkTopologyDevice {
 	 * Function that updates device information from the device
 	 */
 	void (*update)(GtkTopologyDevice *device);
-	struct list_head list;
-	struct list_head tree;
+	struct list_head list;//Used by GtkTopology;
+	struct list_head tree;//Used by QuadTree
 };
 
 #define GTK_TYPE_TOPOLOGY                  (gtk_topology_get_type())
@@ -66,7 +69,7 @@ GtkTopologyDevice* gtk_topology_new_switch();
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device);
 
 //QuadTree functions
-void QuadTreeInit(QuadTree *tree);
+void QuadTreeInit(QuadTree *tree, unsigned int xlow, unsigned int ylow, unsigned int xhigh, unsigned int yhigh);
 void QuadTreeAddDevice(QuadTree *tree, GtkTopologyDevice *device);
 GtkTopologyDevice* QuadTreeFindDevice(QuadTree *tree, int x, int y);
 

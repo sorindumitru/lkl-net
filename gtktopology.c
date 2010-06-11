@@ -7,6 +7,7 @@
 #define GRID_SPACING          16
 
 G_DEFINE_TYPE (GtkTopology, gtk_topology, GTK_TYPE_DRAWING_AREA);
+ #define GTK_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_TYPE_TOPOLOGY, QuadTree))
 
 // Device draw functions
 static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo);
@@ -16,6 +17,7 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 static gboolean gtk_topology_expose(GtkWidget *topology, GdkEventExpose *event);
 static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *event);
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event);
+static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 
 static void gtk_topology_class_init(GtkTopologyClass *class)
 {
@@ -26,18 +28,23 @@ static void gtk_topology_class_init(GtkTopologyClass *class)
 	widget_class->expose_event = gtk_topology_expose;
 	widget_class->button_release_event = gtk_topology_button_release;
 	widget_class->button_press_event = gtk_topology_button_press;
+	widget_class->motion_notify_event = gtk_topology_motion_notify;
+
+	g_type_class_add_private(widget_class, sizeof(QuadTree));
+	
 }
 
 static void gtk_topology_init(GtkTopology *topology)
 {
 	INIT_LIST_HEAD(&topology->devices);
-	gtk_widget_add_events(GTK_WIDGET(topology), GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+	gtk_widget_add_events(GTK_WIDGET(topology), GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(topology);
+	QuadTreeInit(device_tree, 0, 0, 2560, 2048);
 }
 
 GtkWidget* gtk_topology_new(void)
 {
 	GtkWidget *widget = g_object_new(GTK_TYPE_TOPOLOGY, NULL);
-	
 	return widget;
 }
 
@@ -48,13 +55,13 @@ static void draw(GtkWidget* widget, cairo_t *cairo)
 	int width = widget->allocation.width;
 	int height = widget->allocation.height;
 	GtkTopology *topology = GTK_TOPOLOGY(widget);
-	cairo_set_source_rgb(cairo, 0.9, 0.95, 1);
+	cairo_set_source_rgb(cairo, 1.0, 0.95, 1);
 	cairo_rectangle(cairo, 0, 0, width, height);
 	cairo_fill(cairo);
 
 	max = width < height ? height : width;
 	cairo_set_line_width (cairo, 0.5);
-	cairo_set_source_rgb(cairo, 0, 0, 0);
+	cairo_set_source_rgba(cairo, 0, 0, 1, 0.3);
 	for (i=0;i<max;i+= GRID_SPACING) {
 		if (i < width) {
 			cairo_move_to(cairo, i, 0);
@@ -104,6 +111,18 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 	return FALSE;
 }
 
+static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *event)
+{
+	GtkTopology *topology= GTK_TOPOLOGY(widget);
+	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
+	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
+	if (device) {
+		printf("Device %s found!\n", device->hostname);
+	}
+
+	return FALSE;
+}
+
 static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
 {
 	cairo_set_source_rgb(cairo, 0.7, 0, 0);
@@ -137,6 +156,10 @@ GtkTopologyDevice* gtk_topology_new_router()
 	router->hostname = "Router";
 	router->x = 100;
 	router->y = 100;
+	router->xlow = router->x-32;
+	router->ylow = router->y-32;
+	router->xhigh = router->x+32;
+	router->yhigh = router->y+32;
 	return router;
 }
 
@@ -147,31 +170,111 @@ GtkTopologyDevice* gtk_topology_new_switch()
 
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device)
 {
+	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(topology);
 	INIT_LIST_HEAD(&device->list);
+	INIT_LIST_HEAD(&device->tree);
 	list_add(&device->list, &topology->devices);
+	QuadTreeAddDevice(device_tree, device);
 }
 
 static char QuadTreeIsLeaf(QuadTree *tree)
 {
-	return (tree->children[0] ||
-		tree->children[1] ||
-		tree->children[2] ||
-		tree->children[3]);
+	return !(tree->children[0] != NULL ||
+		tree->children[1] != NULL ||
+		tree->children[2] != NULL ||
+		tree->children[3] != NULL);
+}
+
+static char QuadTreeIsDeviceInNode(QuadTree *tree, GtkTopologyDevice *device)
+{
+	return (device->x >= tree->xlow &&
+		device->x <= tree->xhigh &&
+		device->y >= tree->ylow &&
+		device->y <= tree->yhigh);
+}
+
+static char QuadTreeIsDeviceSelected(GtkTopologyDevice *device, unsigned int x, unsigned int y)
+{
+	return (x >= device->xlow &&
+		x <= device->xhigh &&
+		y >= device->ylow &&
+		y <= device->yhigh);
 }
 
 static void QuadTreeSplit(QuadTree *tree)
 {
-
+	int i;
+	for (i=0;i<4;i++) {
+		unsigned int xlow, ylow, xhigh, yhigh;
+		tree->children[i] = malloc(sizeof(QuadTree));
+		/**
+		 *(xl,yl)
+		 *   +---+---+
+		 *   | 1 | 2 |
+		 *   +___+___+
+		 *   | 3 | 4 |
+		 *   +___+___+
+		 *        (xh,yh)
+		 */
+		switch(i) {
+		case 0:
+			xlow = tree->xlow;
+			ylow = tree->ylow;
+			xhigh = (tree->xhigh-tree->xlow)/2;
+			yhigh = (tree->yhigh-tree->ylow)/2;
+			break;
+		case 1:
+			xlow = (tree->xhigh-tree->xlow)/2;
+			ylow = tree->ylow;
+			xhigh = tree->xhigh;
+			yhigh = (tree->yhigh-tree->ylow)/2;
+			break;
+		case 2:
+			xlow = tree->xlow;
+			ylow = (tree->xhigh-tree->xlow)/2;
+			xhigh = (tree->xhigh-tree->xlow)/2;
+			yhigh = tree->yhigh;
+			break;
+		case 3:
+			xlow = (tree->xhigh-tree->xlow)/2;
+			ylow = (tree->yhigh-tree->ylow)/2;
+			xhigh = tree->xhigh;
+			yhigh = tree->yhigh;
+			break;
+		default:
+		        printf("This should not happen. More then 4 children in a tree\n");
+			break;
+		}
+		QuadTreeInit(tree->children[i], xlow, ylow, xhigh, yhigh);
+		struct list_head *head;
+		list_for_each(head, &tree->devices) {
+			GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, tree);
+			QuadTreeAddDevice(tree->children[i], device);
+		}
+	}
 }
 
-void QuadTreeInit(QuadTree *tree)
+void QuadTreeInit(QuadTree *tree, unsigned int xlow, unsigned int ylow, unsigned int xhigh, unsigned int yhigh)
 {
+	int i;
 	memset(tree, 0, sizeof(*tree));
 	INIT_LIST_HEAD(&tree->devices);
+	tree->xlow = xlow;
+	tree->ylow = ylow;
+	tree->xhigh = xhigh;
+	tree->yhigh = yhigh;
+	tree->count = 0;
+	for (i=0;i<4;i++) {
+		tree->children[i] = NULL;
+	}
 }
 
 void QuadTreeAddDevice(QuadTree *tree, GtkTopologyDevice *device)
 {
+	if (!QuadTreeIsDeviceInNode(tree, device)) {
+		return;
+	}
+	
 	if (QuadTreeIsLeaf(tree)) {
 		tree->count++;
 		INIT_LIST_HEAD(&device->tree);
@@ -191,7 +294,14 @@ void QuadTreeAddDevice(QuadTree *tree, GtkTopologyDevice *device)
 GtkTopologyDevice* QuadTreeFindDevice(QuadTree *tree, int x, int y)
 {
 	if (QuadTreeIsLeaf(tree)) {
-		
+		struct list_head *head;
+		list_for_each (head, &tree->devices) {
+			GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, tree);
+			if (QuadTreeIsDeviceInNode(tree,device) && QuadTreeIsDeviceSelected(device, x, y)) {
+				//TODO: check if mouse is over device
+				return device;
+			}
+		}
 	} else {
 		int i;
 		for (i=0;i<4;i++) {

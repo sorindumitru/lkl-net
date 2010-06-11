@@ -10,9 +10,9 @@
 #define XT_FUNCTION_MAXNAMELEN 30
 //starting to add
 struct nat_xt_entry_target {
-	unsigned target_size;
-	char name[XT_FUNCTION_MAXNAMELEN-1];
-	unsigned short revision;
+	unsigned short target_size;
+	char name[XT_FUNCTION_MAXNAMELEN];
+	//unsigned short revision;
 	unsigned char data[0];
 };
 
@@ -50,6 +50,7 @@ struct nat_nf_nat_range //nf_nat_range
 
 	/* Inclusive: network order */
 	//union nat_nf_conntrack_man_proto min, max;
+	unsigned short min, max;
 };
 
 struct nat_nf_nat_multi_range
@@ -60,7 +61,7 @@ struct nat_nf_nat_multi_range
 	struct nat_nf_nat_range range[1];
 };
 
-struct nat_ipt_natinfo
+struct ipt_natinfo
 {
 	struct nat_xt_entry_target t;
 	struct nat_nf_nat_multi_range mr;

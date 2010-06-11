@@ -33,7 +33,7 @@ static const struct option NAT_opts[] = {
 	{ "to-destination", 1, NULL, 'D' },
 };
 
-int do_append_nat_entry(struct iptargs *ipt,struct nat_xt_entry_target *target);
+int do_append_nat_entry(struct iptargs *ipt,struct ipt_natinfo *target);
 
 //check validity of command
 static int check_ipt_command(struct iptargs *ipt)
@@ -71,7 +71,7 @@ static int check_ipt_command(struct iptargs *ipt)
 	return 0;
 }
 
-static struct nat_ipt_natinfo *append_range(struct nat_ipt_natinfo *info, const struct nat_nf_nat_range *range)
+static struct ipt_natinfo *append_range(struct ipt_natinfo *info, const struct nat_nf_nat_range *range)
 {
 	unsigned int size;
 
@@ -82,13 +82,14 @@ static struct nat_ipt_natinfo *append_range(struct nat_ipt_natinfo *info, const 
 	if (!info)
 		printf("\n\nAPPEND RANGE:: out of memory\n");
 
+	info->t.target_size = size;
 	info->mr.range[info->mr.rangesize] = *range;
 	info->mr.rangesize++;
 
 	return info;
 }
 
-static struct nat_xt_entry_target *parse_to(char *arg,struct nat_ipt_natinfo *info)
+static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 {
 	struct nat_nf_nat_range range;
 	char *dash, *error;
@@ -121,19 +122,18 @@ static struct nat_xt_entry_target *parse_to(char *arg,struct nat_ipt_natinfo *in
 	if (dash)
 		free(addr1);
 
-	return &(append_range(info, &range)->t);
+	return append_range(info, &range);
 }
 
-static int NAT_target_parse(char c,char *to_address,struct nat_xt_entry_target **target)
+static int NAT_target_parse(char c,char *to_address,struct ip_natinfo **target)
 {
-	struct nat_ipt_natinfo *info = (void *)*target;
 
 	switch (c) {
-		case 'S':
-			*target = parse_to(to_address, info);
-			return 1;
-		default:
-			return 0;
+	case 'S':
+		*target = parse_to(to_address, *target);
+		return 1;
+	default:
+		return 0;
 	}
 }		
 
@@ -143,7 +143,7 @@ int do_nat(struct params *params)
 	int i=0;
 	struct iptargs *ipt = malloc(sizeof(struct iptargs));
 	struct argstruct *args = get_args(params);
-	struct nat_xt_entry_target *target;
+	struct ipt_natinfo *target;
 
 	struct ipt_entry *fw,*e=NULL;
 	memset(ipt,0,sizeof(struct iptargs));
@@ -183,12 +183,12 @@ int do_nat(struct params *params)
 			ipt->target = strdup(optarg);
 			if ((optarg)&&(strcmp(optarg,"SNAT")==0||strcmp(optarg,"DNAT")==0)){
 				size_t size;
-				size = IPT_ALIGN(sizeof(struct nat_xt_entry_target));
+				size = IPT_ALIGN(sizeof(struct nat_nf_nat_multi_range)) + sizeof(struct nat_xt_entry_target);
 				target = malloc(size);
 				memset(target,0,size);
-				if ( strlen(optarg)<XT_FUNCTION_MAXNAMELEN-1)
-					memcpy(target->name,optarg,strlen(optarg));
-				//TODO fill size & data
+				target->t.target_size = size;
+				if ( strlen(optarg)<XT_FUNCTION_MAXNAMELEN)
+					memcpy(target->t.name,optarg,strlen(optarg));
 			}
 			break;
 		case 'o':
@@ -229,7 +229,7 @@ int do_nat(struct params *params)
 	return 0;
 }
 
-int do_append_nat_entry(struct iptargs *ipt,struct nat_xt_entry_target *target)
+int do_append_nat_entry(struct iptargs *ipt,struct ipt_natinfo *target)
 {
 	int ret;
 	unsigned short size;
@@ -240,14 +240,20 @@ int do_append_nat_entry(struct iptargs *ipt,struct nat_xt_entry_target *target)
 	struct iptc_handle *handle = iptc_init(ipt->table);
 	size = sizeof(*target);
 
-	entry = malloc(sizeof(struct ipt_entry)+size+sizeof(unsigned short));
+	entry = malloc(sizeof(struct ipt_entry)+target->t.target_size);
+	memset(entry, 0, sizeof(struct ipt_entry)+target->t.target_size);
 	iptargs_to_ipt_entry(ipt,entry);
-	memcpy(entry->elems, &size, sizeof(unsigned short));
-	memcpy(entry->elems+sizeof(unsigned short), target, size);
+	printf("%s\n", target->t.name);
 	
-	entry->target_offset = sizeof(struct ipt_entry)+sizeof(unsigned short);
-	entry->next_offset = entry->target_offset + sizeof(*target);
-	//entry->ip.invflags = 0x08;
+	//memcpy(entry->elems, &, sizeof(unsigned short));
+	//memcpy(entry->elems+sizeof(unsigned short), target, size);
+	
+	entry->target_offset = sizeof(struct ipt_entry);
+	entry->next_offset = entry->target_offset + target->t.target_size;
+	//entry->ip.flags |= IPT_SNAT_OPT_SOURCE;
+	//target->t.revision = 1;
+	printf("SIZE = %d %d\n", target->t.target_size, target->mr.rangesize);
+	memcpy(entry->elems, target, target->t.target_size);
 	ret = iptc_append_entry(chain, entry, handle);
 	if (ret)
 		printf("Append successfully\n");

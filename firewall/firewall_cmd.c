@@ -125,7 +125,7 @@ int do_filter_append_entry(struct iptargs *ipt)
 	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
 	memcpy(entry->elems, &size, 2);
-	entry->ip.invflags = 0x08;
+	//entry->ip.invflags = 0x08;
 	memcpy(entry->elems+2, ipt->target, 30);
 	
 	ret = iptc_append_entry(chain, entry, handle);

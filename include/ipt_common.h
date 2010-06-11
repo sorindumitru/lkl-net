@@ -23,7 +23,7 @@ enum ipt_ops{
 	REPLACE,
 	DELETE,
 	LIST,
-	FLUSH
+	FLUSH,
 };
 
 extern char *ipt_ops_to_name[];

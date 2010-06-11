@@ -30,7 +30,7 @@ struct _xt_align {
 
 static const struct option NAT_opts[] = {
 	{ "to-source", 1, NULL, 'S' },
-	{ "to-destination", 1, NULL, 'D' },
+	{ "to-destination", 1, NULL, 'Z' },
 };
 
 int do_append_nat_entry(struct iptargs *ipt,struct ipt_natinfo *target);
@@ -111,7 +111,7 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 		printf("Wrong source address\n");
 	range.min_ip = ip->s_addr;
 	if (dash) {
-		ip = htonl(inet_addr(addr1));
+		ip->s_addr = htonl(inet_addr(addr1));
 		if (!ip)
 			printf("Wrong source address\n");
 		range.max_ip = ip->s_addr;
@@ -125,11 +125,14 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 	return append_range(info, &range);
 }
 
-static int NAT_target_parse(char c,char *to_address,struct ip_natinfo **target)
+static int NAT_target_parse(char c,char *to_address,struct ipt_natinfo **target)
 {
 
 	switch (c) {
 	case 'S':
+		*target = parse_to(to_address, *target);
+		return 1;
+	case 'Z':
 		*target = parse_to(to_address, *target);
 		return 1;
 	default:
@@ -153,7 +156,7 @@ int do_nat(struct params *params)
 
 	memset(&fw, 0, sizeof(fw));
 	
-	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:o:i:S:D:",global_options,&optindex)) != -1) {
+	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:o:i:S:D:F:",global_options,&optindex)) != -1) {
 		printf("#CC:%d %c#\n", c, c);
 		switch(c) {
 		case 'A':
@@ -202,10 +205,23 @@ int do_nat(struct params *params)
 		case 'S' :
 			printf("SNAT c=%c,optarg=%s\n",c,optarg);
 			if(!NAT_target_parse(c,optarg,&target))
-				printf(">>>>>>NAT_target_parse error\n");
+				printf(">>>>>>SNAT_target_parse error\n");
 			break;
-		case 'D' :
-			printf("DNAT\n");
+		case 'Z' :
+			printf("DNAT target=%s chain=%s\n",ipt->target,ipt->chain);
+			if(!NAT_target_parse(c,optarg,&target))
+				printf(">>>>>>DNAT_target_parse error\n");
+			break;
+		case 'D':
+			ipt->chain = optarg;
+			ipt->rulenum = strtoul(args->argv[optind++], NULL, 10);
+			ipt->op = DELETE;
+			break;
+		case 'F':
+			if (optarg) {
+				ipt->chain = optarg;
+			}
+			ipt->op = FLUSH;
 			break;
 		default:
 			printf("not recognized\n");
@@ -222,6 +238,12 @@ int do_nat(struct params *params)
 		break;
 	case LIST:
 		do_list_entries(ipt);
+		break;
+	case DELETE:
+		do_delete_entry(ipt);
+		break;
+	case FLUSH:
+		do_flush_entries(ipt);
 		break;
 	default:
 		break;

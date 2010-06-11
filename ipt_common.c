@@ -25,7 +25,9 @@ struct option global_options[] = {
 	{.name = "in_if",      .flag = NULL,        .has_arg = 1,  .val = 'i'},
 	{.name = "out_if",     .flag = NULL,        .has_arg = 1,  .val = '0'}, 
 	{.name = "to-source",  .flag = NULL,        .has_arg = 1,  .val = 'S'},
-	{.name = "to-destination",  .flag = NULL,        .has_arg = 1,  .val = 'D'},	
+	{.name = "to-destination",  .flag = NULL,        .has_arg = 1,  .val = 'Z'},
+	{.name = "delete",       .flag = NULL,      .has_arg = 1,  .val = 'D'},
+	{.name = "flush",        .flag = NULL,      .has_arg = 1,  .val = 'F'},	
 	{NULL},
 };
 
@@ -149,7 +151,24 @@ int do_flush_entries(struct iptargs *ipt)
 int do_delete_entry(struct iptargs *ipt)
 {
 	struct iptc_handle *handle;
-	return 0;
+	ipt_chainlabel chain;
+	int ret;
+	
+	memset(chain,0,32);
+	memcpy(chain,ipt->chain,strlen(ipt->chain));
+	handle = iptc_init(ipt->table);
+	ret = iptc_delete_num_entry(chain, ipt->rulenum,handle);
+	if (!ret){
+		printf("Could not delete rule\n");
+		return ret;
+	}
+	ret = iptc_commit(handle);
+	if (!ret){
+		printf("Could not commit delete rule\n");
+		return ret;
+	}
+	iptc_free(handle);
+	return 1;
 }
 
 void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask)
@@ -221,3 +240,25 @@ void iptargs_to_ipt_entry(struct iptargs *ipt,struct ipt_entry *e)
 	memcpy(e->ip.iniface_mask,ipt->in_if_mask,IFNAMSIZ);
 	memcpy(e->ip.outiface_mask,ipt->out_if_mask,IFNAMSIZ);
 } 
+
+/*int do_delete_entry(struct iptargs *ipt)
+{
+	struct iptc_handle *handle;
+	ipt_chainlabel chain;
+	int ret;
+
+	memcpy(&chain,ipt->chain,strlen(ipt->chain));
+	handle = iptc_init(ipt->table);
+	ret = iptc_delete_num_entry(chain, ipt->rulenum,handle)
+	if (!ret){
+		printf("Could not delete rule\n");
+		return ret;
+	}
+	ret = ret = iptc_commit(handle);
+	if (!ret){
+		printf("Could not commit delete rule\n");
+		return ret;
+	}
+	iptc_free(handle);
+	return 1;
+}*/

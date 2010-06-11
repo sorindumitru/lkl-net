@@ -11,6 +11,7 @@
 #include <console.h>
 #include <arpa/inet.h>
 #include <ipt_common.h>
+#include <nat.h>
 
 #ifndef IFNAMSIZ
 #define IFNAMSIZ	16
@@ -193,14 +194,56 @@ void print_header(const char *chain, struct iptc_handle *handle)
 	printf(" %ld packets, %ld bytes)\n", (long int) counters.pcnt, (long int) counters.bcnt);
 }
 
+static size_t get_target_size(void)
+{
+	return IPT_ALIGN(sizeof(struct nat_nf_nat_multi_range)) + sizeof(struct nat_xt_entry_target);
+}
+
+void print_nat_address(unsigned int ip)
+{
+	char *address = (char*)malloc(32);
+	address = inet_ntop(AF_INET,&ip,address,32);
+	printf("ip=%d addr=%s",ip,address);
+}
+
 void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_handle*handle)
 {
 	const char *target;
+	struct ipt_natinfo *nat_target;
 	printf("-A %s ", chain);
 	target = iptc_get_target(entry, handle);
-	print_ip("s", entry->ip.src, entry->ip.smsk);
-	print_ip("d", entry->ip.dst, entry->ip.dmsk);
-	printf("-j %s", target); 
+	printf("-j %s", target);
+
+	if (strcmp(target,"DNAT")==0){
+		printf(" ");
+		print_ip("d", entry->ip.dst, entry->ip.dmsk);
+	}else if (strcmp(target,"SNAT")==0){
+		printf(" ");
+		print_ip("s", entry->ip.src, entry->ip.smsk);
+	}else{
+		print_ip("s", entry->ip.src, entry->ip.smsk);
+		print_ip("d", entry->ip.dst, entry->ip.dmsk);
+	}
+
+	if (strcmp(target,"SNAT")==0 || strcmp(target,"DNAT")==0){
+		if (strcmp(target,"SNAT")==0){
+			printf("--to-source\n");	
+		} 
+		if (strcmp(target,"DNAT")==0){
+			printf("--to-destination\n ");
+		}
+		nat_target = (struct ipt_natinfo *)(entry+entry->target_offset);
+		printf("entry->offset=%d target size=%d\n",entry->target_offset,get_target_size());
+		printf("ip1=%d ip2=%d",nat_target->mr.range[0].min_ip,nat_target->mr.range[0].max_ip);
+		print_nat_address(nat_target->mr.range[0].min_ip);
+		printf(" rangesize=%d ",nat_target->mr.rangesize);
+
+		if (nat_target->mr.range[0].min_ip != nat_target->mr.range[0].max_ip){
+			printf("\nINTERVAL!!!!!\n");
+			printf("-");
+			print_nat_address(nat_target->mr.range[0].max_ip);
+		}
+	}	
 	printf("\n");
 }
 
@@ -240,25 +283,3 @@ void iptargs_to_ipt_entry(struct iptargs *ipt,struct ipt_entry *e)
 	memcpy(e->ip.iniface_mask,ipt->in_if_mask,IFNAMSIZ);
 	memcpy(e->ip.outiface_mask,ipt->out_if_mask,IFNAMSIZ);
 } 
-
-/*int do_delete_entry(struct iptargs *ipt)
-{
-	struct iptc_handle *handle;
-	ipt_chainlabel chain;
-	int ret;
-
-	memcpy(&chain,ipt->chain,strlen(ipt->chain));
-	handle = iptc_init(ipt->table);
-	ret = iptc_delete_num_entry(chain, ipt->rulenum,handle)
-	if (!ret){
-		printf("Could not delete rule\n");
-		return ret;
-	}
-	ret = ret = iptc_commit(handle);
-	if (!ret){
-		printf("Could not commit delete rule\n");
-		return ret;
-	}
-	iptc_free(handle);
-	return 1;
-}*/

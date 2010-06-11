@@ -17,7 +17,7 @@ typedef struct _GtkTopologyLink             GtkTopologyLink;
  */
 typedef struct quad_tree {
 	unsigned int count;
-	struct list_head elements;
+	struct list_head devices;
 	struct quad_tree *children[4];
 } QuadTree;
 
@@ -50,6 +50,7 @@ struct _GtkTopologyDevice {
 	 */
 	void (*update)(GtkTopologyDevice *device);
 	struct list_head list;
+	struct list_head tree;
 };
 
 #define GTK_TYPE_TOPOLOGY                  (gtk_topology_get_type())
@@ -63,5 +64,10 @@ GtkWidget* gtk_topology_new();
 GtkTopologyDevice* gtk_topology_new_router();
 GtkTopologyDevice* gtk_topology_new_switch();
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device);
+
+//QuadTree functions
+void QuadTreeInit(QuadTree *tree);
+void QuadTreeAddDevice(QuadTree *tree, GtkTopologyDevice *device);
+GtkTopologyDevice* QuadTreeFindDevice(QuadTree *tree, int x, int y);
 
 #endif /* GTK_TOPOLOGY_H_ */

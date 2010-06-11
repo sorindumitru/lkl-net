@@ -71,9 +71,9 @@ static void draw(GtkWidget* widget, cairo_t *cairo)
 	list_for_each(head, &topology->devices) {
 		GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, list);
 		if (device->draw) {
-			device->draw(device, topology, cairo);
+			device->draw(device, widget, cairo);
 		} else {
-			draw_generic(device, topology, cairo);
+			draw_generic(device, widget, cairo);
 		}
 	}
 }
@@ -81,11 +81,10 @@ static void draw(GtkWidget* widget, cairo_t *cairo)
 static gboolean gtk_topology_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	cairo_t *cairo;
-	GtkTopology *topology = GTK_TOPOLOGY(widget);
 
 	cairo =  gdk_cairo_create(widget->window);
 
-	draw(topology, cairo);
+	draw(widget, cairo);
 
 	cairo_destroy(cairo);
 	
@@ -128,7 +127,7 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 
 static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
 {
-	GtkTopology *topology = GTK_TOPOLOGY(widget);
+	//GtkTopology *topology = GTK_TOPOLOGY(widget);
 }
 
 GtkTopologyDevice* gtk_topology_new_router()
@@ -150,4 +149,58 @@ void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device)
 {
 	INIT_LIST_HEAD(&device->list);
 	list_add(&device->list, &topology->devices);
+}
+
+static char QuadTreeIsLeaf(QuadTree *tree)
+{
+	return (tree->children[0] ||
+		tree->children[1] ||
+		tree->children[2] ||
+		tree->children[3]);
+}
+
+static void QuadTreeSplit(QuadTree *tree)
+{
+
+}
+
+void QuadTreeInit(QuadTree *tree)
+{
+	memset(tree, 0, sizeof(*tree));
+	INIT_LIST_HEAD(&tree->devices);
+}
+
+void QuadTreeAddDevice(QuadTree *tree, GtkTopologyDevice *device)
+{
+	if (QuadTreeIsLeaf(tree)) {
+		tree->count++;
+		INIT_LIST_HEAD(&device->tree);
+		list_add(&device->tree, &tree->devices);
+
+		if (tree->count > QUAD_TREE_NODE_THRESHOLD) {
+			QuadTreeSplit(tree);
+		}
+	} else {
+		int i;
+		for (i=0;i<4;i++) {
+			QuadTreeAddDevice(tree->children[i], device);
+		}
+	}
+}
+
+GtkTopologyDevice* QuadTreeFindDevice(QuadTree *tree, int x, int y)
+{
+	if (QuadTreeIsLeaf(tree)) {
+		
+	} else {
+		int i;
+		for (i=0;i<4;i++) {
+			GtkTopologyDevice* device = QuadTreeFindDevice(tree->children[i], x, y);
+			if (device) {
+				return device;
+			}
+		}
+	}
+
+	return NULL;
 }

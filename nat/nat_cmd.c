@@ -203,14 +203,12 @@ int do_nat(struct params *params)
 				return 1;
 			break;
 		case 'S' :
-			printf("SNAT c=%c,optarg=%s\n",c,optarg);
 			if(!NAT_target_parse(c,optarg,&target))
-				printf(">>>>>>SNAT_target_parse error\n");
+				printf("SNAT_target_parse error\n");
 			break;
 		case 'Z' :
-			printf("DNAT target=%s chain=%s\n",ipt->target,ipt->chain);
 			if(!NAT_target_parse(c,optarg,&target))
-				printf(">>>>>>DNAT_target_parse error\n");
+				printf("DNAT_target_parse error\n");
 			break;
 		case 'D':
 			ipt->chain = optarg;

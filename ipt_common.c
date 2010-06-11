@@ -50,15 +50,16 @@ struct argstruct *get_args(struct params *params)
 
 void parse_ip(struct iptargs *ipt, char dest, char *addr)
 {
-	char *address = strtok(addr,"/");
+	char *address;
 	int netmask;
-	printf("address=%s\n",address);
-	if (strlen(address) == strlen(addr))
+	if ( strchr(addr,'/') == NULL ){
 		netmask = 32;
-	else
+		address = strtok(addr,"/");
+	}else{
+		address = strtok(addr,"/");		
 		netmask = atoi(strtok(NULL, "/"));
-
-	printf("netmask=%d\n",netmask);
+	}
+	
 	if (dest == 's') {
 		inet_pton(AF_INET, address, &ipt->src);
 		ipt->src_mask = netmask;
@@ -194,16 +195,11 @@ void print_header(const char *chain, struct iptc_handle *handle)
 	printf(" %ld packets, %ld bytes)\n", (long int) counters.pcnt, (long int) counters.bcnt);
 }
 
-static size_t get_target_size(void)
-{
-	return IPT_ALIGN(sizeof(struct nat_nf_nat_multi_range)) + sizeof(struct nat_xt_entry_target);
-}
-
 void print_nat_address(unsigned int ip)
 {
 	char *address = (char*)malloc(32);
 	address = inet_ntop(AF_INET,&ip,address,32);
-	printf("ip=%d addr=%s",ip,address);
+	printf("%s",address);
 }
 
 void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_handle*handle)
@@ -227,19 +223,15 @@ void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_h
 
 	if (strcmp(target,"SNAT")==0 || strcmp(target,"DNAT")==0){
 		if (strcmp(target,"SNAT")==0){
-			printf("--to-source\n");	
+			printf("--to-source ");	
 		} 
 		if (strcmp(target,"DNAT")==0){
-			printf("--to-destination\n ");
+			printf("--to-destination ");
 		}
 		nat_target = (struct ipt_natinfo *)(((char *)entry)+entry->target_offset);
-		printf("entry->offset=%d target size=%d\n",entry->target_offset,get_target_size());
-		printf("ip1=%d ip2=%d",nat_target->mr.range[0].min_ip,nat_target->mr.range[0].max_ip);
 		print_nat_address(nat_target->mr.range[0].min_ip);
-		printf(" rangesize=%d ",nat_target->mr.rangesize);
 
 		if (nat_target->mr.range[0].min_ip != nat_target->mr.range[0].max_ip){
-			printf("\nINTERVAL!!!!!\n");
 			printf("-");
 			print_nat_address(nat_target->mr.range[0].max_ip);
 		}

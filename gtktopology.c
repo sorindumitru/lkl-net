@@ -103,6 +103,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 	if (event->type == GDK_BUTTON_RELEASE) {
 		printf("X=%f Y=%f\n", event->x, event->y); 
 	}
+	
 	return FALSE;
 }
 
@@ -246,9 +247,10 @@ static void QuadTreeSplit(QuadTree *tree)
 			break;
 		}
 		QuadTreeInit(tree->children[i], xlow, ylow, xhigh, yhigh);
-		struct list_head *head;
-		list_for_each(head, &tree->devices) {
+		struct list_head *head, *temp;
+		list_for_each_safe(head, temp, &tree->devices) {
 			GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, tree);
+			list_del(head);			
 			QuadTreeAddDevice(tree->children[i], device);
 		}
 	}

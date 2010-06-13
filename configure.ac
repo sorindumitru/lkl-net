@@ -3,8 +3,10 @@
 
 AC_PREREQ([2.65])
 AC_INIT([lkl-net], [0.7], [dumitru.sorin87@gmail.com])
-AM_INIT_AUTOMAKE([lkl-net foreign], [0.6])
+AM_INIT_AUTOMAKE(foreign color-tests silent-rules subdir-objects)
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_HEADER(tools.h)
+AM_SILENT_RULES
 
 # Checks for programs.
 AC_PROG_CC

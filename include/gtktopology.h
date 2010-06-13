@@ -28,10 +28,9 @@ typedef struct quad_tree {
 #define SEL_HUB       2
 #define SEL_BRIDGE    3
 
-struct _GtkTopology {
-	unsigned char device_sel;
-	
+struct _GtkTopology {	
 	GtkDrawingArea parent;
+	unsigned char device_sel;
 
 	/**
 	 * Devices that are to be shown on the topology
@@ -74,6 +73,7 @@ GtkWidget* gtk_topology_new();
 GtkTopologyDevice* gtk_topology_new_router();
 GtkTopologyDevice* gtk_topology_new_switch();
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device);
+void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection);
 
 //QuadTree functions
 void QuadTreeInit(QuadTree *tree, unsigned int xlow, unsigned int ylow, unsigned int xhigh, unsigned int yhigh);

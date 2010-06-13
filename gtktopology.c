@@ -178,6 +178,11 @@ void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device)
 	QuadTreeAddDevice(device_tree, device);
 }
 
+void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection)
+{
+	topology->device_sel = selection;
+}
+
 static char QuadTreeIsLeaf(QuadTree *tree)
 {
 	return !(tree->children[0] != NULL ||

@@ -106,6 +106,9 @@ void callback_dev_create(GtkWidget *widget, gpointer callback_data )
 
 void callback_create_switch(GtkWidget *widget, gpointer   callback_data )
 {
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_SWITCH);
+
+#if 0
 	GtkWidget *dialog = gtk_dialog_new();
 	GtkWidget *name_label = gtk_label_new("Hostname:");
 	GtkWidget *config_label = gtk_label_new("Config file:");
@@ -141,10 +144,14 @@ void callback_create_switch(GtkWidget *widget, gpointer   callback_data )
 	gtk_window_set_title(GTK_WINDOW(dialog), "Create switch");
 	gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(dialog)->vbox));
 	gtk_dialog_run(GTK_DIALOG(dialog));
+#endif
 }
 
 void callback_create_router(GtkWidget *widget, gpointer   callback_data )
 {
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_ROUTER);
+
+#if 0
 	GtkWidget *dialog = gtk_dialog_new();
 	GtkWidget *name_label = gtk_label_new("Hostname:");
 	GtkWidget *config_label = gtk_label_new("Config file:");
@@ -180,11 +187,17 @@ void callback_create_router(GtkWidget *widget, gpointer   callback_data )
 	gtk_window_set_title(GTK_WINDOW(dialog), "Create router");
 	gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
 	gtk_dialog_run(GTK_DIALOG(dialog));
+#endif
 }
 
 void callback_create_hub(GtkWidget *widget, gpointer   callback_data )
 {
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_HUB);
+}
 
+void callback_create_bridge(GtkWidget *widget, gpointer   callback_data )
+{
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_BRIDGE);
 }
 
 conf_info_t *info;
@@ -212,9 +225,10 @@ int init_gui()
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_router), "New router");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_router, 1);
 	// Switch button
-	create_switch = gtk_tool_button_new(create_switch_label, "New switch");
+	switch_icon = gtk_image_new_from_file("data/icons/switch.png");
+	create_switch = gtk_tool_button_new(switch_icon, "New switch");
 	gtk_signal_connect(GTK_OBJECT(create_switch), "clicked", G_CALLBACK(callback_create_switch), NULL);
-	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_switch), create_switch_label);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_switch), switch_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_switch), "New switch");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_switch, 2);
 	// Hub button
@@ -224,6 +238,14 @@ int init_gui()
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_hub), hub_icon);
 	gtk_tool_button_set_label(create_hub, "New hub");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_hub, 3);
+	// Bridge button
+	create_bridge = gtk_tool_button_new(bridge_icon, "New Bridge");
+	bridge_icon = gtk_image_new_from_file("data/icons/bridge.png");
+	gtk_signal_connect(GTK_OBJECT(create_bridge), "clicked", G_CALLBACK(callback_create_bridge), NULL);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_bridge), bridge_icon);
+	gtk_tool_button_set_label(create_bridge, "New bridge");
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_bridge, 4);
+	
 
 	init_device_list(topology);
 	init_canvas(topology);

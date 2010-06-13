@@ -12,6 +12,7 @@ conf/parser.c
 *.o
 *~
 *.swp
+*.dirstamp
 TAGS
 tags
 Project.ede
@@ -29,3 +30,5 @@ hub
 bridge
 liblklnetconfig.a
 parser.c
+stamp-h1
+tools.h

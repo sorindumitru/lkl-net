@@ -148,15 +148,13 @@ int do_nat(struct params *params)
 	struct argstruct *args = get_args(params);
 	struct ipt_natinfo *target;
 
-	struct ipt_entry *fw,*e=NULL;
+	struct ipt_entry *e=NULL;
 	memset(ipt,0,sizeof(struct iptargs));
 	ipt->table = "nat";
 	ipt->chain = NULL;
 	optind = 1;
-
-	memset(&fw, 0, sizeof(fw));
 	
-	while ((c = getopt_long(args->argc, args->argv, "-A:L::s:d:j:o:i:S:D:F:",global_options,&optindex)) != -1) {
+	while ((c = getopt_long(args->argc, args->argv, "A:L::s:d:j:o:i:S:D:F:",global_options,&optindex)) != -1) {
 		printf("#CC:%d %c#\n", c, c);
 		switch(c) {
 		case 'A':

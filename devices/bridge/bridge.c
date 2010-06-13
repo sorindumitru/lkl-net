@@ -56,7 +56,7 @@ int init_host_interface(char* dev)
 int main(int argc, char **argv)
 {
 	int err;
-	topology_t* topology;
+	topology_t* topology = NULL;
 	struct list_head *head;
 
 	int port;

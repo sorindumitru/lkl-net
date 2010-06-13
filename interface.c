@@ -163,12 +163,16 @@ void dump_interface(int fd, interface_t *interface)
 
 	memset(buffer, 0, 256);
 	sprintf(buffer,"interface {\n");
-	write(fd, buffer, strlen(buffer));
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 
 	if (interface->dev) {
 		memset(buffer, 0, 256);
 		sprintf(buffer,"\tdev %s;\n", interface->dev);
-		write(fd, buffer, strlen(buffer));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			perror("write:");
+		}
 	}
 
 	if (interface->address.s_addr) {
@@ -176,13 +180,17 @@ void dump_interface(int fd, interface_t *interface)
 		memset(address, 0, 32);
 		inet_ntop(AF_INET, &interface->address, address, 32);
 		sprintf(buffer, "\tipaddress %s;\n", address);
-		write(fd, buffer, strlen(buffer));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			perror("write:");   
+		}
 	}
 
 	if (interface->mac) {
 		memset(buffer, 0, 256);
 		sprintf(buffer, "\tmac %s\n", ether_ntoa(interface->mac));
-		write(fd, buffer, strlen(buffer));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			perror("write:");
+		}
 	}
 
 	if (interface->gateway.s_addr) {
@@ -190,12 +198,15 @@ void dump_interface(int fd, interface_t *interface)
 		memset(address, 0, 32);
 		inet_ntop(AF_INET, &interface->gateway, address, 32);
 		sprintf(buffer, "\tgateway %s;\n", address);
-		write(fd, buffer, strlen(buffer));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			perror("write:");
+		}
 	}
 	
 	memset(buffer, 0, 256);
 	sprintf(buffer,"\tnetmask %d;\n\tport %d;\n\ttype hub;\n}\n", interface->netmask_len, interface->port);
-	write(fd, buffer, strlen(buffer));
-
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 
 }

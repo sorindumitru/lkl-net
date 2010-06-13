@@ -23,7 +23,14 @@ typedef struct quad_tree {
 	struct quad_tree *children[4];
 } QuadTree;
 
+#define SEL_ROUTER    0
+#define SEL_SWITCH    1
+#define SEL_HUB       2
+#define SEL_BRIDGE    3
+
 struct _GtkTopology {
+	unsigned char device_sel;
+	
 	GtkDrawingArea parent;
 
 	/**

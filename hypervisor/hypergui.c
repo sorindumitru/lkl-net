@@ -27,12 +27,20 @@ GtkWidget *toolbar;
 GtkToolItem *boot;
 GtkToolItem *create_router;
 GtkToolItem *create_switch;
+GtkToolItem *create_hub;
+GtkToolItem *create_bridge;
 
 //labels
 GtkWidget *ok_label;
 GtkWidget *cancel_label;
 GtkWidget *create_router_label;
 GtkWidget *create_switch_label;
+
+//icons
+GtkWidget *router_icon;
+GtkWidget *switch_icon;
+GtkWidget *hub_icon;
+GtkWidget *bridge_icon;
 
 typedef struct dev_entries {
 	unsigned char type;
@@ -174,6 +182,11 @@ void callback_create_router(GtkWidget *widget, gpointer   callback_data )
 	gtk_dialog_run(GTK_DIALOG(dialog));
 }
 
+void callback_create_hub(GtkWidget *widget, gpointer   callback_data )
+{
+
+}
+
 conf_info_t *info;
 hypervisor_t *hypervisor;
 pthread_t request;
@@ -182,12 +195,11 @@ unsigned int port;
 
 int init_gui()
 {
-	GtkWidget *table = gtk_table_new(12, 12, TRUE);
-	GtkWidget *root = gtk_hpaned_new();
+	GtkWidget *table = gtk_table_new(20, 12, TRUE);
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
 
 	//Toolbar
-	toolbar = gtk_toolbar_new();	//gtk_box_pack_start(GTK_CONTAINER(root), GTK_WIDGET(toolbar), FALSE, FALSE, 10);
+	toolbar = gtk_toolbar_new();
 	// Boot button
 	boot = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
 	gtk_signal_connect(GTK_OBJECT(boot), "clicked", G_CALLBACK(callback_boot), NULL);
@@ -204,13 +216,20 @@ int init_gui()
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_switch), create_switch_label);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_switch), "New switch");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_switch, 2);
+	// Hub button
+	create_hub = gtk_tool_button_new(hub_icon, "New hub");
+	hub_icon = gtk_image_new_from_file("data/icons/hub.png");
+	gtk_signal_connect(GTK_OBJECT(create_hub), "clicked", G_CALLBACK(callback_create_hub), NULL);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_hub), hub_icon);
+	gtk_tool_button_set_label(create_hub, "New hub");
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_hub, 3);
 
 	init_device_list(topology);
 	init_canvas(topology);
 
-	gtk_table_attach(GTK_TABLE(table), toolbar, 0, 12, 0, 1, GTK_FILL, GTK_SHRINK, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), topology, 2, 10, 1, 12, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), device_list, 10, 12, 1, 12, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), toolbar, 0, 12, 0, 2, GTK_FILL, GTK_SHRINK, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), topology, 2, 10, 2, 20, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), device_list, 10, 12, 2, 20, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 	gtk_container_add(GTK_CONTAINER(window), table);
 	return 0;
 }

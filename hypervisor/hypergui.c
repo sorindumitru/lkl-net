@@ -85,6 +85,44 @@ void callback_boot(GtkWidget *widget, gpointer   callback_data)
 	gtk_timeout_add(1000, timeout_boot, NULL);
 }
 
+void callback_load(GtkWidget *widget, gpointer   callback_data)
+{
+	GtkWidget *dialog;
+	gchar *filename;
+
+	dialog = gtk_file_chooser_dialog_new("Load config", GTK_WINDOW(window),
+					     GTK_FILE_CHOOSER_ACTION_OPEN,
+					     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					     GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					     NULL);
+
+	gint result = gtk_dialog_run (GTK_DIALOG (dialog));
+	if (result == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+		printf("Selected file: %s\n", filename);
+	}
+	gtk_widget_destroy (dialog);
+}
+
+void callback_save(GtkWidget *widget, gpointer   callback_data)
+{
+	GtkWidget *dialog;
+	gchar *filename;
+
+	dialog = gtk_file_chooser_dialog_new("Save config", GTK_WINDOW(window),
+					     GTK_FILE_CHOOSER_ACTION_SAVE,
+					     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					     NULL);
+
+	gint result = gtk_dialog_run (GTK_DIALOG (dialog));
+	if (result == GTK_RESPONSE_ACCEPT) {
+		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+		printf("Selected file: %s\n", filename);
+	}
+	gtk_widget_destroy (dialog);
+}
+
 void callback_dev_create(GtkWidget *widget, gpointer callback_data )
 {
 	printf("Creating a device\n");
@@ -210,41 +248,51 @@ int init_gui()
 {
 	GtkWidget *table = gtk_table_new(20, 12, TRUE);
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
+	GtkWidget *load_button;
+	GtkWidget *save_button;
 
 	//Toolbar
 	toolbar = gtk_toolbar_new();
 	// Boot button
 	boot = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
 	gtk_signal_connect(GTK_OBJECT(boot), "clicked", G_CALLBACK(callback_boot), NULL);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), boot, 0);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), boot, -1);
+	// Load config
+	load_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_signal_connect(GTK_OBJECT(load_button), "clicked", G_CALLBACK(callback_load), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), load_button, -1);
+	// Save config
+	save_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+	gtk_signal_connect(GTK_OBJECT(save_button), "clicked", G_CALLBACK(callback_save), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), save_button, -1);
 	// Router button
 	create_router = gtk_tool_button_new(router_icon, "New router");
 	router_icon = gtk_image_new_from_file("data/icons/router.png");
 	gtk_signal_connect(GTK_OBJECT(create_router), "clicked", G_CALLBACK(callback_create_router), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_router), router_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_router), "New router");
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_router, 1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_router, -11);
 	// Switch button
 	switch_icon = gtk_image_new_from_file("data/icons/switch.png");
 	create_switch = gtk_tool_button_new(switch_icon, "New switch");
 	gtk_signal_connect(GTK_OBJECT(create_switch), "clicked", G_CALLBACK(callback_create_switch), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_switch), switch_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_switch), "New switch");
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_switch, 2);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_switch, -1);
 	// Hub button
 	create_hub = gtk_tool_button_new(hub_icon, "New hub");
 	hub_icon = gtk_image_new_from_file("data/icons/hub.png");
 	gtk_signal_connect(GTK_OBJECT(create_hub), "clicked", G_CALLBACK(callback_create_hub), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_hub), hub_icon);
 	gtk_tool_button_set_label(create_hub, "New hub");
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_hub, 3);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_hub, -1);
 	// Bridge button
 	create_bridge = gtk_tool_button_new(bridge_icon, "New Bridge");
 	bridge_icon = gtk_image_new_from_file("data/icons/bridge.png");
 	gtk_signal_connect(GTK_OBJECT(create_bridge), "clicked", G_CALLBACK(callback_create_bridge), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_bridge), bridge_icon);
 	gtk_tool_button_set_label(create_bridge, "New bridge");
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_bridge, 4);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_bridge, -1);
 	
 
 	init_device_list(topology);

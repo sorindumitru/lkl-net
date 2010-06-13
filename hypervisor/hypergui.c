@@ -205,9 +205,10 @@ int init_gui()
 	gtk_signal_connect(GTK_OBJECT(boot), "clicked", G_CALLBACK(callback_boot), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), boot, 0);
 	// Router button
-	create_router = gtk_tool_button_new(create_router_label, "New router");
+	create_router = gtk_tool_button_new(router_icon, "New router");
+	router_icon = gtk_image_new_from_file("data/icons/router.png");
 	gtk_signal_connect(GTK_OBJECT(create_router), "clicked", G_CALLBACK(callback_create_router), NULL);
-	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_router), create_router_label);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_router), router_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_router), "New router");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_router, 1);
 	// Switch button

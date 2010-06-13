@@ -93,7 +93,7 @@ int execute_line(char *line)
 {
 	char *token = strtok(line," \t");
 	command* com = find_command(root, token);
-	params *parameters;
+	params *parameters = NULL;
 
 	if (!com) {
 		printf("command not found\n");

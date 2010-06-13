@@ -1,0 +1,55 @@
+CC=gcc
+FLEX=flex
+CFLAGS=-g -Wall -Ilklinclude -Iinclude
+LDLIBS=-pthread -lreadline -lm
+
+# Environment {
+
+HERE=$(PWD)
+LINUX=$(HERE)/../linux-2.6
+MKDIR=mkdir -p
+
+all: $(CROSS)lkl/lkl.a lklinclude/asm lklinclude/asm-generic lklinclude/x86 lklinclude/linux
+
+# Include LKL {
+
+lklinclude/asm:
+	-$(MKDIR) `dirname $@`
+	ln -s $(LINUX)/arch/lkl/include/asm lklinclude/asm
+
+lklinclude/x86:
+	-$(MKDIR) `dirname $@`
+	ln -s $(LINUX)/arch/x86 lklinclude/x86
+
+lklinclude/asm-generic:
+	-$(MKDIR) `dirname $@`
+	ln -s $(LINUX)/include/asm-generic lklinclude/asm-generic
+
+lklinclude/linux:
+	-$(MKDIR) `dirname $@`
+	ln -s $(LINUX)/include/linux lklinclude/linux
+
+INC=lklinclude/asm lklinclude/asm-generic lklinclude/x86 lklinclude/linux
+
+
+# }
+
+# LKL {
+
+$(CROSS)lkl/.config: .config
+	mkdir -p lkl && \
+	cp $< $@
+	
+$(CROSS)lkl/lkl.a: lkl/.config
+	cd $(LINUX) && \
+	$(MAKE) O=$(HERE)/$(CROSS)lkl ARCH=lkl \
+	CROSS_COMPILE=$(CROSS) LKLENV_CFLAGS="$(APR_CONF)" \
+	EXTRA_CFLAGS="$(EXTRA_CFLAGS)" \
+	lkl.a
+
+# }
+
+clean:
+	-rm -rf lkl
+	
+# }

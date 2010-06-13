@@ -26,7 +26,7 @@ int send_packet(int to, packet_t *packet)
 	int err;
 
 	if (packet->size > MAX_PACKET_SIZE) {
-		packet->size == MAX_PACKET_SIZE;
+		packet->size = MAX_PACKET_SIZE;
 		printf("Packet too big!\n");
 	}
 	

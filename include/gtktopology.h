@@ -46,10 +46,9 @@ struct _GtkTopologyClass {
 };
 
 struct _GtkTopologyDevice {
-	unsigned int x, y;
 	unsigned int xlow, ylow;
 	unsigned int xhigh, yhigh;
-	char *hostname;
+	device_t *dev;
 	struct list_head links;
 	/**
 	 * Function that draws the device

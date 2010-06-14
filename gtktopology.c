@@ -118,7 +118,7 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
 	if (device) {
-		printf("Device %s found!\n", device->hostname);
+		printf("Device %s found!\n", device->dev->hostname);
 	}
 
 	return FALSE;
@@ -126,10 +126,11 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 
 static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
 {
+	cairo_text_extents_t extents;
 	cairo_new_path(cairo);
 	cairo_set_source_rgb(cairo, 0.7, 0, 0);
 	cairo_set_line_width(cairo, 1.75);
-	cairo_arc(cairo, device->x, device->y, 32, 0.0, 2*M_PI);
+	cairo_arc(cairo, device->dev->x, device->dev->y, 32, 0.0, 2*M_PI);
 	cairo_stroke_preserve(cairo);
 	cairo_set_source_rgba(cairo, 1.0, 0, 0, 0.4);
 	cairo_fill(cairo);
@@ -138,10 +139,14 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 	cairo_select_font_face(cairo, "Monospace",
 			       CAIRO_FONT_SLANT_NORMAL,
 			       CAIRO_FONT_WEIGHT_BOLD);
-	cairo_move_to(cairo, device->x - 28, device->y + 5);
-	if (device->hostname) {
-		cairo_show_text(cairo, device->hostname);
+	
+	if (device->dev->hostname) {
+		cairo_text_extents(cairo, device->dev->hostname, &extents);
+		cairo_move_to(cairo, device->dev->x - (extents.width+4)/2, device->dev->y + 36 + extents.height);
+		cairo_show_text(cairo, device->dev->hostname);
 	} else {
+		cairo_text_extents(cairo, "?", &extents);
+		cairo_move_to(cairo, device->dev->x - (extents.width+4)/2, device->dev->y + 36 + extents.height);
 		cairo_show_text(cairo, "?");
 	}
 
@@ -156,13 +161,11 @@ GtkTopologyDevice* gtk_topology_new_hub(device_t *device)
 {
 	GtkTopologyDevice *hub = malloc(sizeof(*hub));
 	memset(hub, 0, sizeof(*hub));
-	hub->hostname = device->hostname;
-	hub->x = device->x;
-	hub->y = device->y;
-	hub->xlow = hub->x-32;
-	hub->ylow = hub->y-32;
-	hub->xhigh = hub->x+32;
-	hub->yhigh = hub->y+32;
+	hub->dev = device;
+	hub->xlow = hub->dev->x-32;
+	hub->ylow = hub->dev->y-32;
+	hub->xhigh = hub->dev->x+32;
+	hub->yhigh = hub->dev->y+32;
 
 	return hub;
 }
@@ -171,28 +174,22 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 {
 	GtkTopologyDevice *router = malloc(sizeof(*router));
 	memset(router, 0, sizeof(*router));
-	router->hostname = device->hostname;
-	router->x = device->x;
-	router->y = device->y;
-	router->xlow = router->x-32;
-	router->ylow = router->y-32;
-	router->xhigh = router->x+32;
-	router->yhigh = router->y+32;
+	router->dev = device;
+	router->xlow = router->dev->x-32;
+	router->ylow = router->dev->y-32;
+	router->xhigh = router->dev->x+32;
+	router->yhigh = router->dev->y+32;
 	return router;
 }
 
 GtkTopologyDevice* gtk_topology_new_switch(device_t *device)
 {
 	GtkTopologyDevice *sw = malloc(sizeof(*sw));
-	memset(sw, 0, sizeof(*sw));
-	sw->hostname = device->hostname;
-	sw->x = device->x;
-	sw->y = device->y;
-	sw->xlow = sw->x-32;
-	sw->ylow = sw->y-32;
-	sw->xhigh = sw->x+32;
-	sw->yhigh = sw->y+32;
-
+	sw->dev = device;
+	sw->xlow = sw->dev->x-32;
+	sw->ylow = sw->dev->y-32;
+	sw->xhigh = sw->dev->x+32;
+	sw->yhigh = sw->dev->y+32;
 	return sw;
 }
 
@@ -220,10 +217,10 @@ static char QuadTreeIsLeaf(QuadTree *tree)
 
 static char QuadTreeIsDeviceInNode(QuadTree *tree, GtkTopologyDevice *device)
 {
-	return (device->x >= tree->xlow &&
-		device->x <= tree->xhigh &&
-		device->y >= tree->ylow &&
-		device->y <= tree->yhigh);
+	return (device->dev->x >= tree->xlow &&
+		device->dev->x <= tree->xhigh &&
+		device->dev->y >= tree->ylow &&
+		device->dev->y <= tree->yhigh);
 }
 
 static char QuadTreeIsDeviceSelected(GtkTopologyDevice *device, unsigned int x, unsigned int y)

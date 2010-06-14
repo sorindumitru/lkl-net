@@ -19,6 +19,11 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event);
 static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 
+/**
+ * The device under the mouse
+ */
+GtkTopologyDevice *under_mouse;
+
 static void gtk_topology_class_init(GtkTopologyClass *class)
 {
 	GtkWidgetClass *widget_class;
@@ -109,6 +114,18 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
 {
+	GtkTopology *topology= GTK_TOPOLOGY(widget);
+	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
+	if (event->type == GDK_2BUTTON_PRESS) {
+		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		if (device) {
+			printf("Device %s double clicked!\n", device->dev->hostname);
+			if (device->dialog) {
+				device->dialog(device, widget->window);
+			}
+		}
+	}
+	
 	return FALSE;
 }
 
@@ -117,8 +134,10 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 	GtkTopology *topology= GTK_TOPOLOGY(widget);
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
-	if (device) {
-		printf("Device %s found!\n", device->dev->hostname);
+
+	if (under_mouse != device) {
+		under_mouse = device;
+		gtk_widget_queue_draw(widget);
 	}
 
 	return FALSE;
@@ -148,6 +167,16 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 		cairo_text_extents(cairo, "?", &extents);
 		cairo_move_to(cairo, device->dev->x - (extents.width+4)/2, device->dev->y + 36 + extents.height);
 		cairo_show_text(cairo, "?");
+	}
+
+	if (device == under_mouse) {
+		cairo_new_path(cairo);
+		cairo_set_source_rgb(cairo, 0, 1, 0);
+		cairo_set_line_width(cairo, 2.5);
+		cairo_rectangle(cairo, device->xlow, device->ylow,
+				device->xhigh - device->xlow,
+				device->yhigh - device->ylow);
+		cairo_stroke(cairo);
 	}
 
 }

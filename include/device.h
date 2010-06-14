@@ -19,6 +19,7 @@ typedef struct device {
 	char *hostname;
 	char *config;
 	unsigned int port;
+	unsigned int x, y;
 
 	struct list_head list;
 } device_t;

@@ -26,17 +26,23 @@ hypervisor {
 		type router;
 		hostname R2;
 		config tests/test.router/3routers/router.R2;
+		posx 200;
+		posy 500;
 	}
 
 	device {
 		type router;
 		hostname R1;
 		config tests/test.router/3routers/router.R1;
+		posx 500;
+		posy 300;
 	}
 
 	device {
 		type router;
 		hostname R3;
 		config tests/test.router/3routers/router.R3;
+		posx 700;
+		posy 500;
 	}
 }

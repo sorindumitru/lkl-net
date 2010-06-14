@@ -26,6 +26,8 @@ T_HOSTNAME	"hostname"
 T_HYPERVISOR	"hypervisor"
 T_CONFIG	"config"
 T_TYPE		"type"
+T_POSX          "posx"
+T_POSY          "posy"
 IPADDRESS	(([0-9]){1,3}"."){3}([0-9]){1,3}
 NETMASK	"/"(3[0-2]|[0-2]?[0-9])
 MAC	({HEX}{HEX}:){5}{HEX}{HEX}
@@ -53,6 +55,8 @@ CONFIG_FILE ({LETTER}|{DIGIT}|"/"|"_"|".")+
 {T_HYPERVISOR}	return TOK_T_HYPERVISOR;
 {T_TYPE}	return TOK_T_TYPE;
 {T_DEVICE}	return TOK_T_DEVICE;
+{T_POSX}        return TOK_T_POSX;
+{T_POSY}        return TOK_T_POSY;
 {T_CONFIG}	BEGIN(CONFIG); return TOK_T_CONFIG;
 {IPADDRESS}	return TOK_IPADDRESS;
 {NETMASK}	return TOK_NETMASK;

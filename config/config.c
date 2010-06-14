@@ -293,6 +293,12 @@ int config_read_file(conf_info_t* info, const char* file_name)
 						device->config = malloc(strlen(yytext)+1);
 						memset(device->config, 0, strlen(yytext)+1);
 						memcpy(device->config, yytext, strlen(yytext));
+					} else if (token == TOK_T_POSX) {
+						token = yylex();
+						device->x = atoi(yytext);
+					} else if (token == TOK_T_POSY) {
+						token = yylex();
+						device->y = atoi(yytext);
 					} else {
 						printf("Config reader :: unexpected input at %d, %s\n", num_lines, yytext);
 					}

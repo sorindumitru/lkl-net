@@ -2,6 +2,7 @@
 #define GTK_TOPOLOGY_H_
 
 #include <list.h>
+#include <device.h>
 #include <gtk/gtk.h>
 
 typedef struct _GtkTopology                 GtkTopology;
@@ -55,6 +56,10 @@ struct _GtkTopologyDevice {
 	 */
 	void (*draw)(GtkTopologyDevice *device, GtkWidget *topology, cairo_t *cairo);
 	/**
+	 *
+	 */
+	void (*dialog)(GtkTopologyDevice *device, GtkWindow *window);
+	/**
 	 * Function that updates device information from the device
 	 */
 	void (*update)(GtkTopologyDevice *device);
@@ -70,7 +75,7 @@ struct _GtkTopologyDevice {
 #define GTK_TOPOLOGY_GET_CLASS             (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_TYPE_TOPOLOGY, GtkTopologyClass))
 
 GtkWidget* gtk_topology_new();
-GtkTopologyDevice* gtk_topology_new_router();
+GtkTopologyDevice* gtk_topology_new_router(device_t *hrouter);
 GtkTopologyDevice* gtk_topology_new_switch();
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device);
 void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection);

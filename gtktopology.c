@@ -126,6 +126,7 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 
 static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
 {
+	cairo_new_path(cairo);
 	cairo_set_source_rgb(cairo, 0.7, 0, 0);
 	cairo_set_line_width(cairo, 1.75);
 	cairo_arc(cairo, device->x, device->y, 32, 0.0, 2*M_PI);
@@ -143,6 +144,7 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 	} else {
 		cairo_show_text(cairo, "?");
 	}
+
 }
 
 static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
@@ -150,13 +152,13 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 	//GtkTopology *topology = GTK_TOPOLOGY(widget);
 }
 
-GtkTopologyDevice* gtk_topology_new_router()
+GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 {
 	GtkTopologyDevice *router = malloc(sizeof(*router));
 	memset(router, 0, sizeof(*router));
-	router->hostname = "Router";
-	router->x = 100;
-	router->y = 100;
+	router->hostname = device->hostname;
+	router->x = device->x;
+	router->y = device->y;
 	router->xlow = router->x-32;
 	router->ylow = router->y-32;
 	router->xhigh = router->x+32;

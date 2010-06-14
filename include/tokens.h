@@ -28,6 +28,8 @@
 #define TOK_T_TYPE	136
 #define TOK_T_DEVICE	137
 #define TOK_T_CONFIG	138
+#define TOK_T_POSX      139
+#define TOK_T_POSY      140
 
 #define TOK_EOF		255
 

@@ -327,7 +327,7 @@ void init_canvas(GtkWidget *box)
 	gtk_widget_set_size_request(topology,2560,2048);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), topology);
 	gtk_container_add(GTK_CONTAINER(box), scrolled_window);
-	gtk_topology_add_device(GTK_TOPOLOGY(topology), gtk_topology_new_router());
+	//gtk_topology_add_device(GTK_TOPOLOGY(topology), gtk_topology_new_router());
 }
 
 void init_device_list(GtkWidget *box)
@@ -378,6 +378,7 @@ int main(int argc, char **argv)
 
 	list_for_each_safe(head, temp, &info->devices){
 		device_t *dev = list_entry(head, device_t, list);
+		GtkTopologyDevice *device;
 		list_del(head);
 		INIT_LIST_HEAD(&dev->list);
 		switch(dev->type){
@@ -389,6 +390,8 @@ int main(int argc, char **argv)
 			break;
 		case DEV_ROUTER:
 			list_add(&dev->list, &hypervisor->routers);
+			device = gtk_topology_new_router(dev);
+			gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
 			break;
 		default:
 			break;

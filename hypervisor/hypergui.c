@@ -384,18 +384,20 @@ int main(int argc, char **argv)
 		switch(dev->type){
 		case DEV_HUB:
 			list_add(&dev->list, &hypervisor->links);
+			device = gtk_topology_new_hub(dev);
 			break;
 		case DEV_SWITCH:
 			list_add(&dev->list, &hypervisor->switches);
+			device = gtk_topology_new_switch(dev);
 			break;
 		case DEV_ROUTER:
 			list_add(&dev->list, &hypervisor->routers);
 			device = gtk_topology_new_router(dev);
-			gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
 			break;
 		default:
 			break;
 		}
+		gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
 		add_device(device_list, dev->hostname);
 	}
 

@@ -3,18 +3,24 @@ hypervisor {
 		type hub;
 		hostname hub1;
 		port 50001;
+		posx 350;
+		posy 400;
 	}
 
 	device {
 		type hub;
 		hostname hub2;
 		port 50002;
+		posx 600;
+		posy 400;
 	}
 
 	device {
 		type hub;
 		hostname hub3;
 		port 50003;
+		posx 450;
+		posy 500;
 	}
 	device {
 		type hub;

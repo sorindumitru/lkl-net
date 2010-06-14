@@ -75,8 +75,9 @@ struct _GtkTopologyDevice {
 #define GTK_TOPOLOGY_GET_CLASS             (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_TYPE_TOPOLOGY, GtkTopologyClass))
 
 GtkWidget* gtk_topology_new();
+GtkTopologyDevice* gtk_topology_new_hub(device_t *hhub);
 GtkTopologyDevice* gtk_topology_new_router(device_t *hrouter);
-GtkTopologyDevice* gtk_topology_new_switch();
+GtkTopologyDevice* gtk_topology_new_switch(device_t *hswitch);
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device);
 void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection);
 

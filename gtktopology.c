@@ -152,6 +152,21 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 	//GtkTopology *topology = GTK_TOPOLOGY(widget);
 }
 
+GtkTopologyDevice* gtk_topology_new_hub(device_t *device)
+{
+	GtkTopologyDevice *hub = malloc(sizeof(*hub));
+	memset(hub, 0, sizeof(*hub));
+	hub->hostname = device->hostname;
+	hub->x = device->x;
+	hub->y = device->y;
+	hub->xlow = hub->x-32;
+	hub->ylow = hub->y-32;
+	hub->xhigh = hub->x+32;
+	hub->yhigh = hub->y+32;
+
+	return hub;
+}
+
 GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 {
 	GtkTopologyDevice *router = malloc(sizeof(*router));
@@ -166,9 +181,19 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 	return router;
 }
 
-GtkTopologyDevice* gtk_topology_new_switch()
+GtkTopologyDevice* gtk_topology_new_switch(device_t *device)
 {
-	return NULL;
+	GtkTopologyDevice *sw = malloc(sizeof(*sw));
+	memset(sw, 0, sizeof(*sw));
+	sw->hostname = device->hostname;
+	sw->x = device->x;
+	sw->y = device->y;
+	sw->xlow = sw->x-32;
+	sw->ylow = sw->y-32;
+	sw->xhigh = sw->x+32;
+	sw->yhigh = sw->y+32;
+
+	return sw;
 }
 
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device)

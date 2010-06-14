@@ -143,7 +143,7 @@ int do_create_switch(struct params *params)
 
 int do_show_device(struct params *params)
 {
-	device_t *device;
+	device_t *device = NULL;
 	struct list_head *head;
 	socket_t *socket;
 	
@@ -250,25 +250,37 @@ static void dump_device(int fd, device_t* device)
 	char buffer[128];
 	memset(buffer,0,128);
 	sprintf(buffer,"\tdevice {\n");
-	write(fd, buffer, strlen(buffer));
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 	memset(buffer,0,128);
 	sprintf(buffer,"\t\ttype %s;\n",get_type(device->type));
-	write(fd, buffer, strlen(buffer));
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 	memset(buffer,0,128);
 	sprintf(buffer,"\t\thostname %s;\n",device->hostname);
-	write(fd, buffer, strlen(buffer));
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 	if (device->type != DEV_HUB) {
 		memset(buffer,0,128);
 		sprintf(buffer,"\t\tconfig %s;\n",device->config);
-		write(fd, buffer, strlen(buffer));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			perror("write:");
+		}
 	} else {
 		memset(buffer,0,128);
 		sprintf(buffer,"\t\tport %d;\n", device->port);
-		write(fd, buffer, strlen(buffer));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			perror("write:");
+		}
 	}
 	memset(buffer,0,128);
 	sprintf(buffer,"\t}\n");
-	write(fd, buffer, strlen(buffer));
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 
 }
 
@@ -282,7 +294,9 @@ int do_dump_hyper_config(params *params)
 		return -1;
 	}
 
-	write(fd, "hypervisor {\n", strlen("hypervisor {\n"));
+	if (write(fd, "hypervisor {\n", strlen("hypervisor {\n")) < 0) {
+		perror("write:");
+	}
 
 	list_for_each(head, &hypervisor->links) {
 		device_t *device = list_entry(head, device_t, list);
@@ -299,7 +313,9 @@ int do_dump_hyper_config(params *params)
 		dump_device(fd, device);
 	}
 
-	write(fd, "}\n", strlen("}\n"));
+	if (write(fd, "}\n", strlen("}\n")) < 0) {
+		perror("write:");
+	}
 
 	return 0;
 }

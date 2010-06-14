@@ -114,7 +114,6 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
 {
-	GtkTopology *topology= GTK_TOPOLOGY(widget);
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	if (event->type == GDK_2BUTTON_PRESS) {
 		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
@@ -131,7 +130,6 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 
 static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 {
-	GtkTopology *topology= GTK_TOPOLOGY(widget);
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
 
@@ -188,8 +186,8 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 
 	cairo_new_path(cairo);
 	cairo_set_source_rgb(cairo, 1, 1, 1);
-	image = cairo_svg_surface_create("data/router.svg", 72, 72);
-	cairo_set_source_surface(cairo, image, device->dev->x, device->dev->y);
+	//image = cairo_svg_surface_create("data/router.svg", 72, 72);
+	//cairo_set_source_surface(cairo, image, device->dev->x, device->dev->y);
 	cairo_paint(cairo);
 	cairo_fill(cairo);
 	

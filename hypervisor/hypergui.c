@@ -82,9 +82,9 @@ gint timeout_boot( gpointer data )
 
 void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
 {
-	GtkWidget *dialog = gtk_dialog_new();
-	GtkWidget *apply = gtk_button_new_with_label("Apply");
-	GtkWidget *cancel = gtk_button_new_with_label("Cancel");
+	//GtkWidget *dialog = gtk_dialog_new();
+	//GtkWidget *apply = gtk_button_new_with_label("Apply");
+	//GtkWidget *cancel = gtk_button_new_with_label("Cancel");
 	
 }
 
@@ -256,8 +256,8 @@ int init_gui()
 {
 	GtkWidget *table = gtk_table_new(20, 12, TRUE);
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
-	GtkWidget *load_button;
-	GtkWidget *save_button;
+	GtkToolItem *load_button;
+	GtkToolItem *save_button;
 
 	//Toolbar
 	toolbar = gtk_toolbar_new();
@@ -292,14 +292,14 @@ int init_gui()
 	hub_icon = gtk_image_new_from_file("data/icons/hub.png");
 	gtk_signal_connect(GTK_OBJECT(create_hub), "clicked", G_CALLBACK(callback_create_hub), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_hub), hub_icon);
-	gtk_tool_button_set_label(create_hub, "New hub");
+	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_hub), "New hub");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_hub, -1);
 	// Bridge button
 	create_bridge = gtk_tool_button_new(bridge_icon, "New Bridge");
 	bridge_icon = gtk_image_new_from_file("data/icons/bridge.png");
 	gtk_signal_connect(GTK_OBJECT(create_bridge), "clicked", G_CALLBACK(callback_create_bridge), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_bridge), bridge_icon);
-	gtk_tool_button_set_label(create_bridge, "New bridge");
+	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_bridge), "New bridge");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_bridge, -1);
 	
 
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 
 	list_for_each_safe(head, temp, &info->devices){
 		device_t *dev = list_entry(head, device_t, list);
-		GtkTopologyDevice *device;
+		GtkTopologyDevice *device = NULL;
 		list_del(head);
 		INIT_LIST_HEAD(&dev->list);
 		switch(dev->type){

@@ -136,7 +136,7 @@ int do_flush_entries(struct iptargs *ipt)
 	struct iptc_handle *handle;
 	handle = iptc_init(ipt->table);
 	if (!ipt->chain){
-		char *this;
+		const char *this;
 		for (this=iptc_first_chain(handle); this; this=iptc_next_chain(handle)) {
 			iptc_flush_entries(this, handle);
 		}
@@ -178,7 +178,7 @@ void print_ip(const char* prefix, struct in_addr addr, struct in_addr mask)
 	char *address = malloc(32);
 	int netmask;
 	memset(address, 0, 32);
-	address = inet_ntop(AF_INET, (void*) &addr, address, 32);
+	inet_ntop(AF_INET, (void*) &addr, address, 32);
 	netmask = addr_to_mask(mask.s_addr);
 	
 	printf("-%s %s/%d ", prefix, address, netmask);
@@ -198,7 +198,7 @@ void print_header(const char *chain, struct iptc_handle *handle)
 void print_nat_address(unsigned int ip)
 {
 	char *address = (char*)malloc(32);
-	address = inet_ntop(AF_INET,&ip,address,32);
+	inet_ntop(AF_INET,&ip,address,32);
 	printf("%s",address);
 }
 

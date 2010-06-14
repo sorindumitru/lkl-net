@@ -170,7 +170,7 @@ int config_read_file(conf_info_t* info, const char* file_name)
 					if (token != TOK_MAC) {
 						printf("Config reader :: expecting mac address at %d, but found %s\n", num_lines, yytext);
 					}
-					current_interface->mac = (struct eth_addr*) ether_aton(yytext);
+					current_interface->mac = (struct ether_addr*) ether_aton(yytext);
 				}
 				if ( token == TOK_T_GATEWAY ) {
 					token = yylex();
@@ -326,7 +326,9 @@ int dump_config_file(int fd, conf_info_t *conf)
 	memset(buffer, 0, 256);
 	sprintf(buffer, "hostname %s;\nport %d;\nipaddress %s;\n", conf->general.hostname, conf->general.port, 
 			inet_ntop(AF_INET, &conf->general.address, address, 32));
-	write(fd, buffer, strlen(buffer));
+	if (write(fd, buffer, strlen(buffer)) < 0) {
+		perror("write:");
+	}
 
 	//dump interfaces
 	list_for_each(head, &conf->interfaces) {

@@ -92,7 +92,7 @@ static struct ipt_natinfo *append_range(struct ipt_natinfo *info, const struct n
 static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 {
 	struct nat_nf_nat_range range;
-	char *dash, *error;
+	char *dash;
 	struct in_addr *ip = (struct in_addr*)malloc(sizeof(struct in_addr));
 	char *addr,*addr1;
 
@@ -143,12 +143,10 @@ static int NAT_target_parse(char c,char *to_address,struct ipt_natinfo **target)
 int do_nat(struct params *params)
 {
 	int c,optindex;
-	int i=0;
 	struct iptargs *ipt = malloc(sizeof(struct iptargs));
 	struct argstruct *args = get_args(params);
 	struct ipt_natinfo *target;
 
-	struct ipt_entry *e=NULL;
 	memset(ipt,0,sizeof(struct iptargs));
 	ipt->table = "nat";
 	ipt->chain = NULL;

@@ -57,7 +57,7 @@ struct _GtkTopologyDevice {
 	/**
 	 *
 	 */
-	void (*dialog)(GtkTopologyDevice *device, GtkWindow *window);
+	void (*dialog)(GtkTopologyDevice *device, GdkWindow *window);
 	/**
 	 * Function that updates device information from the device
 	 */

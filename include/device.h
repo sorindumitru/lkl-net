@@ -21,6 +21,7 @@ typedef struct device {
 	unsigned int port;
 	unsigned int x, y;
 
+	struct list_head interfaces;
 	struct list_head list;
 } device_t;
 

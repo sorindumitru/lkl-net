@@ -183,7 +183,40 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 
 static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
 {
-	//GtkTopology *topology = GTK_TOPOLOGY(widget);
+	cairo_text_extents_t extents;
+	cairo_surface_t *image;
+
+	cairo_new_path(cairo);
+	cairo_set_source_rgb(cairo, 1, 1, 1);
+	image = cairo_svg_surface_create("data/router.svg", 72, 72);
+	cairo_set_source_surface(cairo, image, device->dev->x, device->dev->y);
+	cairo_paint(cairo);
+	cairo_fill(cairo);
+	
+	cairo_set_font_size(cairo, 16);
+	cairo_select_font_face(cairo, "Monospace",
+			       CAIRO_FONT_SLANT_NORMAL,
+			       CAIRO_FONT_WEIGHT_BOLD);
+	
+	if (device->dev->hostname) {
+		cairo_text_extents(cairo, device->dev->hostname, &extents);
+		cairo_move_to(cairo, device->dev->x - (extents.width+4)/2, device->dev->y + 36 + extents.height);
+		cairo_show_text(cairo, device->dev->hostname);
+	} else {
+		cairo_text_extents(cairo, "?", &extents);
+		cairo_move_to(cairo, device->dev->x - (extents.width+4)/2, device->dev->y + 36 + extents.height);
+		cairo_show_text(cairo, "?");
+	}
+
+	if (device == under_mouse) {
+		cairo_new_path(cairo);
+		cairo_set_source_rgb(cairo, 0, 1, 0);
+		cairo_set_line_width(cairo, 2.5);
+		cairo_rectangle(cairo, device->xlow, device->ylow,
+				device->xhigh - device->xlow,
+				device->yhigh - device->ylow);
+		cairo_stroke(cairo);
+	}
 }
 
 GtkTopologyDevice* gtk_topology_new_hub(device_t *device)
@@ -208,6 +241,7 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 	router->ylow = router->dev->y-32;
 	router->xhigh = router->dev->x+32;
 	router->yhigh = router->dev->y+32;
+	//router->draw = draw_router;
 	return router;
 }
 

@@ -80,6 +80,14 @@ gint timeout_boot( gpointer data )
 	return FALSE;
 }
 
+void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
+{
+	GtkWidget *dialog = gtk_dialog_new();
+	GtkWidget *apply = gtk_button_new_with_label("Apply");
+	GtkWidget *cancel = gtk_button_new_with_label("Cancel");
+	
+}
+
 void callback_boot(GtkWidget *widget, gpointer   callback_data)
 {
 	gtk_timeout_add(1000, timeout_boot, NULL);
@@ -410,3 +418,5 @@ int main(int argc, char **argv)
 	
 	return 0;
 }
+
+

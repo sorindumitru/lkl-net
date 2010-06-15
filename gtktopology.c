@@ -21,6 +21,16 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event);
 static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 
+struct {
+	int id;
+	char *prefix;
+} dev_names[] = {
+	{0, "Router"},
+	{0, "Switch"},
+	{0, "Hub"},
+	{0, "Bridge"},
+};
+
 /**
  * The device under the mouse
  */
@@ -160,8 +170,24 @@ static gboolean gtk_topology_expose(GtkWidget *widget, GdkEventExpose *event)
 
 static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *event)
 {
+	GtkTopology *topology = GTK_TOPOLOGY(widget);
 	if (event->type == GDK_BUTTON_RELEASE) {
-		printf("X=%f Y=%f\n", event->x, event->y); 
+		char dev_name[32] = {0};
+		device_t *dev = malloc(sizeof(*dev));
+		GtkTopologyDevice *device = NULL;
+		
+		memset(dev, 0, sizeof(*dev));
+		sprintf(dev_name,"%s%d", dev_names[topology->device_sel].prefix,
+		        dev_names[topology->device_sel].id);
+		dev_names[topology->device_sel].id++;
+		//TODO:check if name is taken
+		//
+		dev->x = event->x;
+		dev->y = event->y;
+		dev->hostname = strdup(dev_name);
+		device = gtk_topology_new_router(dev);
+		gtk_topology_add_device(topology, device);
+		gtk_widget_queue_draw(widget);
 	}
 	
 	return FALSE;

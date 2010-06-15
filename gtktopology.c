@@ -37,6 +37,14 @@ struct {
 GtkTopologyDevice *under_mouse;
 GtkTopologyDevice *drag_device;
 
+static void recalc_rect(GtkTopologyDevice *device)
+{
+	device->xlow = device->dev->x-32;
+	device->ylow = device->dev->y-32;
+	device->xhigh = device->dev->x+32;
+	device->yhigh = device->dev->y+32;
+}
+
 static void gtk_topology_class_init(GtkTopologyClass *class)
 {
 	GtkWidgetClass *widget_class;
@@ -177,6 +185,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 			drag_device->dev->x = event->x;
 			drag_device->dev->y = event->y;
 			gtk_widget_queue_draw(widget);
+			recalc_rect(drag_device);
 			drag_device = NULL;
 		}else if (topology->device_sel>=0){
 			char dev_name[32] = {0};
@@ -205,13 +214,17 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 {
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	if (event->type == GDK_2BUTTON_PRESS) {
-		drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
-		if (drag_device) {
-			printf("Device %s double clicked!\n", drag_device->dev->hostname);
-			if (drag_device->dialog) {
-				drag_device->dialog(drag_device, widget->window);
+		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		if (device) {
+			printf("Device %s double clicked!\n", device->dev->hostname);
+			if (device->dialog) {
+				device->dialog(drag_device, widget->window);
 			}
 		}
+	}
+
+	if (event->type == GDK_BUTTON_PRESS) {
+		drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
 	}
 	
 	return FALSE;
@@ -225,6 +238,7 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 	if (drag_device){
 			drag_device->dev->x = event->x;
 			drag_device->dev->y = event->y;
+			recalc_rect(drag_device);
 			gtk_widget_queue_draw(widget);
 	}else if (under_mouse != device) {
 		under_mouse = device;
@@ -315,10 +329,7 @@ GtkTopologyDevice* gtk_topology_new_hub(device_t *device)
 	GtkTopologyDevice *hub = malloc(sizeof(*hub));
 	memset(hub, 0, sizeof(*hub));
 	hub->dev = device;
-	hub->xlow = hub->dev->x-32;
-	hub->ylow = hub->dev->y-32;
-	hub->xhigh = hub->dev->x+32;
-	hub->yhigh = hub->dev->y+32;
+	recalc_rect(hub);
 
 	return hub;
 }
@@ -328,10 +339,7 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 	GtkTopologyDevice *router = malloc(sizeof(*router));
 	memset(router, 0, sizeof(*router));
 	router->dev = device;
-	router->xlow = router->dev->x-32;
-	router->ylow = router->dev->y-32;
-	router->xhigh = router->dev->x+32;
-	router->yhigh = router->dev->y+32;
+	recalc_rect(router);
 	//router->draw = draw_router;
 	return router;
 }
@@ -341,10 +349,7 @@ GtkTopologyDevice* gtk_topology_new_switch(device_t *device)
 	GtkTopologyDevice *sw = malloc(sizeof(*sw));
 	memset(sw, 0, sizeof(*sw));
 	sw->dev = device;
-	sw->xlow = sw->dev->x-32;
-	sw->ylow = sw->dev->y-32;
-	sw->xhigh = sw->dev->x+32;
-	sw->yhigh = sw->dev->y+32;
+	recalc_rect(sw);
 	return sw;
 }
 

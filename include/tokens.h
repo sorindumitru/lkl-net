@@ -30,6 +30,7 @@
 #define TOK_T_CONFIG	138
 #define TOK_T_POSX      139
 #define TOK_T_POSY      140
+#define TOK_T_LINK      141
 
 #define TOK_EOF		255
 

@@ -172,6 +172,10 @@ int config_read_file(conf_info_t* info, const char* file_name)
 					}
 					current_interface->mac = (struct ether_addr*) ether_aton(yytext);
 				}
+				if (token == TOK_T_LINK) {
+					token = yylex();
+					current_interface->link = strdup(yytext);
+				}
 				if ( token == TOK_T_GATEWAY ) {
 					token = yylex();
 					if ( token != TOK_IPADDRESS ) {
@@ -267,6 +271,7 @@ int config_read_file(conf_info_t* info, const char* file_name)
 			token = yylex();
 			while (token != TOK_END) {
 				device = malloc(sizeof(*device));
+				memset(device, 0, sizeof(*device));
 				device->x = 100;
 				device->y = 100;
 				if (token != TOK_T_DEVICE) {

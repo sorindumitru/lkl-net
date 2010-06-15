@@ -11,7 +11,7 @@ typedef struct interface{
 	struct in_addr address, def_addr, gateway;
 	unsigned int netmask_len;
 	unsigned short port;
-
+	char *link;
 	struct list_head list;
 } interface_t;
 

@@ -6,6 +6,7 @@ interface {
 	ipaddress 199.9.9.10/24;
 	port 50001;
 	type hub;
+	link hub1;
 }
 interface {
 	dev eth1;
@@ -14,4 +15,5 @@ interface {
 	ipaddress 10.10.10.10/24;
 	port 50004;
 	type hub;
+	link hub4; 
 }

@@ -6,6 +6,7 @@ interface {
 	ipaddress 8.8.8.9/24;
 	port 50002;
 	type hub;
+	link hub2;
 }
 interface {
 	dev eth1;
@@ -14,4 +15,5 @@ interface {
 	ipaddress 168.16.21.9/24;
 	port 50003;
 	type hub;
+	link hub3;
 }

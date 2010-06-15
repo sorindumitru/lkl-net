@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <gtktopology.h>
+#include <interface.h>
 
 #define GRID_SPACING          16
 
@@ -12,6 +13,7 @@ G_DEFINE_TYPE (GtkTopology, gtk_topology, GTK_TYPE_DRAWING_AREA);
 // Device draw functions
 static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo);
 static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo);
+static void draw_links(GtkTopology *topology, cairo_t *cairo);
 
 // Events
 static gboolean gtk_topology_expose(GtkWidget *topology, GdkEventExpose *event);
@@ -56,7 +58,24 @@ GtkWidget* gtk_topology_new(void)
 
 void gtk_topology_add_device_links(GtkTopology *topology, GtkTopologyDevice *device)
 {
-	
+	struct list_head *i;
+	struct list_head *j;
+	list_for_each(i,&device->dev->interfaces){
+		interface_t *interface;
+		interface = list_entry(i,interface_t,list);	
+		list_for_each(j,&topology->devices){
+			GtkTopologyDevice *d;
+			d = list_entry(j, GtkTopologyDevice, list);
+			if (strcmp(interface->link,d->dev->hostname)==0){
+				GtkTopologyLink *newLink = malloc(sizeof(GtkTopologyLink));
+				INIT_LIST_HEAD(&newLink->list);
+				newLink->end1 = device;
+				newLink->end2 = d;
+				list_add(&newLink->list,&topology->links);
+				continue;
+			}	
+		}
+	}
 }
 
 void gtk_topology_add_links(GtkTopology *topology)
@@ -67,6 +86,21 @@ void gtk_topology_add_links(GtkTopology *topology)
 		device = list_entry(i, GtkTopologyDevice, list);
 		gtk_topology_add_device_links(topology,device);		
 	}
+}
+
+static void draw_links(GtkTopology *topology, cairo_t *cairo)
+{
+	struct list_head *i;
+	list_for_each(i,&topology->links){
+		GtkTopologyLink *link;
+		link = list_entry(i,GtkTopologyLink,list);
+		cairo_set_source_rgb (cairo, 1, 0, 0);
+		cairo_set_line_width (cairo, 0.5);
+		cairo_new_path(cairo);
+		cairo_move_to(cairo,link->end1->dev->x,link->end1->dev->y);
+		cairo_line_to(cairo,link->end2->dev->x,link->end2->dev->y);
+		cairo_stroke(cairo);
+	}		
 }
 
 static void draw(GtkWidget* widget, cairo_t *cairo)

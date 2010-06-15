@@ -26,6 +26,8 @@ hypervisor {
 		type hub;
 		hostname hub4;
 		port 50004;
+		posx 600;
+		posy 750;
 	}
 
 	device {

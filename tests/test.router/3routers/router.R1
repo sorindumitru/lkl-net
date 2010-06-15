@@ -15,4 +15,5 @@ interface {
 	ipaddress 8.8.8.8/24;
 	port 50002;
 	type hub;
+	link hub2;
 }

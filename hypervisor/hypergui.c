@@ -69,6 +69,7 @@ int init_gui();
 void init_labels();
 void init_canvas(GtkWidget *box);
 void init_device_list(GtkWidget *box);
+void init_topology_devices();
 
 static void add_device(GtkWidget *list, const gchar *str)
 {
@@ -76,6 +77,47 @@ static void add_device(GtkWidget *list, const gchar *str)
 	
 	gtk_list_store_append(device_store, &iter);
 	gtk_list_store_set(device_store, &iter, LIST_ITEM, str, -1);
+}
+
+void init_topology_devices()
+{
+	struct list_head *head, *temp;
+	list_for_each_safe(head, temp, &info->devices){
+		conf_info_t *dev_info = malloc(sizeof(*dev_info));
+		device_t *dev = list_entry(head, device_t, list);
+		GtkTopologyDevice *device = NULL;
+		struct list_head *ihead;
+		list_del(head);
+		INIT_LIST_HEAD(&dev->list);
+		switch(dev->type){
+		case DEV_HUB:
+			list_add(&dev->list, &hypervisor->links);
+			device = gtk_topology_new_hub(dev);
+			break;
+		case DEV_SWITCH:
+			list_add(&dev->list, &hypervisor->switches);
+			device = gtk_topology_new_switch(dev);
+			break;
+		case DEV_ROUTER:
+			list_add(&dev->list, &hypervisor->routers);
+			device = gtk_topology_new_router(dev);
+			break;
+		default:
+			break;
+		}
+		config_init(dev_info);
+		config_read_file(dev_info, dev->config);
+		list_for_each(ihead, &dev_info->interfaces) {
+			interface_t *intf = list_entry(ihead, interface_t, list);
+			interface_t *dev_if = malloc(sizeof(*dev_if));
+			memcpy(dev_if, intf, sizeof(*intf));
+			INIT_LIST_HEAD(&dev_if->list);
+			list_add(&dev_if->list, &dev->interfaces); 
+		}
+		gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
+		add_device(device_list, dev->hostname);
+		gtk_widget_queue_draw(topology);
+	}
 }
 
 gint timeout_boot( gpointer data )
@@ -97,31 +139,7 @@ gint timeout_load(gpointer data)
 	config_read_file(info, filename);
 	init_hypervisor(hypervisor,info);
 
-	list_for_each_safe(head, temp, &info->devices){
-		device_t *dev = list_entry(head, device_t, list);
-		GtkTopologyDevice *device = NULL;
-		list_del(head);
-		INIT_LIST_HEAD(&dev->list);
-		switch(dev->type){
-		case DEV_HUB:
-			list_add(&dev->list, &hypervisor->links);
-			device = gtk_topology_new_hub(dev);
-			break;
-		case DEV_SWITCH:
-			list_add(&dev->list, &hypervisor->switches);
-			device = gtk_topology_new_switch(dev);
-			break;
-		case DEV_ROUTER:
-			list_add(&dev->list, &hypervisor->routers);
-			device = gtk_topology_new_router(dev);
-			break;
-		default:
-			break;
-		}
-		gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
-		add_device(device_list, dev->hostname);
-		gtk_widget_queue_draw(topology);
-	}
+	init_topology_devices();
 	
 	return FALSE;
 }
@@ -425,30 +443,7 @@ int main(int argc, char **argv)
 	gtk_window_maximize(GTK_WINDOW(window));
 	init_gui();
 
-	list_for_each_safe(head, temp, &info->devices){
-		device_t *dev = list_entry(head, device_t, list);
-		GtkTopologyDevice *device = NULL;
-		list_del(head);
-		INIT_LIST_HEAD(&dev->list);
-		switch(dev->type){
-		case DEV_HUB:
-			list_add(&dev->list, &hypervisor->links);
-			device = gtk_topology_new_hub(dev);
-			break;
-		case DEV_SWITCH:
-			list_add(&dev->list, &hypervisor->switches);
-			device = gtk_topology_new_switch(dev);
-			break;
-		case DEV_ROUTER:
-			list_add(&dev->list, &hypervisor->routers);
-			device = gtk_topology_new_router(dev);
-			break;
-		default:
-			break;
-		}
-		gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
-		add_device(device_list, dev->hostname);
-	}
+	init_topology_devices();
 
 	g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), G_OBJECT(window));
 

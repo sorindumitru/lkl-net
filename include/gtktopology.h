@@ -39,7 +39,7 @@ struct _GtkTopology {
 	 */
 	QuadTree *device_tree;
 	struct list_head devices;
-	struct list_head links;
+	struct list_head links;//List head for links between devices
 	
 };
 
@@ -86,7 +86,6 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *hrouter);
 GtkTopologyDevice* gtk_topology_new_switch(device_t *hswitch);
 void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device);
 void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection);
-void gtk_topology_add_link(GTkTopologyLink *links,GtkTopologyDevice *device);
 
 //QuadTree functions
 void QuadTreeInit(QuadTree *tree, unsigned int xlow, unsigned int ylow, unsigned int xhigh, unsigned int yhigh);

@@ -203,6 +203,20 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 			dev->x = event->x;
 			dev->y = event->y;
 			dev->hostname = strdup(dev_name);
+			switch(topology->device_sel){
+			case SEL_ROUTER:
+				dev->type = DEV_ROUTER;
+				break;
+			case SEL_SWITCH:
+				dev->type = DEV_SWITCH;
+				break;
+			case SEL_HUB:
+				dev->type = DEV_HUB;
+				break;
+			case SEL_BRIDGE:
+				dev->type = DEV_BRIDGE;
+				break;
+			}
 			device = gtk_topology_new_hub(dev);
 			gtk_topology_add_device(topology, device);
 			gtk_widget_queue_draw(widget);
@@ -262,13 +276,25 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *cairo)
 {
 	cairo_text_extents_t extents;
+
+	cairo_surface_t *image;
+
 	cairo_new_path(cairo);
-	cairo_set_source_rgb(cairo, 0.7, 0, 0);
-	cairo_set_line_width(cairo, 1.75);
-	cairo_arc(cairo, device->dev->x, device->dev->y, 32, 0.0, 2*M_PI);
-	cairo_stroke_preserve(cairo);
-	cairo_set_source_rgba(cairo, 0.0, 0, 1.0, 1);
-	cairo_fill(cairo);
+	cairo_set_source_rgb(cairo, 1, 1, 1);
+	if (device->dev->type == DEV_ROUTER) {
+		image = cairo_image_surface_create_from_png("data/router.png");
+	} else if (device->dev->type == DEV_HUB) {
+		image = cairo_image_surface_create_from_png("data/hub.png");
+	} else if (device->dev->type == DEV_SWITCH) {
+		image = cairo_image_surface_create_from_png("data/switch.png");
+	} else if (device->dev->type == DEV_BRIDGE) {
+		image = cairo_image_surface_create_from_png("data/bridge.png");
+	} else {
+		image = cairo_image_surface_create_from_png("data/generic.png");
+	}
+	cairo_set_source_surface(cairo, image, device->dev->x-32, device->dev->y-32);
+	cairo_paint(cairo);
+	
 	cairo_set_source_rgb(cairo, 0.2, 0, 0);
 	cairo_set_font_size(cairo, 16);
 	cairo_select_font_face(cairo, "Monospace",
@@ -307,7 +333,8 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 	image = cairo_image_surface_create_from_png("data/router.png");
 	cairo_set_source_surface(cairo, image, device->dev->x-32, device->dev->y-32);
 	cairo_paint(cairo);
-	
+
+	cairo_set_source_rgb(cairo, 0.2, 0, 0);
 	cairo_set_font_size(cairo, 16);
 	cairo_select_font_face(cairo, "Monospace",
 			       CAIRO_FONT_SLANT_NORMAL,
@@ -341,7 +368,6 @@ GtkTopologyDevice* gtk_topology_new_generic(device_t *device)
 	memset(router, 0, sizeof(*router));
 	router->dev = device;
 	recalc_rect(router);
-	router->draw = draw_generic;
 	return router;
 }
 GtkTopologyDevice* gtk_topology_new_hub(device_t *device)

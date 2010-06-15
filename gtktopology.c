@@ -246,6 +246,7 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 GtkTopologyDevice* gtk_topology_new_switch(device_t *device)
 {
 	GtkTopologyDevice *sw = malloc(sizeof(*sw));
+	memset(sw, 0, sizeof(*sw));
 	sw->dev = device;
 	sw->xlow = sw->dev->x-32;
 	sw->ylow = sw->dev->y-32;

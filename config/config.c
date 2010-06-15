@@ -267,6 +267,8 @@ int config_read_file(conf_info_t* info, const char* file_name)
 			token = yylex();
 			while (token != TOK_END) {
 				device = malloc(sizeof(*device));
+				device->x = 100;
+				device->y = 100;
 				if (token != TOK_T_DEVICE) {
 					printf("Config reader :: expecting device at %d, but got %s\n", num_lines, yytext);
 				}

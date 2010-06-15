@@ -56,6 +56,11 @@ enum
   N_COLUMNS
 };
 
+conf_info_t *info;
+hypervisor_t *hypervisor;
+pthread_t request;
+char *prompt = ">";
+unsigned int port;
 
 /// Forward declarations
 static void add_device(GtkWidget *list, const gchar *str);
@@ -77,6 +82,47 @@ gint timeout_boot( gpointer data )
 {
 	struct params params;
 	do_boot_up(&params);
+	return FALSE;
+}
+
+gint timeout_load(gpointer data)
+{
+	struct list_head *head, *temp;
+	gchar *filename = (gchar *) data;
+	if (info->read) 
+		config_free(info);
+	
+	info = malloc(sizeof(*info));
+	config_init(info);
+	config_read_file(info, filename);
+	init_hypervisor(hypervisor,info);
+
+	list_for_each_safe(head, temp, &info->devices){
+		device_t *dev = list_entry(head, device_t, list);
+		GtkTopologyDevice *device = NULL;
+		list_del(head);
+		INIT_LIST_HEAD(&dev->list);
+		switch(dev->type){
+		case DEV_HUB:
+			list_add(&dev->list, &hypervisor->links);
+			device = gtk_topology_new_hub(dev);
+			break;
+		case DEV_SWITCH:
+			list_add(&dev->list, &hypervisor->switches);
+			device = gtk_topology_new_switch(dev);
+			break;
+		case DEV_ROUTER:
+			list_add(&dev->list, &hypervisor->routers);
+			device = gtk_topology_new_router(dev);
+			break;
+		default:
+			break;
+		}
+		gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
+		add_device(device_list, dev->hostname);
+		gtk_widget_queue_draw(topology);
+	}
+	
 	return FALSE;
 }
 
@@ -108,6 +154,7 @@ void callback_load(GtkWidget *widget, gpointer   callback_data)
 	if (result == GTK_RESPONSE_ACCEPT) {
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 		printf("Selected file: %s\n", filename);
+		gtk_timeout_add(500, timeout_load, filename);
 	}
 	gtk_widget_destroy (dialog);
 }
@@ -245,12 +292,6 @@ void callback_create_bridge(GtkWidget *widget, gpointer   callback_data )
 {
 	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_BRIDGE);
 }
-
-conf_info_t *info;
-hypervisor_t *hypervisor;
-pthread_t request;
-char *prompt = ">";
-unsigned int port;
 
 int init_gui()
 {

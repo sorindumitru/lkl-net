@@ -1,7 +1,7 @@
 AM_CFLAGS = -g -Wall -Iinclude -Ilklinclude
 
-GTKFLGS = `pkg-config --cflags gtk+-2.0`
-GTKLIBS = `pkg-config --libs gtk+-2.0`
+GTKFLGS = `pkg-config --cflags gtk+-2.0 gtksourceview-1.0`
+GTKLIBS = `pkg-config --libs gtk+-2.0 gtksourceview-1.0`
 LKL = lkl/lkl.a
 
 bin_PROGRAMS = bin/hyper bin/hypergui bin/router bin/switch bin/firewall bin/nat bin/hub bin/bridge

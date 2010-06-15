@@ -1,3 +1,5 @@
+#include <gio/gio.h>
+#include <gtksourceview/gtksourceview.h>
 #include <gtk/gtk.h>
 
 #include <stdio.h>
@@ -274,7 +276,7 @@ int init_gui()
 	save_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
 	gtk_signal_connect(GTK_OBJECT(save_button), "clicked", G_CALLBACK(callback_save), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), save_button, -1);
-	GtkSeparatorToolItem *sep = gtk_separator_tool_item_new();
+	GtkToolItem *sep = gtk_separator_tool_item_new();
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep, -1);
 	// Router button
 	create_router = gtk_tool_button_new(router_icon, "New router");
@@ -331,9 +333,45 @@ void init_labels()
 	create_switch_label = gtk_label_new("Create switch");
 }
 
-void on_changed(GtkWidget *widget, gpointer label) 
+void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data)
 {
+	GtkWidget *dialog;
+	dialog = gtk_dialog_new();
+	GtkWidget *source_view;
+	GtkSourceBuffer *source_buffer = gtk_source_buffer_new(NULL);
+	gchar *device_name;
+	GtkTreeIter iter;
+	GtkTopology *top = GTK_TOPOLOGY(topology);
+	struct list_head *head;
 
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(device_store), &iter, path);
+	gtk_tree_model_get(GTK_TREE_MODEL(device_store), &iter, 0, &device_name, -1);
+
+	source_view = gtk_source_view_new_with_buffer(source_buffer);
+
+	list_for_each(head, &top->devices) {
+		GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, list);
+		if (!strcmp(device_name, device->dev->hostname) && device->dev->config) {
+			GError *error;
+			gchar *buffer;
+			//open file
+			printf("config %s\n", device->dev->config);
+			if (!g_file_get_contents (device->dev->config, &buffer, NULL, &error)) {
+				return;
+			}
+			gtk_source_buffer_begin_not_undoable_action(source_buffer);
+			gtk_text_buffer_set_text (GTK_TEXT_BUFFER(source_buffer), buffer, -1);
+			gtk_source_buffer_end_not_undoable_action(source_buffer);
+			gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(source_buffer), FALSE);
+			gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(source_view), TRUE);
+			gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(source_view), TRUE);
+			gtk_widget_set_sensitive (GTK_WIDGET(source_view), FALSE);
+			gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(dialog)->vbox), source_view);
+			gtk_widget_show_all(dialog);
+			gtk_dialog_run(GTK_DIALOG(dialog));
+			gtk_widget_destroy(dialog);
+		}
+	}
 }
 
 void init_canvas(GtkWidget *box)
@@ -362,10 +400,8 @@ void init_device_list(GtkWidget *box)
 	device_store = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING);
 
 	gtk_tree_view_set_model(GTK_TREE_VIEW(device_list), GTK_TREE_MODEL(device_store));
-
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(device_list));
-
-	g_signal_connect(selection, "changed", G_CALLBACK(on_changed), NULL);
+	g_signal_connect(GTK_OBJECT(device_list), "row-activated", G_CALLBACK(on_changed), NULL);
 }
 
 int main(int argc, char **argv)

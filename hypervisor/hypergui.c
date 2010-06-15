@@ -109,7 +109,6 @@ void init_topology_devices()
 		if (dev->type != DEV_HUB) {
 			config_init(dev_info);
 			config_read_file(dev_info, dev->config);
-			printf("conf %s\n", dev->config);
 			list_for_each(ihead, &dev_info->interfaces) {
 				interface_t *intf = list_entry(ihead, interface_t, list);
 				interface_t *dev_if = malloc(sizeof(*dev_if));

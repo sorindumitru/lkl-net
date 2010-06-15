@@ -95,12 +95,14 @@ static void draw_links(GtkTopology *topology, cairo_t *cairo)
 		GtkTopologyLink *link;
 		link = list_entry(i,GtkTopologyLink,list);
 		cairo_set_source_rgb (cairo, 1, 0, 0);
-		cairo_set_line_width (cairo, 0.5);
+		cairo_set_line_width (cairo, 2.5);
 		cairo_new_path(cairo);
 		cairo_move_to(cairo,link->end1->dev->x,link->end1->dev->y);
 		cairo_line_to(cairo,link->end2->dev->x,link->end2->dev->y);
 		cairo_stroke(cairo);
-	}		
+	}
+
+	cairo_new_path(cairo);
 }
 
 static void draw(GtkWidget* widget, cairo_t *cairo)
@@ -110,6 +112,7 @@ static void draw(GtkWidget* widget, cairo_t *cairo)
 	int width = widget->allocation.width;
 	int height = widget->allocation.height;
 	GtkTopology *topology = GTK_TOPOLOGY(widget);
+	
 	cairo_set_source_rgb(cairo, 1.0, 0.95, 1);
 	cairo_rectangle(cairo, 0, 0, width, height);
 	cairo_fill(cairo);
@@ -129,6 +132,8 @@ static void draw(GtkWidget* widget, cairo_t *cairo)
 		}
 	}
 	cairo_stroke(cairo);
+	
+	draw_links(topology, cairo);
 
 	list_for_each(head, &topology->devices) {
 		GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, list);
@@ -199,7 +204,7 @@ static void draw_generic(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *
 	cairo_set_line_width(cairo, 1.75);
 	cairo_arc(cairo, device->dev->x, device->dev->y, 32, 0.0, 2*M_PI);
 	cairo_stroke_preserve(cairo);
-	cairo_set_source_rgba(cairo, 1.0, 0, 0, 0.4);
+	cairo_set_source_rgba(cairo, 0.0, 0, 1.0, 1);
 	cairo_fill(cairo);
 	cairo_set_source_rgb(cairo, 0.2, 0, 0);
 	cairo_set_font_size(cairo, 16);

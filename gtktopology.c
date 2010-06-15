@@ -52,6 +52,10 @@ GtkWidget* gtk_topology_new(void)
 	GtkWidget *widget = g_object_new(GTK_TYPE_TOPOLOGY, NULL);
 	return widget;
 }
+static void gtk_topology_add_links(GtkTopology *topology)
+{
+	
+}
 
 static void draw(GtkWidget* widget, cairo_t *cairo)
 {

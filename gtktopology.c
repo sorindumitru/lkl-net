@@ -203,7 +203,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 			dev->x = event->x;
 			dev->y = event->y;
 			dev->hostname = strdup(dev_name);
-			device = gtk_topology_new_router(dev);
+			device = gtk_topology_new_hub(dev);
 			gtk_topology_add_device(topology, device);
 			gtk_widget_queue_draw(widget);
 		}
@@ -304,10 +304,9 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 
 	cairo_new_path(cairo);
 	cairo_set_source_rgb(cairo, 1, 1, 1);
-	//image = cairo_svg_surface_create("data/router.svg", 72, 72);
-	//cairo_set_source_surface(cairo, image, device->dev->x, device->dev->y);
+	image = cairo_image_surface_create_from_png("data/router.png");
+	cairo_set_source_surface(cairo, image, device->dev->x-32, device->dev->y-32);
 	cairo_paint(cairo);
-	cairo_fill(cairo);
 	
 	cairo_set_font_size(cairo, 16);
 	cairo_select_font_face(cairo, "Monospace",
@@ -335,6 +334,16 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 	}
 }
 
+
+GtkTopologyDevice* gtk_topology_new_generic(device_t *device)
+{
+	GtkTopologyDevice *router = malloc(sizeof(*router));
+	memset(router, 0, sizeof(*router));
+	router->dev = device;
+	recalc_rect(router);
+	router->draw = draw_generic;
+	return router;
+}
 GtkTopologyDevice* gtk_topology_new_hub(device_t *device)
 {
 	GtkTopologyDevice *hub = malloc(sizeof(*hub));
@@ -351,7 +360,7 @@ GtkTopologyDevice* gtk_topology_new_router(device_t *device)
 	memset(router, 0, sizeof(*router));
 	router->dev = device;
 	recalc_rect(router);
-	//router->draw = draw_router;
+	router->draw = draw_router;
 	return router;
 }
 

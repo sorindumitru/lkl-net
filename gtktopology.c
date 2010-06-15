@@ -42,6 +42,7 @@ static void gtk_topology_class_init(GtkTopologyClass *class)
 static void gtk_topology_init(GtkTopology *topology)
 {
 	INIT_LIST_HEAD(&topology->devices);
+	INIT_LIST_HEAD(&topology->links);
 	gtk_widget_add_events(GTK_WIDGET(topology), GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(topology);
 	QuadTreeInit(device_tree, 0, 0, 2560, 2048);
@@ -52,9 +53,20 @@ GtkWidget* gtk_topology_new(void)
 	GtkWidget *widget = g_object_new(GTK_TYPE_TOPOLOGY, NULL);
 	return widget;
 }
-static void gtk_topology_add_links(GtkTopology *topology)
+
+void gtk_topology_add_device_links(GtkTopology *topology, GtkTopologyDevice *device)
 {
 	
+}
+
+void gtk_topology_add_links(GtkTopology *topology)
+{
+	struct list_head *i;
+	list_for_each(i,&topology->devices){
+		GtkTopologyDevice *device;
+		device = list_entry(i, GtkTopologyDevice, list);
+		gtk_topology_add_device_links(topology,device);		
+	}
 }
 
 static void draw(GtkWidget* widget, cairo_t *cairo)

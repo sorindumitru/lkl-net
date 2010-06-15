@@ -105,19 +105,25 @@ void init_topology_devices()
 		default:
 			break;
 		}
-		config_init(dev_info);
-		config_read_file(dev_info, dev->config);
-		list_for_each(ihead, &dev_info->interfaces) {
-			interface_t *intf = list_entry(ihead, interface_t, list);
-			interface_t *dev_if = malloc(sizeof(*dev_if));
-			memcpy(dev_if, intf, sizeof(*intf));
-			INIT_LIST_HEAD(&dev_if->list);
-			list_add(&dev_if->list, &dev->interfaces); 
+		INIT_LIST_HEAD(&dev->interfaces);
+		if (dev->type != DEV_HUB) {
+			config_init(dev_info);
+			config_read_file(dev_info, dev->config);
+			printf("conf %s\n", dev->config);
+			list_for_each(ihead, &dev_info->interfaces) {
+				interface_t *intf = list_entry(ihead, interface_t, list);
+				interface_t *dev_if = malloc(sizeof(*dev_if));
+				memcpy(dev_if, intf, sizeof(*intf));
+				INIT_LIST_HEAD(&dev_if->list);
+				list_add(&dev_if->list, &dev->interfaces); 
+			}
 		}
 		gtk_topology_add_device(GTK_TOPOLOGY(topology), device);
 		add_device(device_list, dev->hostname);
-		gtk_widget_queue_draw(topology);
 	}
+
+	gtk_topology_add_links(GTK_TOPOLOGY(topology));
+	gtk_widget_queue_draw(topology);
 }
 
 gint timeout_boot( gpointer data )
@@ -129,7 +135,6 @@ gint timeout_boot( gpointer data )
 
 gint timeout_load(gpointer data)
 {
-	struct list_head *head, *temp;
 	gchar *filename = (gchar *) data;
 	if (info->read) 
 		config_free(info);
@@ -158,7 +163,7 @@ void callback_boot(GtkWidget *widget, gpointer   callback_data)
 }
 
 void callback_load(GtkWidget *widget, gpointer   callback_data)
-{
+ {
 	GtkWidget *dialog;
 	gchar *filename;
 
@@ -218,87 +223,11 @@ void callback_dev_create(GtkWidget *widget, gpointer callback_data )
 void callback_create_switch(GtkWidget *widget, gpointer   callback_data )
 {
 	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_SWITCH);
-
-#if 0
-	GtkWidget *dialog = gtk_dialog_new();
-	GtkWidget *name_label = gtk_label_new("Hostname:");
-	GtkWidget *config_label = gtk_label_new("Config file:");
-	GtkWidget *name = gtk_entry_new();
-	GtkWidget *config = gtk_entry_new();
-	dev_entries_t *ok_entries = malloc(sizeof(*ok_entries));
-	ok_entries->type = 1;
-	ok_entries->dialog = dialog;
-	ok_entries->name = name;
-	ok_entries->config = config;
-	dev_entries_t *cancel_entries = malloc(sizeof(*cancel_entries));
-	cancel_entries->type = 11;
-	cancel_entries->dialog = dialog;
-	GtkWidget *ok_button = gtk_button_new_with_label("Ok");
-	gtk_signal_connect(GTK_OBJECT(ok_button), "clicked", G_CALLBACK(callback_dev_create),(gpointer) ok_entries);
-	GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
-	gtk_signal_connect(GTK_OBJECT(cancel_button), "clicked", G_CALLBACK(callback_dev_create), (gpointer) cancel_entries);
-	
-	GtkWidget *name_box = gtk_hbox_new(FALSE, 10);
-	GtkWidget *config_box = gtk_hbox_new(FALSE,10);
-	GtkWidget *buttons = gtk_hbox_new(FALSE, 10);
-
-	
-	gtk_container_add(GTK_CONTAINER(name_box), name_label);
-	gtk_container_add(GTK_CONTAINER(name_box), name);
-	gtk_container_add(GTK_CONTAINER(config_box), config_label);
-	gtk_container_add(GTK_CONTAINER(config_box), config);
-	gtk_container_add(GTK_CONTAINER(buttons), ok_button);
-	gtk_container_add(GTK_CONTAINER(buttons), cancel_button);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), name_box);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), config_box);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), buttons);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Create switch");
-	gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(dialog)->vbox));
-	gtk_dialog_run(GTK_DIALOG(dialog));
-#endif
 }
 
 void callback_create_router(GtkWidget *widget, gpointer   callback_data )
 {
 	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_ROUTER);
-
-#if 0
-	GtkWidget *dialog = gtk_dialog_new();
-	GtkWidget *name_label = gtk_label_new("Hostname:");
-	GtkWidget *config_label = gtk_label_new("Config file:");
-	GtkWidget *name = gtk_entry_new();
-	GtkWidget *config = gtk_entry_new();
-	dev_entries_t *ok_entries = malloc(sizeof(*ok_entries));
-	ok_entries->type = 0;
-	ok_entries->dialog = dialog;
-	ok_entries->name = name;
-	ok_entries->config = config;
-	dev_entries_t *cancel_entries = malloc(sizeof(*cancel_entries));
-	cancel_entries->type = 11;
-	cancel_entries->dialog = dialog;
-	GtkWidget *ok_button = gtk_button_new_with_label("Ok");
-	gtk_signal_connect(GTK_OBJECT(ok_button), "clicked", G_CALLBACK(callback_dev_create),(gpointer) ok_entries);
-	GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
-	gtk_signal_connect(GTK_OBJECT(cancel_button), "clicked", G_CALLBACK(callback_dev_create), (gpointer) cancel_entries);
-	
-	GtkWidget *name_box = gtk_hbox_new(FALSE, 10);
-	GtkWidget *config_box = gtk_hbox_new(FALSE,10);
-	GtkWidget *buttons = gtk_hbox_new(FALSE, 10);
-
-	
-	gtk_container_add(GTK_CONTAINER(name_box), name_label);
-	gtk_container_add(GTK_CONTAINER(name_box), name);
-	gtk_container_add(GTK_CONTAINER(config_box), config_label);
-	gtk_container_add(GTK_CONTAINER(config_box), config);
-	gtk_container_add(GTK_CONTAINER(buttons), ok_button);
-	gtk_container_add(GTK_CONTAINER(buttons), cancel_button);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), name_box);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), config_box);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), buttons);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Create router");
-	gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
-	gtk_dialog_run(GTK_DIALOG(dialog));
-#endif
 }
 
 void callback_create_hub(GtkWidget *widget, gpointer   callback_data )
@@ -394,7 +323,6 @@ void init_canvas(GtkWidget *box)
 	gtk_widget_set_size_request(topology,2560,2048);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), topology);
 	gtk_container_add(GTK_CONTAINER(box), scrolled_window);
-	//gtk_topology_add_device(GTK_TOPOLOGY(topology), gtk_topology_new_router());
 }
 
 void init_device_list(GtkWidget *box)
@@ -420,7 +348,6 @@ void init_device_list(GtkWidget *box)
 
 int main(int argc, char **argv)
 {
-	struct list_head *head, *temp;
 	info = malloc(sizeof(*info));
 	hypervisor = malloc(sizeof(*hypervisor));
 	config_init(info);
@@ -454,5 +381,3 @@ int main(int argc, char **argv)
 	
 	return 0;
 }
-
-

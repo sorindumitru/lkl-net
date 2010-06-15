@@ -230,9 +230,9 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 		if(device){
 			GtkTopology *top = GTK_TOPOLOGY(widget);
 			if (top->device_sel == 4){
-				struct list_head *del = &device->list;
-				list_del(del);
 				gtk_widget_queue_draw(widget);
+				gtk_topology_del_device_links(top, device);
+				list_del(&device->list);
 			}else
 				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
 		}		
@@ -371,6 +371,19 @@ void gtk_topology_add_device(GtkTopology *topology, GtkTopologyDevice *device)
 	INIT_LIST_HEAD(&device->tree);
 	list_add(&device->list, &topology->devices);
 	QuadTreeAddDevice(device_tree, device);
+}
+
+void gtk_topology_del_device_links(GtkTopology *topology, GtkTopologyDevice *device)
+{
+	struct list_head *head, *temp;
+
+	list_for_each_safe(head, temp, &topology->links) {
+		GtkTopologyLink *link = list_entry(head, GtkTopologyLink, list);
+		if (link->end1 == device || link->end2 == device) {
+			list_del(head);
+			free(link);
+		}
+	}
 }
 
 void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection)

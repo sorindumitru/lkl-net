@@ -274,6 +274,8 @@ int init_gui()
 	save_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
 	gtk_signal_connect(GTK_OBJECT(save_button), "clicked", G_CALLBACK(callback_save), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), save_button, -1);
+	GtkSeparatorToolItem *sep = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep, -1);
 	// Router button
 	create_router = gtk_tool_button_new(router_icon, "New router");
 	router_icon = gtk_image_new_from_file("data/icons/router.png");

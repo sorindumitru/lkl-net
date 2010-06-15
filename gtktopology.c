@@ -35,6 +35,7 @@ struct {
  * The device under the mouse
  */
 GtkTopologyDevice *under_mouse;
+GtkTopologyDevice *drag_device;
 
 static void gtk_topology_class_init(GtkTopologyClass *class)
 {
@@ -172,22 +173,29 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 {
 	GtkTopology *topology = GTK_TOPOLOGY(widget);
 	if (event->type == GDK_BUTTON_RELEASE) {
-		char dev_name[32] = {0};
-		device_t *dev = malloc(sizeof(*dev));
-		GtkTopologyDevice *device = NULL;
+		if (drag_device){
+			drag_device->dev->x = event->x;
+			drag_device->dev->y = event->y;
+			gtk_widget_queue_draw(widget);
+			drag_device = NULL;
+		}else if (topology->device_sel>=0){
+			char dev_name[32] = {0};
+			device_t *dev = malloc(sizeof(*dev));
+			GtkTopologyDevice *device = NULL;
 		
-		memset(dev, 0, sizeof(*dev));
-		sprintf(dev_name,"%s%d", dev_names[topology->device_sel].prefix,
+			memset(dev, 0, sizeof(*dev));
+			sprintf(dev_name,"%s%d", dev_names[topology->device_sel].prefix,
 		        dev_names[topology->device_sel].id);
-		dev_names[topology->device_sel].id++;
-		//TODO:check if name is taken
-		//
-		dev->x = event->x;
-		dev->y = event->y;
-		dev->hostname = strdup(dev_name);
-		device = gtk_topology_new_router(dev);
-		gtk_topology_add_device(topology, device);
-		gtk_widget_queue_draw(widget);
+			dev_names[topology->device_sel].id++;
+			//TODO:check if name is taken
+			//
+			dev->x = event->x;
+			dev->y = event->y;
+			dev->hostname = strdup(dev_name);
+			device = gtk_topology_new_router(dev);
+			gtk_topology_add_device(topology, device);
+			gtk_widget_queue_draw(widget);
+		}
 	}
 	
 	return FALSE;
@@ -197,11 +205,11 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 {
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	if (event->type == GDK_2BUTTON_PRESS) {
-		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
-		if (device) {
-			printf("Device %s double clicked!\n", device->dev->hostname);
-			if (device->dialog) {
-				device->dialog(device, widget->window);
+		drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		if (drag_device) {
+			printf("Device %s double clicked!\n", drag_device->dev->hostname);
+			if (drag_device->dialog) {
+				drag_device->dialog(drag_device, widget->window);
 			}
 		}
 	}
@@ -214,7 +222,11 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
 
-	if (under_mouse != device) {
+	if (drag_device){
+			drag_device->dev->x = event->x;
+			drag_device->dev->y = event->y;
+			gtk_widget_queue_draw(widget);
+	}else if (under_mouse != device) {
 		under_mouse = device;
 		gtk_widget_queue_draw(widget);
 	}

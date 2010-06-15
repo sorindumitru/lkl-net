@@ -188,7 +188,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 			gtk_widget_queue_draw(widget);
 			recalc_rect(drag_device);
 			drag_device = NULL;
-		}else if (topology->device_sel != 255){
+		}else if (topology->device_sel < 4){
 			printf("%d\n", topology->device_sel);
 			char dev_name[32] = {0};
 			device_t *dev = malloc(sizeof(*dev));
@@ -226,7 +226,16 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 	}
 
 	if (event->type == GDK_BUTTON_PRESS) {
-		drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		if(device){
+			GtkTopology *top = GTK_TOPOLOGY(widget);
+			if (top->device_sel == 4){
+				struct list_head *del = &device->list;
+				list_del(del);
+				gtk_widget_queue_draw(widget);
+			}else
+				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		}		
 	}
 	
 	return FALSE;

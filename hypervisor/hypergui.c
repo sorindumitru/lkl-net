@@ -167,6 +167,12 @@ void callback_cancel(GtkWidget *widget, gpointer   callback_data)
 	top->device_sel = -1;
 }
 
+void callback_delete(GtkWidget *widget, gpointer   callback_data)
+{
+	GtkTopology *top = GTK_TOPOLOGY(topology);
+	top->device_sel = 4;
+}
+
 void callback_load(GtkWidget *widget, gpointer   callback_data)
  {
 	GtkWidget *dialog;
@@ -252,6 +258,7 @@ int init_gui()
 	GtkToolItem *load_button;
 	GtkToolItem *save_button;
 	GtkToolItem *cancel_button;
+	GtkToolItem *delete_button;
 
 	//Toolbar
 	toolbar = gtk_toolbar_new();
@@ -295,8 +302,12 @@ int init_gui()
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_bridge), bridge_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_bridge), "New bridge");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_bridge, -1);
+	// Delete button
+	delete_button = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
+	gtk_signal_connect(GTK_OBJECT(delete_button), "clicked", G_CALLBACK(callback_delete), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), delete_button, -1);
 	// Cancel button
-	cancel_button = gtk_tool_button_new_from_stock(GTK_STOCK_CANCEL);
+	cancel_button = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
 	gtk_signal_connect(GTK_OBJECT(cancel_button), "clicked", G_CALLBACK(callback_cancel), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), cancel_button, -1);
 

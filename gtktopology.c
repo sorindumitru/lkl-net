@@ -64,6 +64,7 @@ static void gtk_topology_init(GtkTopology *topology)
 {
 	INIT_LIST_HEAD(&topology->devices);
 	INIT_LIST_HEAD(&topology->links);
+	topology->device_sel = -1;
 	gtk_widget_add_events(GTK_WIDGET(topology), GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(topology);
 	QuadTreeInit(device_tree, 0, 0, 2560, 2048);
@@ -187,7 +188,8 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 			gtk_widget_queue_draw(widget);
 			recalc_rect(drag_device);
 			drag_device = NULL;
-		}else if (topology->device_sel>=0){
+		}else if (topology->device_sel != 255){
+			printf("%d\n", topology->device_sel);
 			char dev_name[32] = {0};
 			device_t *dev = malloc(sizeof(*dev));
 			GtkTopologyDevice *device = NULL;

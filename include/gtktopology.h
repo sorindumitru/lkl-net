@@ -10,7 +10,7 @@ typedef struct _GtkTopologyClass            GtkTopologyClass;
 typedef struct _GtkTopologyDevice           GtkTopologyDevice;
 typedef struct _GtkTopologyLink             GtkTopologyLink;
 
-#define QUAD_TREE_NODE_THRESHOLD            8 // maximum elements in node;
+#define QUAD_TREE_NODE_THRESHOLD            256 // maximum elements in node;
 
 /**
  * Quad tree data structure for easy finding

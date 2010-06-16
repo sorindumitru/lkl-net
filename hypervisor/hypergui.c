@@ -44,6 +44,7 @@ GtkWidget *switch_icon;
 GtkWidget *hub_icon;
 GtkWidget *bridge_icon;
 
+
 typedef struct dev_entries {
 	unsigned char type;
 	GtkWidget *dialog;
@@ -166,13 +167,12 @@ void callback_boot(GtkWidget *widget, gpointer   callback_data)
 void callback_cancel(GtkWidget *widget, gpointer   callback_data)
 {
 	GtkTopology *top = GTK_TOPOLOGY(topology);
-	top->device_sel = -1;
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_NONE);
 }
 
 void callback_delete(GtkWidget *widget, gpointer   callback_data)
 {
-	GtkTopology *top = GTK_TOPOLOGY(topology);
-	top->device_sel = 4;
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_DEL_DEVICE);
 }
 
 void callback_load(GtkWidget *widget, gpointer   callback_data)
@@ -253,6 +253,16 @@ void callback_create_bridge(GtkWidget *widget, gpointer   callback_data )
 	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_BRIDGE);
 }
 
+void callback_add_link(GtkWidget *widget, gpointer   callback_data )
+{
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_ADD_LINK);
+}
+
+void callback_del_link(GtkWidget *widget, gpointer   callback_data )
+{
+	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_DEL_LINK);
+}
+
 int init_gui()
 {
 	GtkWidget *table = gtk_table_new(20, 12, TRUE);
@@ -261,6 +271,10 @@ int init_gui()
 	GtkToolItem *save_button;
 	GtkToolItem *cancel_button;
 	GtkToolItem *delete_button;
+	GtkToolItem *add_link;
+	GtkWidget *add_link_icon;
+	GtkToolItem *del_link;
+	GtkWidget *del_link_icon;
 
 	//Toolbar
 	toolbar = gtk_toolbar_new();
@@ -276,6 +290,7 @@ int init_gui()
 	save_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
 	gtk_signal_connect(GTK_OBJECT(save_button), "clicked", G_CALLBACK(callback_save), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), save_button, -1);
+
 	GtkToolItem *sep = gtk_separator_tool_item_new();
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep, -1);
 	// Router button
@@ -306,6 +321,26 @@ int init_gui()
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(create_bridge), bridge_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(create_bridge), "New bridge");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), create_bridge, -1);
+
+	GtkToolItem *sep1 = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep1, -1);
+	// Add link button
+	add_link = gtk_tool_button_new(add_link_icon, "Add link");
+	add_link_icon = gtk_image_new_from_file("data/icons/add_link.png");
+	gtk_signal_connect(GTK_OBJECT(add_link), "clicked", G_CALLBACK(callback_add_link), NULL);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(add_link), add_link_icon);
+	gtk_tool_button_set_label(GTK_TOOL_BUTTON(add_link), "New bridge");
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), add_link, -1);
+	// Del link button
+	del_link = gtk_tool_button_new(del_link_icon, "Delete link");
+	del_link_icon = gtk_image_new_from_file("data/icons/del_link.png");
+	gtk_signal_connect(GTK_OBJECT(del_link), "clicked", G_CALLBACK(callback_del_link), NULL);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(del_link), del_link_icon);
+	gtk_tool_button_set_label(GTK_TOOL_BUTTON(del_link), "New bridge");
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), del_link, -1);
+	
+	GtkToolItem *sep2 = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep2, -1);
 	// Delete button
 	delete_button = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
 	gtk_signal_connect(GTK_OBJECT(delete_button), "clicked", G_CALLBACK(callback_delete), NULL);
@@ -314,6 +349,7 @@ int init_gui()
 	cancel_button = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
 	gtk_signal_connect(GTK_OBJECT(cancel_button), "clicked", G_CALLBACK(callback_cancel), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), cancel_button, -1);
+	
 
 	init_device_list(topology);
 	init_canvas(topology);

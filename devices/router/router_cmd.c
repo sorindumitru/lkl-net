@@ -106,6 +106,10 @@ struct idxmap
 	char		name[16];
 };
 
+extern int get_interface_index(const char *dev);
+extern int lkl_add_route(char *address, char *dev, char *gateway, char *other);
+extern int lkl_remove_route(char *address, char *dev, char *gateway, char *other);
+
 int get_hz()
 {
 	return 0;
@@ -971,79 +975,13 @@ void iproute_reset_filter()
 
 int do_add_route(struct params* params)
 {
-	/*struct {
-		struct nlmsghdr 	n;
-		struct rtmsg 		r;
-		char   			buf[1024];
-	} req;*/
-	//int netmask = atoi((char *)params->p[1]);
-	/*struct hostent *hostinfo =gethostbyname((char*)params->p[0]);
-	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
-	hostinfo = gethostbyname((char*)params->p[2]);
-	struct in_addr gateway = *(struct in_addr*)hostinfo->h_addr;
-	hostinfo = gethostbyname((char*)params->p[1]);
-	struct in_addr netmask = *(struct in_addr*)hostinfo->h_addr;
-	*/
 	lkl_add_route((char*)params->p[0],(char*)params->p[1],(char*)params->p[2],(char*)params->p[3]);
-	/*struct rtattr * mxrta = (void*)mxbuf;
-
-	memset(&req, 0, sizeof(req));
-
-	req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
-	req.n.nlmsg_flags = NLM_F_REQUEST|flags;
-	req.n.nlmsg_type = cmd;
-	req.r.rtm_family = preferred_family;
-	req.r.rstruct hostent *hostinfo =gethostbyname((char*)params->p[0]);
-	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;tm_table = RT_TABLE_MAIN;
-	req.r.rtm_scope = RT_SCOPE_NOWHERE;
-
-	if (cmd != RTM_DELROUTE) {
-		req.r.rtm_protocol = RTPROT_BOOT;
-		req.r.rtm_scope = RT_SCOPE_UNIVERSE;
-		req.r.rtm_type = RTN_UNICAST;
-	}
-
-	mxrta->rta_type = RTA_METRICS;
-	mxrta->rta_len = RTA_LENGTH(0);
-	*/
 	return 0;
 }
 
 int do_remove_route(struct params* params)
 {
 	lkl_remove_route((char*)params->p[0],(char*)params->p[1],(char*)params->p[2],(char*)params->p[3]);
-	/*struct {
-		struct nlmsghdr 	n;
-		struct rtmsg 		r;
-		char   			buf[1024];
-	} req;*/
-	/*int netmask = atoi((char *)params->p[1]);
-	struct hostent *hostinfo =gethostbyname((char*)params->p[0]);
-	struct in_addr addr = *(struct in_addr*)hostinfo->h_addr;
-	hostinfo = gethostbyname((char*)params->p[2]);
-	struct in_addr gateway = *(struct in_addr*)hostinfo->h_addr;
-
-	lkl_remove_route(addr.s_addr,gateway.s_addr,netmask);
-	/*struct rtattr * mxrta = (void*)mxbuf;
-
-	memset(&req, 0, sizeof(req));
-
-	req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
-	req.n.nlmsg_flags = NLM_F_REQUEST|flags;
-	req.n.nlmsg_type = cmd;
-	req.r.rtm_family = preferred_family;
-	req.r.rtm_table = RT_TABLE_MAIN;
-	req.r.rtm_scope = RT_SCOPE_NOWHERE;
-
-	if (cmd != RTM_DELROUTE) {
-		req.r.rtm_protocol = RTPROT_BOOT;
-		req.r.rtm_scope = RT_SCOPE_UNIVERSE;
-		req.r.rtm_type = RTN_UNICAST;
-	}
-
-	mxrta->rta_type = RTA_METRICS;
-	mxrta->rta_len = RTA_LENGTH(0);
-	*/
 	return 0;
 }
 

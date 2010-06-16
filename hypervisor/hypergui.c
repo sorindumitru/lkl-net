@@ -59,12 +59,12 @@ typedef struct dev_entries {
 
 enum
 {
-  LIST_ITEM = 0,
-  N_COLUMNS
+  DEV_NAME = 0,
+  DEV_N_COLUMNS
 };
 
 enum {
-	IF_NAME,
+	IF_NAME = 0,
 	IF_LINK,
 	IF_IP,
 	IF_NETMASK,
@@ -92,14 +92,14 @@ void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col
 void on_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data);
 
 // Dialogs
-void router_dialog(GtkTopologyDevice *device, GtkWindow *window);
+void router_dialog(GtkTopologyDevice *device, GdkWindow *window);
 
 static void add_device(GtkWidget *list, const gchar *str)
 {
 	GtkTreeIter iter;
 	
 	gtk_list_store_append(device_store, &iter);
-	gtk_list_store_set(device_store, &iter, LIST_ITEM, str, -1);
+	gtk_list_store_set(device_store, &iter, DEV_NAME, str, -1);
 }
 
 void init_topology_devices()
@@ -232,7 +232,7 @@ void on_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *c
 	gtk_tree_model_get(GTK_TREE_MODEL(interface_store), &if_iter, 0, &ifname, -1);
 }
 
-void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
+void router_dialog(GtkTopologyDevice *device, GdkWindow *window)
 {
 	GtkWidget *dialog = gtk_dialog_new();
 	GtkWidget *add = gtk_button_new_with_label("Add");
@@ -560,9 +560,9 @@ void init_device_list(GtkWidget *box)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(device_list), TRUE);
 
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Devices", renderer, "text", LIST_ITEM, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Devices", renderer, "text", DEV_NAME, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(device_list), column);
-	device_store = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING);
+	device_store = gtk_list_store_new(DEV_N_COLUMNS, G_TYPE_STRING);
 
 	gtk_tree_view_set_model(GTK_TREE_VIEW(device_list), GTK_TREE_MODEL(device_store));
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(device_list));

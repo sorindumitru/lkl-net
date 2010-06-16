@@ -244,10 +244,6 @@ void submenu_clicked(GtkWidget *widget, gpointer data)
 {
 	struct submenu_data *sdata = (struct submenu_data*)data;
 	link_device->interface = strdup(sdata->interface->dev);
-	
-	g_print("clicked %s\n",sdata->interface->dev);
-	if(sdata->top->device_sel == SEL_ADD_LINK)
-		sdata->top->device_sel = SEL_ADD_LINK2;
 }
 
 static void show_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
@@ -298,10 +294,11 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				link_device->end1 = device;
 				if(device->dev->type == DEV_SWITCH || device->dev->type == DEV_ROUTER){
 					show_popup_menu(device,top);
+					top->device_sel = SEL_ADD_LINK2;
 				}else{
 					top->device_sel = SEL_ADD_LINK2;
 				}
-				
+				top->device_sel = SEL_ADD_LINK2;
 			} else if (top->device_sel == SEL_ADD_LINK2){
 				if ( (link_device->end1 != device)&&(link_device->end1->dev->type!=device->dev->type)){
 					if(link_device->end1->dev->type!= DEV_HUB && device->dev->type == DEV_HUB ){
@@ -315,6 +312,7 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				}				
 				top->device_sel = SEL_ADD_LINK;
 			}else {
+				top->device_sel = SEL_NONE;
 				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
 			}
 		}else if (top->device_sel == SEL_ADD_LINK2){

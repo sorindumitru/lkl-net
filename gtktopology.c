@@ -64,7 +64,7 @@ static void gtk_topology_init(GtkTopology *topology)
 {
 	INIT_LIST_HEAD(&topology->devices);
 	INIT_LIST_HEAD(&topology->links);
-	topology->device_sel = -1;
+	topology->device_sel = SEL_NONE;
 	gtk_widget_add_events(GTK_WIDGET(topology), GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(topology);
 	QuadTreeInit(device_tree, 0, 0, 2560, 2048);
@@ -91,6 +91,7 @@ void gtk_topology_add_device_links(GtkTopology *topology, GtkTopologyDevice *dev
 				INIT_LIST_HEAD(&newLink->list);
 				newLink->end1 = device;
 				newLink->end2 = d;
+				newLink->interface = strdup(interface->dev);
 				list_add(&newLink->list,&topology->links);
 				continue;
 			}	
@@ -188,7 +189,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 			gtk_widget_queue_draw(widget);
 			recalc_rect(drag_device);
 			drag_device = NULL;
-		}else if (topology->device_sel < 4){
+		}else if (topology->device_sel < SEL_DEL_DEVICE){
 			printf("%d\n", topology->device_sel);
 			char dev_name[32] = {0};
 			device_t *dev = malloc(sizeof(*dev));
@@ -243,7 +244,7 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
 		if(device){
 			GtkTopology *top = GTK_TOPOLOGY(widget);
-			if (top->device_sel == 4){
+			if (top->device_sel == SEL_DEL_DEVICE){
 				gtk_widget_queue_draw(widget);
 				gtk_topology_del_device_links(top, device);
 				list_del(&device->list);

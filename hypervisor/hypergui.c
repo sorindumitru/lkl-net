@@ -61,9 +61,10 @@ enum
 
 enum {
 	IF_NAME,
-	IF_IP,
-	IF_MAC,
 	IF_LINK,
+	IF_IP,
+	IF_NETMASK,
+	IF_MAC,
 	IF_N_COLUMNS,
 };
 
@@ -172,8 +173,8 @@ void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
 	GtkTreeView *interface_list;
 	GtkListStore *interface_store;
 	GtkCellRenderer *renderer;
-	GtkTreeViewColumn *name, *link, *ip, *mac;
-	char ip_data[32], mac_data[32];
+	GtkTreeViewColumn *name, *link, *ip, *mac, *netmask;
+	char ip_data[32];
 	GtkTreeIter iter;
 	struct list_head *head;
 
@@ -186,9 +187,11 @@ void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), link);
 	ip = gtk_tree_view_column_new_with_attributes("Ip address", renderer, "text", IF_IP, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), ip);
+	netmask = gtk_tree_view_column_new_with_attributes("Netmask", renderer, "text", IF_NETMASK, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), netmask);
 	mac = gtk_tree_view_column_new_with_attributes("Mac address", renderer, "text", IF_MAC, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), mac);
-	interface_store = gtk_list_store_new(IF_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	interface_store = gtk_list_store_new(IF_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(interface_list), GTK_TREE_MODEL(interface_store));
 
 	gtk_table_attach(GTK_TABLE(table), interface_list, 0, 12, 0, 10, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
@@ -199,7 +202,14 @@ void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
 		interface_t *interface = list_entry(head, interface_t, list);
 		gtk_list_store_append(interface_store, &iter);
 		inet_ntop(AF_INET, &interface->address.s_addr, ip_data, 32);
-		gtk_list_store_set(interface_store, &iter, IF_NAME, interface->dev, IF_LINK, interface->link, IF_IP, ip_data, IF_MAC, ether_ntoa(interface->mac));
+		gtk_list_store_set(interface_store, &iter,
+				   IF_NAME, interface->dev,
+				   IF_LINK, interface->link,
+				   IF_IP, ip_data,
+				   IF_NETMASK, interface->netmask_len,
+				   IF_MAC, ether_ntoa(interface->mac),
+				   -1
+				   );
 	}
 	
 	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(dialog)->vbox), table);
@@ -216,7 +226,6 @@ void callback_boot(GtkWidget *widget, gpointer   callback_data)
 
 void callback_cancel(GtkWidget *widget, gpointer   callback_data)
 {
-	GtkTopology *top = GTK_TOPOLOGY(topology);
 	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_NONE);
 }
 
@@ -375,15 +384,15 @@ int init_gui()
 	GtkToolItem *sep1 = gtk_separator_tool_item_new();
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep1, -1);
 	// Add link button
-	add_link = gtk_tool_button_new(add_link_icon, "Add link");
 	add_link_icon = gtk_image_new_from_file("data/icons/add_link.png");
+	add_link = gtk_tool_button_new(add_link_icon, "Add link");
 	gtk_signal_connect(GTK_OBJECT(add_link), "clicked", G_CALLBACK(callback_add_link), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(add_link), add_link_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(add_link), "New bridge");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), add_link, -1);
 	// Del link button
-	del_link = gtk_tool_button_new(del_link_icon, "Delete link");
 	del_link_icon = gtk_image_new_from_file("data/icons/del_link.png");
+	del_link = gtk_tool_button_new(del_link_icon, "Delete link");
 	gtk_signal_connect(GTK_OBJECT(del_link), "clicked", G_CALLBACK(callback_del_link), NULL);
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(del_link), del_link_icon);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(del_link), "New bridge");

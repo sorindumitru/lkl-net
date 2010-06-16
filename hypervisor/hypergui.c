@@ -61,8 +61,10 @@ enum
 
 enum {
 	IF_NAME,
+	IF_IP,
+	IF_MAC,
 	IF_LINK,
-	IF_N_COLUMNS
+	IF_N_COLUMNS,
 };
 
 conf_info_t *info;
@@ -170,20 +172,35 @@ void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
 	GtkTreeView *interface_list;
 	GtkListStore *interface_store;
 	GtkCellRenderer *renderer;
-	GtkTreeViewColumn *name, *link;
+	GtkTreeViewColumn *name, *link, *ip, *mac;
+	char ip_data[32], mac_data[32];
+	GtkTreeIter iter;
+	struct list_head *head;
 
 	interface_list = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(interface_list), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	name = gtk_tree_view_column_new_with_attributes("Interface", renderer, "text", IF_NAME, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(device_list), name);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), name);
 	link = gtk_tree_view_column_new_with_attributes("Link", renderer, "text", IF_LINK, NULL);
-	device_store = gtk_list_store_new(IF_N_COLUMNS, G_TYPE_STRING);
-	gtk_tree_view_set_model(GTK_TREE_VIEW(device_list), GTK_TREE_MODEL(device_store));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), link);
+	ip = gtk_tree_view_column_new_with_attributes("Ip address", renderer, "text", IF_IP, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), ip);
+	mac = gtk_tree_view_column_new_with_attributes("Mac address", renderer, "text", IF_MAC, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(interface_list), mac);
+	interface_store = gtk_list_store_new(IF_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(interface_list), GTK_TREE_MODEL(interface_store));
 
 	gtk_table_attach(GTK_TABLE(table), interface_list, 0, 12, 0, 10, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), apply, 0, 6, 10, 12, GTK_FILL, GTK_SHRINK, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), cancel, 6, 12, 10, 12, GTK_FILL, GTK_SHRINK, 0, 0);
+
+	list_for_each(head, &device->dev->interfaces) {
+		interface_t *interface = list_entry(head, interface_t, list);
+		gtk_list_store_append(interface_store, &iter);
+		inet_ntop(AF_INET, &interface->address.s_addr, ip_data, 32);
+		gtk_list_store_set(interface_store, &iter, IF_NAME, interface->dev, IF_LINK, interface->link, IF_IP, ip_data, IF_MAC, ether_ntoa(interface->mac));
+	}
 	
 	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(dialog)->vbox), table);
 	gtk_widget_show_all(dialog);

@@ -36,6 +36,7 @@ struct {
  */
 GtkTopologyDevice *under_mouse;
 GtkTopologyDevice *drag_device;
+unsigned char hovered = 0;
 
 static void recalc_rect(GtkTopologyDevice *device)
 {
@@ -184,12 +185,15 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 	GtkTopology *topology = GTK_TOPOLOGY(widget);
 	if (event->type == GDK_BUTTON_RELEASE) {
 		if (drag_device){
-			drag_device->dev->x = event->x;
-			drag_device->dev->y = event->y;
-			gtk_widget_queue_draw(widget);
-			recalc_rect(drag_device);
+			if (hovered) {
+				drag_device->dev->x = event->x;
+				drag_device->dev->y = event->y;
+				gtk_widget_queue_draw(widget);
+				recalc_rect(drag_device);
+			}
 			drag_device = NULL;
-		}else if (topology->device_sel < SEL_DEL_DEVICE){
+			hovered = 0;
+		} else if (topology->device_sel < SEL_DEL_DEVICE){
 			printf("%d\n", topology->device_sel);
 			char dev_name[32] = {0};
 			device_t *dev = malloc(sizeof(*dev));
@@ -238,6 +242,10 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				device->dialog(drag_device, widget->window);
 			}
 		}
+		if (drag_device) {
+			drag_device = NULL;
+			hovered = 0;
+		}
 	}
 
 	if (event->type == GDK_BUTTON_PRESS) {
@@ -248,9 +256,10 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				gtk_widget_queue_draw(widget);
 				gtk_topology_del_device_links(top, device);
 				list_del(&device->list);
-			}else
+			}else {
 				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
-		}		
+			}
+		}
 	}
 	
 	return FALSE;
@@ -262,11 +271,12 @@ static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *ev
 	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
 
 	if (drag_device){
-			drag_device->dev->x = event->x;
-			drag_device->dev->y = event->y;
-			recalc_rect(drag_device);
-			gtk_widget_queue_draw(widget);
-	}else if (under_mouse != device) {
+		drag_device->dev->x = event->x;
+		drag_device->dev->y = event->y;
+		recalc_rect(drag_device);
+		gtk_widget_queue_draw(widget);
+		hovered = 1;
+	} else if (under_mouse != device) {
 		under_mouse = device;
 		gtk_widget_queue_draw(widget);
 	}

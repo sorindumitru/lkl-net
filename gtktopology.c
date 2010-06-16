@@ -1,3 +1,6 @@
+//TODO:-check validity of link
+//     -verify it no longer shows line	
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,11 +34,18 @@ struct {
 	{0, "Bridge"},
 };
 
+struct submenu_data{
+	interface_t *interface;
+	GtkTopology *top;
+};
+
 /**
  * The device under the mouse
  */
 GtkTopologyDevice *under_mouse;
 GtkTopologyDevice *drag_device;
+
+GtkTopologyLink *link_device = NULL;
 unsigned char hovered = 0;
 
 static void recalc_rect(GtkTopologyDevice *device)
@@ -232,26 +242,30 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 }
 void submenu_clicked(GtkWidget *widget, gpointer data)
 {
-	interface_t *interface = (interface_t*)data;
+	struct submenu_data *sdata = (struct submenu_data*)data;
+	link_device->interface = strdup(sdata->interface->dev);
 	
-	g_print("clicked %s\n",interface->dev);
+	g_print("clicked %s\n",sdata->interface->dev);
+	if(sdata->top->device_sel == SEL_ADD_LINK)
+		sdata->top->device_sel = SEL_ADD_LINK2;
 }
 
-static void show_popup_menu(GtkTopologyDevice *device)
+static void show_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 {
 	struct list_head *i;
 	GtkWidget *menu;
 	menu = gtk_menu_new();
 	list_for_each(i,&device->dev->interfaces){
 		GtkWidget *sub_menu;
-		interface_t *interface = list_entry(i,interface_t,list);
-		sub_menu =  gtk_menu_item_new_with_label(interface->dev);
-		g_signal_connect (GTK_OBJECT (sub_menu), "activate",G_CALLBACK (submenu_clicked), interface);
+		struct submenu_data *sdata = malloc(sizeof(struct submenu_data));
+		sdata->interface = list_entry(i,interface_t,list);
+		sub_menu =  gtk_menu_item_new_with_label(sdata->interface->dev);
+		sdata->top = top;
+		g_signal_connect (GTK_OBJECT (sub_menu), "activate",G_CALLBACK (submenu_clicked), sdata);
 		gtk_menu_append(GTK_MENU(menu),sub_menu);
 		gtk_widget_show(sub_menu); 	
 	}
 	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 1, 0);
-	//gtk_widget_show_all (menu);
 }
 
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
@@ -273,35 +287,71 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 
 	if (event->type == GDK_BUTTON_PRESS) {
 		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		GtkTopology *top = GTK_TOPOLOGY(widget);
 		if(device){
-			GtkTopology *top = GTK_TOPOLOGY(widget);
 			if (top->device_sel == SEL_DEL_DEVICE){
 				gtk_widget_queue_draw(widget);
 				gtk_topology_del_device_links(top, device);
 				list_del(&device->list);
 			} else if (top->device_sel == SEL_ADD_LINK){
-				//printf("ShowMenu\n");
-				show_popup_menu(device);
-			} else {
+				link_device = (GtkTopologyLink*)malloc(sizeof(GtkTopologyLink));
+				link_device->end1 = device;
+				if(device->dev->type == DEV_SWITCH || device->dev->type == DEV_ROUTER){
+					show_popup_menu(device,top);
+				}else{
+					top->device_sel = SEL_ADD_LINK2;
+				}
+				
+			} else if (top->device_sel == SEL_ADD_LINK2){
+				if ( (link_device->end1 != device)&&(link_device->end1->dev->type!=device->dev->type)){
+					if(link_device->end1->dev->type!= DEV_HUB && device->dev->type == DEV_HUB ){
+						link_device->end2 = device;
+					}else if(link_device->end1->dev->type==DEV_HUB && device->dev->type != DEV_HUB ){
+						link_device->end2 = device;
+						show_popup_menu(device,top);
+					}
+					INIT_LIST_HEAD(&link_device->list);
+					list_add(&link_device->list,&top->links);
+				}				
+				top->device_sel = SEL_ADD_LINK;
+			}else {
 				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
 			}
+		}else if (top->device_sel == SEL_ADD_LINK2){
+			top->device_sel = SEL_ADD_LINK;
 		}
 	}
 	
 	return FALSE;
 }
 
+static void draw_link(GtkWidget *widget, GdkEventMotion *event)
+{
+	cairo_t *cairo;
+	cairo =  gdk_cairo_create(widget->window);
+	cairo_set_source_rgb (cairo, 1, 0, 0);
+	cairo_set_line_width (cairo, 2.5);
+	cairo_new_path(cairo);
+	cairo_move_to(cairo,link_device->end1->dev->x,link_device->end1->dev->y);
+	cairo_line_to(cairo,event->x,event->y);
+	cairo_stroke(cairo);
+	cairo_new_path(cairo);
+	gtk_widget_queue_draw(widget);
+}
+
 static gboolean gtk_topology_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 {
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
-
+	GtkTopology *top = GTK_TOPOLOGY(widget); 
 	if (drag_device){
 		drag_device->dev->x = event->x;
 		drag_device->dev->y = event->y;
 		recalc_rect(drag_device);
 		gtk_widget_queue_draw(widget);
 		hovered = 1;
+	} else if(top->device_sel == SEL_ADD_LINK2){
+		draw_link(widget,event);
 	} else if (under_mouse != device) {
 		under_mouse = device;
 		gtk_widget_queue_draw(widget);
@@ -398,7 +448,6 @@ static void draw_router(GtkTopologyDevice *device, GtkWidget *widget, cairo_t *c
 	}
 }
 
-
 GtkTopologyDevice* gtk_topology_new_generic(device_t *device)
 {
 	GtkTopologyDevice *router = malloc(sizeof(*router));
@@ -407,6 +456,7 @@ GtkTopologyDevice* gtk_topology_new_generic(device_t *device)
 	recalc_rect(router);
 	return router;
 }
+
 GtkTopologyDevice* gtk_topology_new_hub(device_t *device)
 {
 	GtkTopologyDevice *hub = malloc(sizeof(*hub));

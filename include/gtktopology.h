@@ -31,7 +31,8 @@ typedef struct quad_tree {
 #define SEL_BRIDGE        3
 #define SEL_DEL_DEVICE    4
 #define SEL_ADD_LINK      5
-#define SEL_DEL_LINK      6
+#define SEL_ADD_LINK2     6
+#define SEL_DEL_LINK      7
 
 struct _GtkTopology {	
 	GtkDrawingArea parent;

@@ -59,6 +59,12 @@ enum
   N_COLUMNS
 };
 
+enum {
+	IF_NAME,
+	IF_LINK,
+	IF_N_COLUMNS
+};
+
 conf_info_t *info;
 hypervisor_t *hypervisor;
 pthread_t request;
@@ -73,6 +79,9 @@ void init_labels();
 void init_canvas(GtkWidget *box);
 void init_device_list(GtkWidget *box);
 void init_topology_devices();
+
+// Dialogs
+void router_dialog(GtkTopologyDevice *device, GtkWindow *window);
 
 static void add_device(GtkWidget *list, const gchar *str)
 {
@@ -104,6 +113,7 @@ void init_topology_devices()
 		case DEV_ROUTER:
 			list_add(&dev->list, &hypervisor->routers);
 			device = gtk_topology_new_router(dev);
+			device->dialog = router_dialog;
 			break;
 		default:
 			break;
@@ -153,9 +163,32 @@ gint timeout_load(gpointer data)
 
 void router_dialog(GtkTopologyDevice *device, GtkWindow *window)
 {
-	//GtkWidget *dialog = gtk_dialog_new();
-	//GtkWidget *apply = gtk_button_new_with_label("Apply");
-	//GtkWidget *cancel = gtk_button_new_with_label("Cancel");
+	GtkWidget *dialog = gtk_dialog_new();
+	GtkWidget *apply = gtk_button_new_with_label("Apply");
+	GtkWidget *cancel = gtk_button_new_with_label("Cancel");
+	GtkWidget *table = gtk_table_new(12, 12, FALSE);
+	GtkTreeView *interface_list;
+	GtkListStore *interface_store;
+	GtkCellRenderer *renderer;
+	GtkTreeViewColumn *name, *link;
+
+	interface_list = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(interface_list), TRUE);
+	renderer = gtk_cell_renderer_text_new();
+	name = gtk_tree_view_column_new_with_attributes("Interface", renderer, "text", IF_NAME, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(device_list), name);
+	link = gtk_tree_view_column_new_with_attributes("Link", renderer, "text", IF_LINK, NULL);
+	device_store = gtk_list_store_new(IF_N_COLUMNS, G_TYPE_STRING);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(device_list), GTK_TREE_MODEL(device_store));
+
+	gtk_table_attach(GTK_TABLE(table), interface_list, 0, 12, 0, 10, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), apply, 0, 6, 10, 12, GTK_FILL, GTK_SHRINK, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), cancel, 6, 12, 10, 12, GTK_FILL, GTK_SHRINK, 0, 0);
+	
+	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(dialog)->vbox), table);
+	gtk_widget_show_all(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	
 }
 
@@ -265,7 +298,7 @@ void callback_del_link(GtkWidget *widget, gpointer   callback_data )
 
 int init_gui()
 {
-	GtkWidget *table = gtk_table_new(20, 12, TRUE);
+	GtkWidget *table = gtk_table_new(20, 12, FALSE);
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
 	GtkToolItem *load_button;
 	GtkToolItem *save_button;

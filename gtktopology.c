@@ -226,6 +226,29 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 	
 	return FALSE;
 }
+void submenu_clicked(GtkWidget *widget, gpointer data)
+{
+	interface_t *interface = (interface_t*)data;
+	
+	g_print("clicked %s\n",interface->dev);
+}
+
+static void show_popup_menu(GtkTopologyDevice *device)
+{
+	struct list_head *i;
+	GtkWidget *menu;
+	menu = gtk_menu_new();
+	list_for_each(i,&device->dev->interfaces){
+		GtkWidget *sub_menu;
+		interface_t *interface = list_entry(i,interface_t,list);
+		sub_menu =  gtk_menu_item_new_with_label(interface->dev);
+		g_signal_connect (GTK_OBJECT (sub_menu), "activate",G_CALLBACK (submenu_clicked), interface);
+		gtk_menu_append(GTK_MENU(menu),sub_menu);
+		gtk_widget_show(sub_menu); 	
+	}
+	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 1, 0);
+	//gtk_widget_show_all (menu);
+}
 
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
 {
@@ -248,6 +271,9 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				gtk_widget_queue_draw(widget);
 				gtk_topology_del_device_links(top, device);
 				list_del(&device->list);
+			}else if (top->device_sel == SEL_ADD_LINK){
+				//printf("ShowMenu\n");
+				show_popup_menu(device);
 			}else
 				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
 		}		

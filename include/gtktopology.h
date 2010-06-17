@@ -4,6 +4,7 @@
 #include <list.h>
 #include <device.h>
 #include <gtk/gtk.h>
+#include <interface.h>
 
 typedef struct _GtkTopology                 GtkTopology;
 typedef struct _GtkTopologyClass            GtkTopologyClass;
@@ -75,7 +76,7 @@ struct _GtkTopologyDevice {
 struct _GtkTopologyLink {
 	struct _GtkTopologyDevice *end1;
 	struct _GtkTopologyDevice *end2;
-	char *interface;
+	interface_t *interface;
 	struct list_head list;
 };
 

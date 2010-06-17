@@ -97,12 +97,12 @@ void gtk_topology_add_device_links(GtkTopology *topology, GtkTopologyDevice *dev
 		list_for_each(j,&topology->devices){
 			GtkTopologyDevice *d;
 			d = list_entry(j, GtkTopologyDevice, list);
-			if (strcmp(interface->link,d->dev->hostname)==0){
+			if(interface->link!=NULL && strcmp(interface->link,d->dev->hostname)==0){
 				GtkTopologyLink *newLink = malloc(sizeof(GtkTopologyLink));
 				INIT_LIST_HEAD(&newLink->list);
 				newLink->end1 = device;
 				newLink->end2 = d;
-				newLink->interface = strdup(interface->dev);
+				newLink->interface = interface;
 				list_add(&newLink->list,&topology->links);
 				continue;
 			}	
@@ -243,7 +243,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 void submenu_clicked(GtkWidget *widget, gpointer data)
 {
 	struct submenu_data *sdata = (struct submenu_data*)data;
-	link_device->interface = strdup(sdata->interface->dev);
+	link_device->interface = sdata->interface;
 }
 
 static void show_popup_menu(GtkTopologyDevice *device,GtkTopology *top)

@@ -89,7 +89,7 @@ void init_topology_devices();
 
 // Callbacks
 void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data);
-void on_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data);
+void callback_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data);
 
 // Dialogs
 void router_dialog(GtkTopologyDevice *device, GdkWindow *window);
@@ -172,8 +172,28 @@ gint timeout_load(gpointer data)
 	return FALSE;
 }
 
+char data;
+
+void callback_verify_ok(GtkWidget *widget, gpointer   callback_data) 
+{
+	GtkWidget *dialog = (GtkWidget *) callback_data;
+	data = 1;
+	gtk_widget_hide_all(dialog);
+}
+
+void callback_verify_cancel(GtkWidget *widget, gpointer   callback_data) 
+{
+	GtkWidget *dialog = (GtkWidget *) callback_data;
+	gtk_widget_hide_all(dialog);
+}
+
+void error_dialog() {
+
+}
+
 void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 {
+	GtkTopologyDevice *device = (GtkTopologyDevice*) callback_data;
 	GtkWidget *dialog = gtk_dialog_new();
 	GtkWidget *table = gtk_table_new(12, 12, FALSE);
 	GtkWidget *name_label, *name_entry;
@@ -205,26 +225,61 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 	ok = gtk_button_new_with_label("Ok");
 	cancel = gtk_button_new_with_label("Cancel");
 	gtk_table_attach(GTK_TABLE(table), ok, 0, 6, 8, 10, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_signal_connect(GTK_OBJECT(ok), "clicked", G_CALLBACK(callback_verify_ok), dialog);
 	gtk_table_attach(GTK_TABLE(table), cancel, 6, 12, 8, 10, GTK_FILL, GTK_SHRINK, 0, 0);
+	gtk_signal_connect(GTK_OBJECT(cancel), "clicked", G_CALLBACK(callback_verify_cancel), dialog);
 	
 	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(dialog)->vbox), table);
+	data = 0;
 	gtk_widget_show_all(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
+	
+	//validate entrys;
+	if (data == 1) {
+		interface_t *interface = malloc(sizeof(*interface));
+		interface->dev = strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
+		interface->link = strdup(gtk_entry_get_text(GTK_ENTRY(link_entry)));
+		if (!inet_pton(AF_INET, gtk_entry_get_text(GTK_ENTRY(ip_entry)), &interface->address)) {
+			error_dialog();
+			return;
+		}
+		interface->mac = ether_aton(gtk_entry_get_text(GTK_ENTRY(mac_entry)));
+		if (!interface->mac) {
+			error_dialog();
+			return;
+		}
+		
+		INIT_LIST_HEAD(&interface->list);
+		list_add(&interface->list, &device->dev->interfaces);
+	}
 	gtk_widget_destroy(dialog);
 }
 
 void callback_remove_if(GtkWidget *widget, gpointer   callback_data)
 {
+	struct list_head *head, *temp;
+	char *interface_name;
+	GtkTopologyDevice *device = (GtkTopologyDevice*) callback_data;
 	GtkTreeIter if_iter;
 	GtkTreeModel *model = GTK_TREE_MODEL(interface_store);
 	GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(interface_list));
 	gtk_tree_selection_get_selected(sel, &model, &if_iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(interface_store), &if_iter, 0, &interface_name, -1);
+	
+	list_for_each_safe(head, temp, &device->dev->interfaces) {
+		interface_t *interface = list_entry(head, interface_t, list);
+		if (!strcmp(interface_name, interface->dev)) {
+			list_del(head);
+			free(interface);
+		}
+	}
+	
+	//TODO: delete links from topology
+	
 	gtk_list_store_remove(interface_store, &if_iter);
-
-	//TODO: actually delete
 }
 
-void on_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data)
+void callback_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column,  gpointer user_data)
 {
 	GtkTreeIter if_iter;
 	char *ifname;
@@ -262,9 +317,9 @@ void router_dialog(GtkTopologyDevice *device, GdkWindow *window)
 
 	gtk_table_attach(GTK_TABLE(table), interface_list, 0, 12, 0, 10, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), add, 0, 6, 10, 12, GTK_FILL, GTK_SHRINK, 0, 0);
-	gtk_signal_connect(GTK_OBJECT(add), "clicked", G_CALLBACK(callback_add_if), NULL);
+	gtk_signal_connect(GTK_OBJECT(add), "clicked", G_CALLBACK(callback_add_if), device);
 	gtk_table_attach(GTK_TABLE(table), remove, 6, 12, 10, 12, GTK_FILL, GTK_SHRINK, 0, 0);
-	gtk_signal_connect(GTK_OBJECT(remove), "clicked", G_CALLBACK(callback_remove_if), NULL);
+	gtk_signal_connect(GTK_OBJECT(remove), "clicked", G_CALLBACK(callback_remove_if), device);
 
 	list_for_each(head, &device->dev->interfaces) {
 		interface_t *interface = list_entry(head, interface_t, list);
@@ -280,7 +335,7 @@ void router_dialog(GtkTopologyDevice *device, GdkWindow *window)
 				   );
 	}
 
-	g_signal_connect(GTK_OBJECT(interface_list), "row-activated", G_CALLBACK(on_if_select), NULL);
+	g_signal_connect(GTK_OBJECT(interface_list), "row-activated", G_CALLBACK(callback_if_select), NULL);
 	
 	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(dialog)->vbox), table);
 	gtk_widget_show_all(dialog);

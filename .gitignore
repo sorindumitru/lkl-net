@@ -33,3 +33,4 @@ parser.c
 stamp-h1
 tools.h
 lkl-net.kdev4
+.kdev_include_paths

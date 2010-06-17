@@ -671,7 +671,18 @@ gint notify_device(gpointer data)
 	GtkTopologyDevice *device = (GtkTopologyDevice*) data;
 	
 	if (device->list.next == NULL && device->list.prev == NULL) {
-		GtkTreeIter if_iter;
+		GtkTreeIter iter;
+		GtkTreePath *path = gtk_tree_path_new_from_string("0");
+		while(1) {
+			char *device_name;
+			gtk_tree_model_get_iter(GTK_TREE_MODEL(device_store), &iter, path);
+			gtk_tree_model_get(GTK_TREE_MODEL(device_store), &iter, 0, &device_name, -1);
+			if (!strcmp(device_name, device->dev->hostname)) {
+				gtk_list_store_remove(device_store, &iter);
+				return FALSE;
+			}
+			gtk_tree_path_next(path);
+		}
 		//GtkTreeModel *model = GTK_TREE_MODEL(device_store);
 		//gtk_list_store_remove(device_store, &if_iter);
 		list_del(&device->dev->list);

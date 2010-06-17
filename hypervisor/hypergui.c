@@ -4,7 +4,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <signal.h>
@@ -93,6 +95,7 @@ void callback_if_select(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewCol
 
 // Dialogs
 void router_dialog(GtkTopologyDevice *device, GdkWindow *window);
+void error_dialog(const gchar *message);
 
 static void add_device(GtkWidget *list, const gchar *str)
 {
@@ -172,6 +175,75 @@ gint timeout_load(gpointer data)
 	return FALSE;
 }
 
+gint timeout_save(gpointer data)
+{
+	gchar *filename = (gchar *) data;
+	struct list_head *head;
+	GtkTopology *top = GTK_TOPOLOGY(topology);
+	int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0) {
+		error_dialog("Could not open file");
+		return FALSE;
+	}
+	
+	if (write(fd, "hypervisor {\n", strlen("hypervisor {\n")) < 0) {
+		error_dialog("Could not write file");
+		return FALSE;
+	}
+	
+	list_for_each(head, &top->devices) {
+		GtkTopologyDevice *device = list_entry(head, GtkTopologyDevice, list);
+		char buffer[256];
+		if (write(fd, "\tdevice {\n", strlen("\tdevice {\n")) < 0) {
+			error_dialog("Could not write file");
+			return FALSE;
+		}
+		memset(buffer, 0, 256);
+		sprintf(buffer, "\t\ttype %s;\n", get_type(device->dev->type));
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			error_dialog("Could not write file");
+			return FALSE;
+		}
+		memset(buffer, 0, 256);
+		sprintf(buffer,"\t\thostname %s;\n",device->dev->hostname);
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			error_dialog("Could not write file");
+			return FALSE;
+		}
+		if (device->dev->type != DEV_HUB) {
+			memset(buffer,0,128);
+			sprintf(buffer,"\t\tconfig %s;\n",device->dev->config);
+			if (write(fd, buffer, strlen(buffer)) < 0) {
+				error_dialog("Could not write file");
+			}
+		} else {
+			memset(buffer,0,128);
+			sprintf(buffer,"\t\tport %d;\n", device->dev->port);
+			if (write(fd, buffer, strlen(buffer)) < 0) {
+				error_dialog("Could not write file");
+			}
+		}
+		memset(buffer, 0, 256);
+		sprintf(buffer,"\t\tposx %d;\n\t\tposy %d\n",device->dev->x, device->dev->y);
+		if (write(fd, buffer, strlen(buffer)) < 0) {
+			error_dialog("Could not write file");
+			return FALSE;
+		}
+		if (write(fd, "\t}\n", strlen("\t}\n")) < 0) {
+			error_dialog("Could not write file");
+			return FALSE;
+		}
+	}
+	
+	if (write(fd, "}\n", strlen("}\n")) < 0) {
+		error_dialog("Could not write file");
+		return FALSE;
+	}
+	
+	close(fd);
+	return FALSE;
+}
+
 char data;
 
 void callback_verify_ok(GtkWidget *widget, gpointer   callback_data) 
@@ -187,7 +259,7 @@ void callback_verify_cancel(GtkWidget *widget, gpointer   callback_data)
 	gtk_widget_hide_all(dialog);
 }
 
-void error_dialog() {
+void error_dialog(const gchar *message) {
 
 }
 
@@ -240,12 +312,12 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 		interface->dev = strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
 		interface->link = strdup(gtk_entry_get_text(GTK_ENTRY(link_entry)));
 		if (!inet_pton(AF_INET, gtk_entry_get_text(GTK_ENTRY(ip_entry)), &interface->address)) {
-			error_dialog();
+			error_dialog("Invalid address");
 			return;
 		}
 		interface->mac = ether_aton(gtk_entry_get_text(GTK_ENTRY(mac_entry)));
 		if (!interface->mac) {
-			error_dialog();
+			error_dialog("Invalid address");
 			return;
 		}
 		
@@ -393,7 +465,7 @@ void callback_save(GtkWidget *widget, gpointer   callback_data)
 	gint result = gtk_dialog_run (GTK_DIALOG (dialog));
 	if (result == GTK_RESPONSE_ACCEPT) {
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-		printf("Selected file: %s\n", filename);
+		gtk_timeout_add(250, timeout_save, filename);
 	}
 	gtk_widget_destroy (dialog);
 }

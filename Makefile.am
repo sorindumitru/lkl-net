@@ -17,7 +17,7 @@ bin_hyper_LINK = $(CCLD) -pthread -lreadline -o $@
 bin_hypergui_SOURCES = hypervisor/hypergui.c hypervisor/hypervisor_cmd.c console.c autocomplete.c interface.c device.c gtktopology.c
 bin_hypergui_CFLAGS = -DISHYPERVISOR $(AM_CFLAGS) $(GTKFLGS)
 bin_hypergui_LDADD = liblklnetconfig.a
-bin_hypergui_LINK = $(CCLD) -pthread -lreadline $(GTKLIBS) -o $@
+bin_hypergui_LINK = $(CCLD) -lm -pthread -lreadline $(GTKLIBS) -o $@
 
 bin_router_SOURCES = devices/router/router_cmd.c devices/router/router.c interface.c devices/switch/switch_cmd.c device.c console.c autocomplete.c
 bin_router_CFLAGS = -DISROUTER -DISLKL $(AM_CFLAGS)

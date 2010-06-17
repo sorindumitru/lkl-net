@@ -128,6 +128,8 @@ int config_read_file(conf_info_t* info, const char* file_name)
 				exit(-1);
 			}
 			current_interface = malloc(sizeof(interface_t));
+			current_interface->link = NULL;
+			
 			token = yylex();
 			while ( token != TOK_END ) {
 				if ( token == TOK_T_IPADDRESS ) {

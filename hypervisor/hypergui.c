@@ -668,7 +668,7 @@ void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col
 
 void notify_device(GtkTopologyDevice *device)
 {
-	add_device(GTK_WIDGET(device_store), device->dev->hostname);
+	add_device(device_list, device->dev->hostname);
 }
 
 void notify_link(GtkTopologyLink *link)

@@ -666,8 +666,19 @@ void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col
 	}
 }
 
+void notify_device(GtkTopologyDevice *device)
+{
+	add_device(GTK_WIDGET(device_store), device->dev->hostname);
+}
+
+void notify_link(GtkTopologyLink *link)
+{
+	
+}
+
 void init_canvas(GtkWidget *box)
 {
+	GtkTopology *top;
 	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(scrolled_window), 10);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
@@ -675,6 +686,10 @@ void init_canvas(GtkWidget *box)
 	gtk_widget_set_size_request(topology,2560,2048);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), topology);
 	gtk_container_add(GTK_CONTAINER(box), scrolled_window);
+	
+	top = GTK_TOPOLOGY(topology);
+	top->notify_device = notify_device;
+	top->notify_link = notify_link;
 }
 
 void init_device_list(GtkWidget *box)

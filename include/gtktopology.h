@@ -39,6 +39,9 @@ struct _GtkTopology {
 	GtkDrawingArea parent;
 	unsigned char device_sel;
 
+	void (*notify_device)(GtkTopologyDevice *device);
+	void (*notify_link)(GtkTopologyLink *link);
+	
 	/**
 	 * Devices that are to be shown on the topology
 	 * Held both as quad_tree and as list for easy access

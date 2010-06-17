@@ -666,14 +666,17 @@ void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col
 	}
 }
 
-void notify_device(GtkTopologyDevice *device)
+gint notify_device(gpointer data)
 {
+	GtkTopologyDevice *device = (GtkTopologyDevice*) data;
 	add_device(device_list, device->dev->hostname);
+	return FALSE;
 }
 
-void notify_link(GtkTopologyLink *link)
+gint notify_link(gpointer data)
 {
-	
+
+	return FALSE;
 }
 
 void init_canvas(GtkWidget *box)

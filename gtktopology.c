@@ -1,6 +1,3 @@
-//TODO:-check validity of link
-//     -verify it no longer shows line	
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -235,7 +232,7 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 				break;
 			}
 			device = gtk_topology_new_hub(dev);
-			//notify_device(device);
+			gtk_timeout_add(200,topology->notify_device,device);
 			gtk_topology_add_device(topology, device);
 			gtk_widget_queue_draw(widget);
 		}
@@ -244,32 +241,39 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 	return FALSE;
 }
 
-static int link_is_valid(int end)
+static int link_is_valid( void )
 {
-	printf("is_valid???\n");
-	if (end == first_link_end){
-		if (link_device->end1->dev->type == DEV_HUB || link_device->end1->dev->type == DEV_SWITCH)
-			return 1;
-		else{
-			if (link_device->interface->link != NULL){
-				printf("No link for interface\n");
-				return 1;
-			}
-		}
+	if (link_device->interface->link == NULL){
+		return 1;
 	}
 	return 0;
+}
+
+static void update_interface( void )
+{
+	if (link_device->end1->dev->type == DEV_HUB){
+		link_device->interface->link = strdup(link_device->end1->dev->hostname);
+	}else{
+		link_device->interface->link = strdup(link_device->end2->dev->hostname);
+	}
 }
 
 void submenu_clicked(GtkWidget *widget, gpointer data)
 {
 	struct submenu_data *sdata = (struct submenu_data*)data;
 	link_device->interface = sdata->interface;
-	printf("submenu\n");
-	if (sdata->top->device_sel == SEL_ADD_LINK && link_is_valid(first_link_end)) {
+	if (sdata->top->device_sel == SEL_ADD_LINK && link_is_valid()) {
 		sdata->top->device_sel = SEL_ADD_LINK2;
-	} else if (sdata->top->device_sel == SEL_ADD_LINK2 && link_is_valid(second_link_end)) {
-		INIT_LIST_HEAD(&link_device->list);
-		list_add(&link_device->list,&sdata->top->links);	
+	} else{
+		if (sdata->top->device_sel == SEL_ADD_LINK2 && link_is_valid()) {
+			INIT_LIST_HEAD(&link_device->list);
+			list_add(&link_device->list,&sdata->top->links);
+			sdata->top->device_sel = SEL_ADD_LINK;
+			update_interface();
+			gtk_timeout_add(200,sdata->top->notify_link,link_device);
+			
+		}else
+			sdata->top->device_sel = SEL_ADD_LINK;	
 	}
 }
 
@@ -326,24 +330,22 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				} else {
 					top->device_sel = SEL_ADD_LINK2;
 				}
-				/*if (link_is_valid(first_link_end)){
-					printf("OK end1\n");
-					top->device_sel = SEL_ADD_LINK2;
-				}else{
-					printf("end1 WRONG\n");
-				}*/
 				return FALSE;
 			} else if (top->device_sel == SEL_ADD_LINK2){
 				if ( (link_device->end1 != device)&&(link_device->end1->dev->type!=device->dev->type)){
 					if(link_device->end1->dev->type!= DEV_HUB && device->dev->type == DEV_HUB ){
 						link_device->end2 = device;
+						INIT_LIST_HEAD(&link_device->list);
+						list_add(&link_device->list,&top->links);
+						update_interface();
+						top->device_sel = SEL_ADD_LINK;
+						gtk_timeout_add(200,top->notify_link,link_device);
 					}else if(link_device->end1->dev->type==DEV_HUB && device->dev->type != DEV_HUB ){
 						link_device->end2 = device;
 						show_popup_menu(device,top);
 					}
 					
 				}				
-				top->device_sel = SEL_ADD_LINK;
 				return FALSE;
 			}else {
 				top->device_sel = SEL_NONE;

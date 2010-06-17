@@ -39,8 +39,8 @@ struct _GtkTopology {
 	GtkDrawingArea parent;
 	unsigned char device_sel;
 
-	void (*notify_device)(GtkTopologyDevice *device);
-	void (*notify_link)(GtkTopologyLink *link);
+	void (*notify_device)(gpointer data);
+	void (*notify_link)(gpointer data);
 	
 	/**
 	 * Devices that are to be shown on the topology

@@ -243,11 +243,34 @@ static gboolean gtk_topology_button_release(GtkWidget *widget, GdkEventButton *e
 	
 	return FALSE;
 }
+
+static int link_is_valid(int end)
+{
+	printf("is_valid???\n");
+	if (end == first_link_end){
+		if (link_device->end1->dev->type == DEV_HUB || link_device->end1->dev->type == DEV_SWITCH)
+			return 1;
+		else{
+			if (link_device->interface->link != NULL){
+				printf("No link for interface\n");
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 void submenu_clicked(GtkWidget *widget, gpointer data)
 {
 	struct submenu_data *sdata = (struct submenu_data*)data;
 	link_device->interface = sdata->interface;
 	printf("submenu\n");
+	if (sdata->top->device_sel == SEL_ADD_LINK && link_is_valid(first_link_end)) {
+		sdata->top->device_sel = SEL_ADD_LINK2;
+	} else if (sdata->top->device_sel == SEL_ADD_LINK2 && link_is_valid(second_link_end)) {
+		INIT_LIST_HEAD(&link_device->list);
+		list_add(&link_device->list,&sdata->top->links);	
+	}
 }
 
 static void show_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
@@ -268,21 +291,7 @@ static void show_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 1, 0);
 }
 
-static int link_is_valid(int end)
-{
-	printf("is_valid???\n");
-	if (end == first_link_end){
-		if (link_device->end1->dev->type == DEV_HUB || link_device->end1->dev->type == DEV_SWITCH)
-			return 1;
-		else{
-			if (link_device->interface->link != NULL){
-				printf("No link for interface\n");
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
+
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
 {
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
@@ -308,18 +317,22 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				gtk_widget_queue_draw(widget);
 				gtk_topology_del_device_links(top, device);
 				list_del(&device->list);
+				return FALSE;
 			} else if (top->device_sel == SEL_ADD_LINK){
 				link_device = (GtkTopologyLink*)malloc(sizeof(GtkTopologyLink));
 				link_device->end1 = device;
 				if(device->dev->type == DEV_SWITCH || device->dev->type == DEV_ROUTER){
 					show_popup_menu(device,top);
+				} else {
+					top->device_sel = SEL_ADD_LINK2;
 				}
-				if (link_is_valid(first_link_end)){
+				/*if (link_is_valid(first_link_end)){
 					printf("OK end1\n");
 					top->device_sel = SEL_ADD_LINK2;
 				}else{
 					printf("end1 WRONG\n");
-				}
+				}*/
+				return FALSE;
 			} else if (top->device_sel == SEL_ADD_LINK2){
 				if ( (link_device->end1 != device)&&(link_device->end1->dev->type!=device->dev->type)){
 					if(link_device->end1->dev->type!= DEV_HUB && device->dev->type == DEV_HUB ){
@@ -328,10 +341,10 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 						link_device->end2 = device;
 						show_popup_menu(device,top);
 					}
-					INIT_LIST_HEAD(&link_device->list);
-					list_add(&link_device->list,&top->links);
+					
 				}				
 				top->device_sel = SEL_ADD_LINK;
+				return FALSE;
 			}else {
 				top->device_sel = SEL_NONE;
 				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);

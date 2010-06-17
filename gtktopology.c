@@ -341,6 +341,8 @@ static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *eve
 				gtk_widget_queue_draw(widget);
 				gtk_topology_del_device_links(top, device);
 				list_del(&device->list);
+				device->list.next = device->list.prev = NULL;
+				gtk_timeout_add(200,top->notify_device,device);
 				return FALSE;
 			} else if (top->device_sel == SEL_ADD_LINK){
 				link_device = (GtkTopologyLink*)malloc(sizeof(GtkTopologyLink));

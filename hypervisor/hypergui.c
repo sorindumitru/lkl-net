@@ -269,7 +269,6 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 	GtkWidget *dialog = gtk_dialog_new();
 	GtkWidget *table = gtk_table_new(12, 12, FALSE);
 	GtkWidget *name_label, *name_entry;
-	GtkWidget *link_label, *link_entry;
 	GtkWidget *ip_label, *ip_entry;
 	GtkWidget *mac_label, *mac_entry;
 	GtkWidget *ok, *cancel;
@@ -278,11 +277,6 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 	name_entry = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table), name_label, 0, 6, 0, 2, GTK_FILL, GTK_SHRINK, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), name_entry, 6, 12, 0, 2, GTK_FILL, GTK_SHRINK, 0, 0);
-
-	link_label = gtk_label_new("Link");
-	link_entry = gtk_entry_new();
-	gtk_table_attach(GTK_TABLE(table), link_label, 0, 6, 2, 4, GTK_FILL, GTK_SHRINK, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), link_entry, 6, 12, 2, 4, GTK_FILL, GTK_SHRINK, 0, 0);
 
 	ip_label = gtk_label_new("Ip");
 	ip_entry = gtk_entry_new();
@@ -310,7 +304,7 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 	if (data == 1) {
 		interface_t *interface = malloc(sizeof(*interface));
 		interface->dev = strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
-		interface->link = strdup(gtk_entry_get_text(GTK_ENTRY(link_entry)));
+		interface->link = NULL;
 		if (!inet_pton(AF_INET, gtk_entry_get_text(GTK_ENTRY(ip_entry)), &interface->address)) {
 			error_dialog("Invalid address");
 			return;
@@ -366,6 +360,7 @@ void router_dialog(GtkTopologyDevice *device, GdkWindow *window)
 	GtkWidget *remove = gtk_button_new_with_label("Remove");
 	GtkWidget *table = gtk_table_new(12, 12, FALSE);
 	GtkCellRenderer *renderer;
+	char *null = "";
 	GtkTreeViewColumn *name, *link, *ip, *mac, *netmask;
 	char ip_data[32];
 	GtkTreeIter iter;
@@ -399,7 +394,7 @@ void router_dialog(GtkTopologyDevice *device, GdkWindow *window)
 		inet_ntop(AF_INET, &interface->address.s_addr, ip_data, 32);
 		gtk_list_store_set(interface_store, &iter,
 				   IF_NAME, interface->dev,
-				   IF_LINK, interface->link,
+				   IF_LINK, interface->link != NULL ? interface->link : null,
 				   IF_IP, ip_data,
 				   IF_NETMASK, interface->netmask_len,
 				   IF_MAC, ether_ntoa(interface->mac),
@@ -609,10 +604,15 @@ int init_gui()
 
 	init_device_list(topology);
 	init_canvas(topology);
+	
+	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(scrolled_window), 10);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), device_list);
 
 	gtk_table_attach(GTK_TABLE(table), toolbar, 0, 12, 0, 2, GTK_FILL, GTK_SHRINK, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), topology, 2, 10, 2, 20, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), device_list, 10, 12, 2, 20, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(table), scrolled_window, 10, 12, 2, 20, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 	gtk_container_add(GTK_CONTAINER(window), table);
 	return 0;
 }
@@ -669,12 +669,38 @@ void on_changed(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col
 gint notify_device(gpointer data)
 {
 	GtkTopologyDevice *device = (GtkTopologyDevice*) data;
+	
+	if (device->list.next == NULL && device->list.prev == NULL) {
+		GtkTreeIter if_iter;
+		//GtkTreeModel *model = GTK_TREE_MODEL(device_store);
+		//gtk_list_store_remove(device_store, &if_iter);
+		list_del(&device->dev->list);
+		return FALSE;
+	}
+	
 	add_device(device_list, device->dev->hostname);
+	INIT_LIST_HEAD(&device->dev->list);
+	device->dialog = router_dialog;
+	switch(device->dev->type){
+	case DEV_HUB:
+		list_add(&device->dev->list, &hypervisor->links);
+		break;
+	case DEV_BRIDGE:
+		break;
+	case DEV_ROUTER:
+		list_add(&device->dev->list, &hypervisor->routers);
+		break;
+	case DEV_SWITCH:
+		list_add(&device->dev->list, &hypervisor->switches);
+		break;
+	default:
+		break;
+	}
 	return FALSE;
 }
 
 gint notify_link(gpointer data)
-{
+{	
 
 	return FALSE;
 }

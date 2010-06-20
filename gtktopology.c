@@ -10,6 +10,8 @@
 #define GRID_SPACING          16
 #define first_link_end        101
 #define second_link_end       102
+#define PI 3.14159265
+#define DIM                   32
 
 G_DEFINE_TYPE (GtkTopology, gtk_topology, GTK_TYPE_DRAWING_AREA);
  #define GTK_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_TYPE_TOPOLOGY, QuadTree))
@@ -141,9 +143,9 @@ void gtk_topology_del_interface_link(GtkTopology *topology,interface_t *del_inte
 		}	
 	}
 	gtk_widget_queue_draw(GTK_WIDGET(topology));
-}
+} 
 
-struct point2D *versor(GtkTopologyLink *link)
+/*struct point2D *versor(GtkTopologyLink *link)
 {
 	struct point2D *point = malloc(sizeof(struct point2D));
 	GtkTopologyDevice *d1 =(link->end1->dev->type != DEV_HUB?link->end1:link->end2);
@@ -153,25 +155,19 @@ struct point2D *versor(GtkTopologyLink *link)
 	point->y = (d1->dev->y - d2->dev->y)/dist;
 	return point; 
 	
-}
-
-float angle(GtkTopologyLink *link)
-{
-	GtkTopologyDevice *d1 =(link->end1->dev->type != DEV_HUB?link->end1:link->end2);
-	GtkTopologyDevice *d2 =(link->end1->dev->type != DEV_HUB?link->end2:link->end1);
-	float cos = (d2->dev->x*d1->dev->x+d2->dev->y*d1->dev->y)/(sqrt(pow(d2->dev->x,2)+pow(d2->dev->y,2))+sqrt(pow(d1->dev->x,2)+pow(d1->dev->y,2)));
-	return acos(cos); 
-}
+}*///angle=atan(y/x)
 
 static void draw_links(GtkTopology *topology, cairo_t *cairo)
 {
 	struct list_head *i;
 	list_for_each(i,&topology->links){
 		GtkTopologyLink *link;
-		struct point2D *v;
-		cairo_matrix_t matrix;
+		GtkTopologyDevice *d1;
+		GtkTopologyDevice *d2;
 		int ix,iy;
 		link = list_entry(i,GtkTopologyLink,list);
+		d1 =(link->end1->dev->type != DEV_HUB?link->end1:link->end2);
+		d2 =(link->end1->dev->type != DEV_HUB?link->end2:link->end1);
 		cairo_set_source_rgb (cairo, 1, 0, 0);
 		cairo_set_line_width (cairo, 2.5);
 		cairo_new_path(cairo);
@@ -180,18 +176,24 @@ static void draw_links(GtkTopology *topology, cairo_t *cairo)
 		cairo_set_font_size(cairo, 16);
 		cairo_stroke(cairo);
 		
-		/*cairo_set_source_rgb (cairo, 0, 0, 0);
+		cairo_set_source_rgb (cairo, 0, 0, 0);
 		cairo_select_font_face(cairo, "Monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
-		v = versor(link);
-		if (v->x>0) ix=100;else ix=100;
-		if (v->y>0) iy=100;else iy=100;
-		//cairo_move_to(cairo, link->end1->dev->x+ix*v->x,link->end1->dev->y+iy*v->y);
-		cairo_get_matrix(cairo,&matrix);
-		cairo_translate(cairo, 150, 100);
- 		cairo_rotate(cairo, angle(link));
+		if (d1->dev->x >= d2->dev->x && d1->dev->y >= d2->dev->y){
+			ix = -2*DIM;
+			iy = -2*DIM;
+		} else if (d1->dev->x >= d2->dev->x && d1->dev->y <= d2->dev->y){
+			ix = -2*DIM;
+			iy = DIM;
+		}else if (d1->dev->x <= d2->dev->x && d1->dev->y >= d2->dev->y){
+			ix = DIM;
+			iy = -2*DIM;
+		} else if (d1->dev->x <= d2->dev->x && d1->dev->y <= d2->dev->y){
+			ix = DIM;
+			iy = DIM;
+		}
+		cairo_move_to(cairo, d1->dev->x+ix,d1->dev->y+iy);
 		cairo_show_text(cairo, link->interface->dev);
-		//cairo_identity_matrix(cairo);
-		cairo_set_matrix(cairo,matrix);*/
+		cairo_identity_matrix(cairo);
 	}
 
 	cairo_new_path(cairo);
@@ -341,7 +343,7 @@ static void update_interface( void )
 void submenu_clicked(GtkWidget *widget, gpointer data)
 {
 	struct submenu_data *sdata = (struct submenu_data*)data;
-	GtkTopologyDevice *d;
+	//GtkTopologyDevice *d;
 	if (sdata->top->device_sel == SEL_DEL_LINK){
 		printf("del link from %s\n",sdata->interface->dev);
 		//d = (link_device->end1->dev->type!=DEV_HUB?link_device->end1:link_device->end2);

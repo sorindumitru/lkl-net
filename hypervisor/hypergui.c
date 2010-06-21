@@ -302,13 +302,25 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 	
 	//validate entrys;
 	if (data == 1) {
+		GtkTreeIter iter;
 		interface_t *interface = malloc(sizeof(*interface));
-		interface->dev = strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
-		interface->link = NULL;
-		if (!inet_pton(AF_INET, gtk_entry_get_text(GTK_ENTRY(ip_entry)), &interface->address)) {
+		char *ip_data = strtok(gtk_entry_get_text(GTK_ENTRY(ip_entry)), "/");
+		char *null = "";
+		if (!ip_data) {
 			error_dialog("Invalid address");
 			return;
 		}
+		char *netmask = strtok(NULL, "/");
+		if (!netmask) {
+			error_dialog("Invalid address");
+			return;
+		}
+		interface->dev = strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
+		interface->link = NULL;
+		if (!inet_pton(AF_INET, gtk_entry_get_text(GTK_ENTRY(ip_entry)), &interface->address)) {
+			
+		}
+		interface->netmask_len = atoi(netmask);
 		interface->mac = ether_aton(gtk_entry_get_text(GTK_ENTRY(mac_entry)));
 		if (!interface->mac) {
 			error_dialog("Invalid address");
@@ -317,6 +329,16 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 		
 		INIT_LIST_HEAD(&interface->list);
 		list_add(&interface->list, &device->dev->interfaces);
+		
+		gtk_list_store_append(interface_store, &iter);
+		gtk_list_store_set(interface_store, &iter,
+				   IF_NAME, interface->dev,
+				   IF_LINK, interface->link != NULL ? interface->link : null,
+				   IF_IP, ip_data,
+				   IF_NETMASK, interface->netmask_len,
+				   IF_MAC, ether_ntoa(interface->mac),
+				   -1
+				   );
 	}
 	gtk_widget_destroy(dialog);
 }

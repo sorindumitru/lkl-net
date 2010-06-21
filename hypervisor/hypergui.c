@@ -304,7 +304,7 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 	if (data == 1) {
 		GtkTreeIter iter;
 		interface_t *interface = malloc(sizeof(*interface));
-		char *ip_data = strtok(gtk_entry_get_text(GTK_ENTRY(ip_entry)), "/");
+		char *ip_data = strtok((char *)gtk_entry_get_text(GTK_ENTRY(ip_entry)), "/");
 		char *null = "";
 		if (!ip_data) {
 			error_dialog("Invalid address");
@@ -357,12 +357,11 @@ void callback_remove_if(GtkWidget *widget, gpointer   callback_data)
 	list_for_each_safe(head, temp, &device->dev->interfaces) {
 		interface_t *interface = list_entry(head, interface_t, list);
 		if (!strcmp(interface_name, interface->dev)) {
+			gtk_topology_del_interface_link(GTK_TOPOLOGY(topology), interface);
 			list_del(head);
 			free(interface);
 		}
 	}
-	
-	//TODO: delete links from topology
 	
 	gtk_list_store_remove(interface_store, &if_iter);
 }

@@ -99,6 +99,7 @@ void gtk_topology_set_selection(GtkTopology *topology, unsigned char selection);
 void gtk_topology_add_links(GtkTopology *topology);
 void gtk_topology_add_device_links(GtkTopology *topology, GtkTopologyDevice *device);
 void gtk_topology_del_device_links(GtkTopology *topology, GtkTopologyDevice *device);
+void gtk_topology_del_interface_link(GtkTopology *topology, interface_t *interface);
 
 //QuadTree functions
 void QuadTreeInit(QuadTree *tree, unsigned int xlow, unsigned int ylow, unsigned int xhigh, unsigned int yhigh);

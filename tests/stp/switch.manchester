@@ -8,6 +8,7 @@ interface {
 	gateway 127.0.0.1;
 	port 50001;
 	type hub;
+	link hub1;
 }
 interface {
 	ipaddress 0.0.0.0/0;
@@ -16,6 +17,7 @@ interface {
 	gateway 127.0.0.1;
 	port 50003;
 	type hub;
+	link hub3;
 }
 switch {
 	interface eth0;

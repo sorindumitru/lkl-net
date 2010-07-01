@@ -4,7 +4,7 @@ GTKFLGS = `pkg-config --cflags gtk+-2.0 gtksourceview-1.0`
 GTKLIBS = `pkg-config --libs gtk+-2.0 gtksourceview-1.0`
 LKL = lkl/lkl.a
 
-bin_PROGRAMS = bin/hyper bin/hypergui bin/router bin/switch bin/firewall bin/nat bin/hub bin/bridge
+bin_PROGRAMS = bin/hyper bin/hypergui bin/router bin/switch bin/firewall bin/nat bin/hub bin/bridge bin/echo
 lib_LIBRARIES = liblklnetconfig.a
 
 liblklnetconfig_a_SOURCES = config/config.c config/parser.l
@@ -44,3 +44,8 @@ bin_hub_SOURCES = devices/hub/hub.c
 bin_bridge_SOURCES = devices/bridge/bridge.c packet.c interface.c device.c
 bin_bridge_LDADD = liblklnetconfig.a
 bin_bridge_LINK = $(CCLD) -pthread -o $@
+
+bin_echo_SOURCES = apps/test.c
+bin_echo_CFLAGS = $(AM_CFLAGS)
+bin_echo_LDADD = lkl/lkl.a
+bin_echo_LINK = $(CCLD) -pthread -o $@

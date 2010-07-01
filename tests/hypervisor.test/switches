@@ -2,39 +2,43 @@ hypervisor {
 	device {
 		type hub;
 		hostname hub1;
-		config alfa;
 		port 50001;
+		posx 685;
+		posy 203
 	}
-
 	device {
 		type hub;
 		hostname hub2;
-		config beta;
 		port 50002;
+		posx 545;
+		posy 368
 	}
-
 	device {
 		type hub;
 		hostname hub3;
-		config gamma;
 		port 50003;
+		posx 443;
+		posy 223
 	}
-
 	device {
 		type switch;
 		hostname London;
 		config tests/stp/switch.london;
+		posx 774;
+		posy 356
 	}
-
 	device {
 		type switch;
 		hostname Manchester;
 		config tests/stp/switch.manchester;
+		posx 541;
+		posy 94
 	}
-
 	device {
 		type switch;
 		hostname Glasgow;
 		config tests/stp/switch.glasgow;
+		posx 332;
+		posy 365
 	}
 }

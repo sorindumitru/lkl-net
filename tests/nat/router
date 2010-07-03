@@ -1,0 +1,21 @@
+hostname nat_router;
+ipaddress 127.0.0.1;
+port 65001;
+interface{
+	dev eth0;
+	mac aa:bb:cc:00:01:01;
+	gateway 127.0.0.1;
+	ipaddress 10.10.10.10/24;
+	port 50001;
+	type hub;
+	link hub1;
+}
+interface{
+	dev eth1;
+	mac aa:b1:11:00:01:01;
+	gateway 127.0.0.1;
+	ipaddress 168.16.21.9/24;
+	port 50002;
+	type hub;
+	link hub2;
+}

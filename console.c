@@ -64,7 +64,7 @@ command root[] = {
 #endif
 #ifdef ISROUTER	
 	{"remove", 3, DEVICE_ROUTER, do_remove_route, "Remove route", (command*) NULL, "<network_address/netmask> <interface_name>"},
-	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address/netmask> <interface_name>"},
+	{"add", 3, DEVICE_ROUTER, do_add_route, "Add route", (command*) NULL, "<network_address/netmask> <interface_name> <gateway address>"},
 	{"interface", -1, DEVICE_ROUTER, NULL, "Interface commands",interface_commands , NULL},
 	{"dump", 1, DEVICE_ROUTER, do_dump_config_file, "Dump config file", (command*) NULL, "<config file>"},
 #endif

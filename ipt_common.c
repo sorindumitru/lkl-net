@@ -101,7 +101,7 @@ int addr_to_mask(unsigned int mask)
 	}
 	return i;
 }
-
+//TODO:print interface name
 int do_list_entries(struct iptargs *ipt)
 {
 	struct iptc_handle *handle;

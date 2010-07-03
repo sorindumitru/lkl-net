@@ -165,6 +165,7 @@ static void draw_links(GtkTopology *topology, cairo_t *cairo)
 		GtkTopologyDevice *d1;
 		GtkTopologyDevice *d2;
 		int ix,iy;
+		//float angle;
 		link = list_entry(i,GtkTopologyLink,list);
 		d1 =(link->end1->dev->type != DEV_HUB?link->end1:link->end2);
 		d2 =(link->end1->dev->type != DEV_HUB?link->end2:link->end1);
@@ -178,6 +179,11 @@ static void draw_links(GtkTopology *topology, cairo_t *cairo)
 		
 		cairo_set_source_rgb (cairo, 0, 0, 0);
 		cairo_select_font_face(cairo, "Monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
+		/*if (d1->dev->x == d2->dev->x)
+			angle = 0;
+		else
+			angle = (d1->dev->y - d2->dev->y)/(d1->dev->x - d2->dev->x);*/
+
 		if (d1->dev->x >= d2->dev->x && d1->dev->y >= d2->dev->y){
 			ix = -2*DIM;
 			iy = -2*DIM;
@@ -191,6 +197,7 @@ static void draw_links(GtkTopology *topology, cairo_t *cairo)
 			ix = DIM;
 			iy = DIM;
 		}
+		//cairo_rotate(cairo,angle);
 		cairo_move_to(cairo, d1->dev->x+ix,d1->dev->y+iy);
 		cairo_show_text(cairo, link->interface->dev);
 		cairo_identity_matrix(cairo);

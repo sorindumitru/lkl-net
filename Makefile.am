@@ -19,8 +19,8 @@ bin_hypergui_CFLAGS = -DISHYPERVISOR $(AM_CFLAGS) $(GTKFLGS)
 bin_hypergui_LDADD = liblklnetconfig.a
 bin_hypergui_LINK = $(CCLD) -lm -pthread -lreadline $(GTKLIBS) -o $@
 
-bin_router_SOURCES = devices/router/router_cmd.c devices/router/router.c interface.c devices/switch/switch_cmd.c device.c console.c autocomplete.c
-bin_router_CFLAGS = -DISROUTER -DISLKL $(AM_CFLAGS)
+bin_router_SOURCES = devices/router/router_cmd.c devices/router/router.c interface.c devices/switch/switch_cmd.c device.c console.c devices/firewall/firewall_cmd.c devices/nat/nat_cmd.c autocomplete.c ipt_common.c
+bin_router_CFLAGS = -DISROUTER -DISLKL -DISNAT -DISFIREWALL $(AM_CFLAGS)
 bin_router_LDADD = liblklnetconfig.a lkl/lkl.a
 bin_router_LINK = $(CCLD) -pthread -lreadline -o $@
 

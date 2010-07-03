@@ -266,10 +266,20 @@ int ipt_parse_interface(char *arg, char *vianame, char *mask)
 void iptargs_to_ipt_entry(struct iptargs *ipt,struct ipt_entry *e)
 {
 	memset(e,0,sizeof(*e));
-	e->ip.src = ipt->src;
-	e->ip.dst = ipt->dst;
-	e->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
-	e->ip.dmsk.s_addr = mask_to_addr(ipt->dst_mask);
+        if (ipt->src) {
+	        e->ip.src = ipt->src;
+                e->ip.smsk.s_addr = mask_to_addr(ipt->src_mask);
+        } else {
+                inet_pton(AF_INET,"0.0.0.0", &entry->ip.src);
+		inet_pton(AF_INET,"0.0.0.0", &entry->ip.smsk);
+        }
+        if (ipt->dst) {
+                e->ip.dst = ipt->dst;
+	        e->ip.dmsk.s_addr = mask_to_addr(ipt->dst_mask);
+        } else { 
+                inet_pton(AF_INET,"0.0.0.0", &entry->ip.dst);
+		inet_pton(AF_INET,"0.0.0.0", &entry->ip.dmsk);
+        }
 	memcpy(e->ip.iniface,ipt->in_if,IFNAMSIZ);
 	memcpy(e->ip.outiface,ipt->out_if,IFNAMSIZ);
 	memcpy(e->ip.iniface_mask,ipt->in_if_mask,IFNAMSIZ);

@@ -125,9 +125,18 @@ int do_filter_append_entry(struct iptargs *ipt)
 	entry->target_offset = sizeof(struct ipt_entry);
 	entry->next_offset = size+sizeof(struct ipt_entry);
 	memcpy(entry->elems, &size, 2);
-	//entry->ip.invflags = 0x08;
 	memcpy(entry->elems+2, ipt->target, 30);
-	
+        if (!strcmp(ipt->target,"ACCEPT")) {
+                int accept = 1;
+                memcpy(entry->elems+32, &accept, sizeof(accept)); 
+        }
+
+	if (!strcmp(ipt->target,"DROP")) {
+                printf("DDDDDDDDDDDDDDDDDDDDDDDdd\n");
+                int accept = 0;
+                memcpy(entry->elems+32, &accept, sizeof(accept)); 
+        }
+
 	ret = iptc_append_entry(chain, entry, handle);
 	ret = iptc_commit(handle);
 	iptc_free(handle);

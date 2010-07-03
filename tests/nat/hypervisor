@@ -1,0 +1,23 @@
+hypervisor {
+	device {
+		type hub;
+		hostname hub1;
+		port 50001;
+		posx 590;
+		posy 196
+	}
+	device {
+		type hub;
+		hostname hub2;
+		port 50002;
+		posx 235;
+		posy 187
+	}
+	device {
+		type router;
+		hostname nat_router;
+		config tests/nat/router;
+		posx 414;
+		posy 180
+	}
+}

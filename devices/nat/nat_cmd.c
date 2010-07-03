@@ -106,7 +106,7 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 	}else
 		addr = strdup(arg);
 	
-	ip->s_addr =htonl(inet_addr(addr));
+	ip->s_addr =inet_addr(addr);
 	if (!ip)
 		printf("Wrong source address\n");
 	range.min_ip = ip->s_addr;

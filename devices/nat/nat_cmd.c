@@ -111,7 +111,7 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 		printf("Wrong source address\n");
 	range.min_ip = ip->s_addr;
 	if (dash) {
-		ip->s_addr = htonl(inet_addr(addr1));
+		ip->s_addr = inet_addr(addr1);
 		if (!ip)
 			printf("Wrong source address\n");
 		range.max_ip = ip->s_addr;

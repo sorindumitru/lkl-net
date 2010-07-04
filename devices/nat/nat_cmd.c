@@ -76,7 +76,7 @@ static struct ipt_natinfo *append_range(struct ipt_natinfo *info, const struct n
 	unsigned int size;
 
 	/* One rangesize already in struct ipt_natinfo */
-	size = XT_ALIGN(sizeof(*info) + info->mr.rangesize * sizeof(*range));
+	size = XT_ALIGN(sizeof(*info) + info->mr.rangesize * (sizeof(*range) - 1));
 
 	info = realloc(info, size);
 	if (!info)
@@ -98,7 +98,7 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 
 	memset(&range, 0, sizeof(range));
 	
-	range.flags |= IP_NAT_RANGE_MAP_IPS;
+	range.flags |= IP_NAT_RANGE_MAP_IPS | IP_NAT_RANGE_PROTO_SPECIFIED;
 	dash = strchr(arg, '-');
 	if (dash){
 		addr = strdup(strtok(arg,"-"));
@@ -121,6 +121,9 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 	free(addr);
 	if (dash)
 		free(addr1);
+
+        range.min = htons(0);
+        range.max = htons(65535);
 
 	return append_range(info, &range);
 }

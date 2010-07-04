@@ -1,0 +1,49 @@
+hostname Switch22;
+ipaddress 127.0.0.1;
+port 55011;
+interface {
+	dev eth0;
+	ipaddress 0.0.0.0/32;
+	mac 00:00:22:00:00:22;
+	gatewway 127.0.0.1;
+	port 51020;
+	link Hub12;
+	type hub;
+}
+
+interface {
+	dev eth1;
+	ipaddress 0.0.0.0/32;
+	mac 00:00:22:01:00:22;
+	gatewway 127.0.0.1;
+	port 51027;
+	link Hub21;
+	type hub;
+}
+
+interface {
+	dev eth2;
+	ipaddress 0.0.0.0/32;
+	mac 00:00:22:02:00:22;
+	gatewway 127.0.0.1;
+	port 51028;
+	link Hub23;
+	type hub;
+}
+
+interface {
+	dev eth3;
+	ipaddress 0.0.0.0/32;
+	mac 00:00:22:03:00:22;
+	gatewway 127.0.0.1;
+	port 51033;
+	link Hub22;
+	type hub;
+}
+
+switch {
+	interface eth0;
+	interface eth1;
+	interface eth2;
+	interface eth3;
+}

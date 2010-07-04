@@ -1,0 +1,457 @@
+hypervisor {
+	device {
+		type switch;
+		hostname Switch00;
+		config tests/scalability/Switch00;
+		posx 100;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub01;
+		port 51001;
+		posx 100;
+		posy 200;
+	}
+	device {
+		type switch;
+		hostname Switch02;
+		config tests/scalability/Switch02;
+		posx 100;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub03;
+		port 51002;
+		posx 100;
+		posy 400;
+	}
+	device {
+		type switch;
+		hostname Switch04;
+		config tests/scalability/Switch04;
+		posx 100;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub05;
+		port 51003;
+		posx 100;
+		posy 600;
+	}
+	device {
+		type switch;
+		hostname Switch06;
+		config tests/scalability/Switch06;
+		posx 100;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub07;
+		port 51004;
+		posx 100;
+		posy 800;
+	}
+	device {
+		type switch;
+		hostname Switch08;
+		config tests/scalability/Switch08;
+		posx 100;
+		posy 900;
+	}
+	device {
+		type hub;
+		hostname Hub00;
+		port 51005;
+		posx 100;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub02;
+		port 51007;
+		posx 100;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub04;
+		port 51009;
+		posx 100;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub06;
+		port 51011;
+		posx 100;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub08;
+		port 51013;
+		posx 100;
+		posy 900;
+	}
+	device {
+		type switch;
+		hostname Switch10;
+		config tests/scalability/Switch10;
+		posx 200;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub11;
+		port 51014;
+		posx 200;
+		posy 200;
+	}
+	device {
+		type switch;
+		hostname Switch12;
+		config tests/scalability/Switch12;
+		posx 200;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub13;
+		port 51015;
+		posx 200;
+		posy 400;
+	}
+	device {
+		type switch;
+		hostname Switch14;
+		config tests/scalability/Switch14;
+		posx 200;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub15;
+		port 51016;
+		posx 200;
+		posy 600;
+	}
+	device {
+		type switch;
+		hostname Switch16;
+		config tests/scalability/Switch16;
+		posx 200;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub17;
+		port 51017;
+		posx 200;
+		posy 800;
+	}
+	device {
+		type switch;
+		hostname Switch18;
+		config tests/scalability/Switch18;
+		posx 200;
+		posy 900;
+	}
+	device {
+		type hub;
+		hostname Hub10;
+		port 51018;
+		posx 200;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub12;
+		port 51020;
+		posx 200;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub14;
+		port 51022;
+		posx 200;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub16;
+		port 51024;
+		posx 200;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub18;
+		port 51026;
+		posx 200;
+		posy 900;
+	}
+	device {
+		type switch;
+		hostname Switch20;
+		config tests/scalability/Switch20;
+		posx 300;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub21;
+		port 51027;
+		posx 300;
+		posy 200;
+	}
+	device {
+		type switch;
+		hostname Switch22;
+		config tests/scalability/Switch22;
+		posx 300;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub23;
+		port 51028;
+		posx 300;
+		posy 400;
+	}
+	device {
+		type switch;
+		hostname Switch24;
+		config tests/scalability/Switch24;
+		posx 300;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub25;
+		port 51029;
+		posx 300;
+		posy 600;
+	}
+	device {
+		type switch;
+		hostname Switch26;
+		config tests/scalability/Switch26;
+		posx 300;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub27;
+		port 51030;
+		posx 300;
+		posy 800;
+	}
+	device {
+		type switch;
+		hostname Switch28;
+		config tests/scalability/Switch28;
+		posx 300;
+		posy 900;
+	}
+	device {
+		type hub;
+		hostname Hub20;
+		port 51031;
+		posx 300;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub22;
+		port 51033;
+		posx 300;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub24;
+		port 51035;
+		posx 300;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub26;
+		port 51037;
+		posx 300;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub28;
+		port 51039;
+		posx 300;
+		posy 900;
+	}
+	device {
+		type switch;
+		hostname Switch30;
+		config tests/scalability/Switch30;
+		posx 400;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub31;
+		port 51040;
+		posx 400;
+		posy 200;
+	}
+	device {
+		type switch;
+		hostname Switch32;
+		config tests/scalability/Switch32;
+		posx 400;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub33;
+		port 51041;
+		posx 400;
+		posy 400;
+	}
+	device {
+		type switch;
+		hostname Switch34;
+		config tests/scalability/Switch34;
+		posx 400;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub35;
+		port 51042;
+		posx 400;
+		posy 600;
+	}
+	device {
+		type switch;
+		hostname Switch36;
+		config tests/scalability/Switch36;
+		posx 400;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub37;
+		port 51043;
+		posx 400;
+		posy 800;
+	}
+	device {
+		type switch;
+		hostname Switch38;
+		config tests/scalability/Switch38;
+		posx 400;
+		posy 900;
+	}
+	device {
+		type hub;
+		hostname Hub30;
+		port 51044;
+		posx 400;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub32;
+		port 51046;
+		posx 400;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub34;
+		port 51048;
+		posx 400;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub36;
+		port 51050;
+		posx 400;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub38;
+		port 51052;
+		posx 400;
+		posy 900;
+	}
+	device {
+		type switch;
+		hostname Switch40;
+		config tests/scalability/Switch40;
+		posx 500;
+		posy 100;
+	}
+	device {
+		type hub;
+		hostname Hub41;
+		port 51053;
+		posx 500;
+		posy 200;
+	}
+	device {
+		type switch;
+		hostname Switch42;
+		config tests/scalability/Switch42;
+		posx 500;
+		posy 300;
+	}
+	device {
+		type hub;
+		hostname Hub43;
+		port 51054;
+		posx 500;
+		posy 400;
+	}
+	device {
+		type switch;
+		hostname Switch44;
+		config tests/scalability/Switch44;
+		posx 500;
+		posy 500;
+	}
+	device {
+		type hub;
+		hostname Hub45;
+		port 51055;
+		posx 500;
+		posy 600;
+	}
+	device {
+		type switch;
+		hostname Switch46;
+		config tests/scalability/Switch46;
+		posx 500;
+		posy 700;
+	}
+	device {
+		type hub;
+		hostname Hub47;
+		port 51056;
+		posx 500;
+		posy 800;
+	}
+	device {
+		type switch;
+		hostname Switch48;
+		config tests/scalability/Switch48;
+		posx 500;
+		posy 900;
+	}
+}

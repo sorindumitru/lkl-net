@@ -170,14 +170,36 @@ void remove_connection(int fd)
 	}
 	printf("\nNEW DATA::END\n");
 }*/
+
+unsigned short do_crc(unsigned short *header)
+{
+        unsigned short crc = 0;
+        int i;
+        for(i=0;i<10;i++) {
+                crc += *(header+i);
+        }
+
+        crc += 2;
+        return ~crc;
+}
+
 void dump_header(unsigned char *buf)
 {
 	unsigned short prot_type;
 	prot_type = dump_eth_header((struct eth_header*)buf);
-	if (prot_type == 2048)//IP header
+	if (prot_type == 2048) {//IP header
 		dump_ip_header((struct ip_header*)(buf+14));
+                unsigned short *header = (unsigned short*) (buf+14);
+                //change checksum
+                int crc = do_crc(header);
+                printf("\n\t\tCHECKSUM 0x%X\n", crc);
+                if (crc != 0xFFFF) {
+                        unsigned short *checksum = header+5;
+                        *checksum = *checksum - 1;
+                }
+        }
 	else if (prot_type ==2054 )//ARP header
-		dump_arp_header((struct arp_header*)(buf+14));	
+		//dump_arp_header((struct arp_header*)(buf+14));	
 	printf("\n===============================================\n");
 }
 
@@ -265,7 +287,7 @@ void wait_for_messages( int port_no )
 				n=recv(ret_ev.data.fd, buf, size, 0);
 				//print_data_hexa(size,buf);
 				res=modify_packet(buf,size);
-				//dump_header(buf);
+				dump_header(buf);
 				forward_packet(ret_ev.data.fd, res->message, res->size);
 				/*if (n<=14){
 					//length packet

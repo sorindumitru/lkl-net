@@ -1015,6 +1015,8 @@ int do_show_ip_route(struct params* params)
 		fprintf(stderr, "Dump terminated\n");
 		exit(1);
 	}
+
+        rtnl_close(&rth);
 	
 	return 0;
 }

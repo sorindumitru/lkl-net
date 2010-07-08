@@ -24,7 +24,7 @@ struct _xt_align {
 #define XT_ALIGN(s) (((s) + (__alignof__(struct _xt_align)-1)) 	\
 			& ~(__alignof__(struct _xt_align)-1))
 
-#define IP_NAT_RANGE_MAP_IPS 3
+//#define IP_NAT_RANGE_MAP_IPS 3
 #define IP_NAT_RANGE_PROTO_SPECIFIED 5
 #define IPT_SNAT_OPT_SOURCE 0x01
 
@@ -98,7 +98,7 @@ static struct ipt_natinfo *parse_to(char *arg,struct ipt_natinfo *info)
 
 	memset(&range, 0, sizeof(range));
 	
-	range.flags |= IP_NAT_RANGE_MAP_IPS | IP_NAT_RANGE_PROTO_SPECIFIED;
+	range.flags |= IP_NAT_RANGE_MAP_IPS;// | IP_NAT_RANGE_PROTO_SPECIFIED;
 	dash = strchr(arg, '-');
 	if (dash){
 		addr = strdup(strtok(arg,"-"));

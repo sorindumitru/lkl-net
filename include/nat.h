@@ -8,6 +8,7 @@
 #endif
 
 #define XT_FUNCTION_MAXNAMELEN 30
+#define IP_NAT_RANGE_MAP_IPS   1
 //starting to add
 struct nat_xt_entry_target {
 	unsigned short target_size;

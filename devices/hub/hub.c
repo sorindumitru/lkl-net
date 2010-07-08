@@ -189,14 +189,14 @@ void dump_header(unsigned char *buf)
 	prot_type = dump_eth_header((struct eth_header*)buf);
 	if (prot_type == 2048) {//IP header
 		dump_ip_header((struct ip_header*)(buf+14));
-                unsigned short *header = (unsigned short*) (buf+14);
+                /*unsigned short *header = (unsigned short*) (buf+14);
                 //change checksum
                 int crc = do_crc(header);
                 printf("\n\t\tCHECKSUM 0x%X\n", crc);
                 if (crc != 0xFFFF) {
                         unsigned short *checksum = header+5;
                         *checksum = *checksum - 1;
-                }
+                }*/
         }
 	else if (prot_type ==2054 )//ARP header
 		//dump_arp_header((struct arp_header*)(buf+14));	

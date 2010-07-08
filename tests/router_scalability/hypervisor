@@ -1,0 +1,37 @@
+hypervisor {
+	device {
+		type hub;
+		hostname Hub2;
+		port 50002;
+		posx 694;
+		posy 238
+	}
+	device {
+		type hub;
+		hostname Hub1;
+		port 50001;
+		posx 511;
+		posy 250
+	}
+	device {
+		type hub;
+		hostname Hub0;
+		port 50000;
+		posx 322;
+		posy 237
+	}
+	device {
+		type router;
+		hostname Router1;
+		config tests/router_scalability/Router1;
+		posx 691;
+		posy 85
+	}
+	device {
+		type router;
+		hostname Router0;
+		config tests/router_scalability/Router0;
+		posx 324;
+		posy 76
+	}
+}

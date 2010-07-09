@@ -501,12 +501,14 @@ void router_dialog(GtkTopologyDevice *device, GdkWindow *window)
 		interface_t *interface = list_entry(head, interface_t, list);
 		gtk_list_store_append(interface_store, &iter);
 		inet_ntop(AF_INET, &interface->address.s_addr, ip_data, 32);
+                char *mac = ether_ntoa(interface->mac);
+                printf("%s\n", mac);
 		gtk_list_store_set(interface_store, &iter,
 				   IF_NAME, interface->dev,
 				   IF_LINK, interface->link != NULL ? interface->link : null,
 				   IF_IP, ip_data,
 				   IF_NETMASK, interface->netmask_len,
-				   IF_MAC, ether_ntoa(interface->mac),
+				   IF_MAC, mac,
 				   -1
 				   );
 	}

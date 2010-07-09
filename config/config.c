@@ -172,7 +172,9 @@ int config_read_file(conf_info_t* info, const char* file_name)
 					if (token != TOK_MAC) {
 						printf("Config reader :: expecting mac address at %d, but found %s\n", num_lines, yytext);
 					}
-					current_interface->mac = (struct ether_addr*) ether_aton(yytext);
+					struct ether_addr *mac = (struct ether_addr*) ether_aton(yytext);
+					current_interface->mac = malloc(sizeof(*mac));
+					memcpy(current_interface->mac, mac, sizeof(*mac));
 				}
 				if (token == TOK_T_LINK) {
 					token = yylex();

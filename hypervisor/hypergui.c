@@ -836,6 +836,53 @@ gint notify_device(gpointer data)
 
 gint notify_link(gpointer data)
 {	
+        GtkTopologyLink *link = (GtkTopologyLink*) data;
+        device_t *hub, *dev;
+        request_t *request = malloc(sizeof(*request) + sizeof(interface_t));
+        socket_t *socketd;
+        socket_t *socketh;
+        struct hostent *host;
+        struct sockaddr_in device;
+        int err, sock;
+
+        if (link->end1->dev->type == DEV_HUB) {
+                hub = link->end1;
+                dev = link->end2;
+        } else {
+                hub = link->end2;
+                dev = link->end1;
+        }
+
+        request->length = sizeof(*request) + sizeof(request_add_if_t);
+        request->type = REQ_ADD_IF;
+        //memcpy(request->data, interface, sizeof(*interface));
+
+        socketd = get_device_socket(dev);
+        host = gethostbyname(socketd->address);
+        device.sin_family = AF_INET;
+        device.sin_port = socketd->port;
+        device.sin_addr = *(struct in_addr*) host->h_addr;
+        free(socketd);
+
+        socketh = get_device_socket(dev);
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) {
+                perror("could not open socket");
+        }
+        err = connect(sock, (struct sockaddr*) &device, sizeof(device));
+        if (err < 0) {
+                perror("could not connect");
+        }
+
+        err = send(sock, request, sizeof(*request),  0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        err = send(sock, socketh, sizeof(*socketh), 0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        free(socketh);
 
 	return FALSE;
 }

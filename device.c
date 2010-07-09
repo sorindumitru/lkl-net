@@ -303,6 +303,8 @@ void* device_request_thread(void *params)
                                 }
                         case REQ_DEL_IF:
                                 break;
+                        case REQ_ADD_LINK:
+                                break;
                         default:
                                 printf("UUPS\n");
                                 break;

@@ -10,6 +10,10 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <signal.h>
+#include <netinet/in.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #include <config.h>
 #include <device.h>
@@ -274,15 +278,71 @@ gint notify_add_if(gpointer data)
 {	
         interface_t *interface = ((struct add_if*) data)->interface;
         device_t *dev = ((struct add_if*) data)->dev;
-        request_t *request = malloc(sizeof(*request) + sizeof(request_add_if_t));
-        socket_t *socket;
+        request_t *request = malloc(sizeof(*request) + sizeof(interface_t));
+        socket_t *socketp;
+        struct hostent *host;
+        struct sockaddr_in device;
+        int err, sock;
 
         request->length = sizeof(*request) + sizeof(request_add_if_t);
         request->type = REQ_ADD_IF;
-        memcpy(request->data, interface, sizeof(*interface));
+        //memcpy(request->data, interface, sizeof(*interface));
 
-        socket = get_device_socket(dev);
+        socketp = get_device_socket(dev);
+        host = gethostbyname(socketp->address);
+        device.sin_family = AF_INET;
+        device.sin_port = socketp->port;
+        device.sin_addr = *(struct in_addr*) host->h_addr;
+        free(socketp);
 
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) {
+                perror("could not open socket");
+        }
+        err = connect(sock, (struct sockaddr*) &device, sizeof(device));
+        if (err < 0) {
+                perror("could not connect");
+        }
+
+        err = send(sock, request, sizeof(*request),  0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        err = send(sock, interface, sizeof(*interface),  0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        int size = strlen(interface->dev)+1;
+        err = send(sock, &size, sizeof(size),  0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        err = send(sock, interface->dev, strlen(interface->dev)+1,  0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        if (interface->link) {
+                size = strlen(interface->link)+1;
+                err = send(sock, &size, sizeof(size),  0);
+                if (err < 0) {
+                        perror("could not send data");
+                }
+                err = send(sock, interface->link, strlen(interface->link)+1,  0);
+                if (err < 0) {
+                        perror("could not send data");
+                }
+        } else { 
+                size = -1;
+                err = send(sock, &size, sizeof(size),  0);
+                if (err < 0) {
+                        perror("could not send data");
+                }
+        }
+        err = send(sock, interface->mac, sizeof(*(interface->mac)),  0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        
 	return FALSE;
 }
 
@@ -365,7 +425,7 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
                 struct add_if *ai= malloc(sizeof(*ai));
                 ai->interface = interface;
                 ai->dev = device->dev;
-                gtk_timeout_add(200, notify_add_if, ai);
+                gtk_timeout_add(500, notify_add_if, ai);
 	}
 	gtk_widget_destroy(dialog);
 }

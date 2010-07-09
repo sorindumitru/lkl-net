@@ -17,6 +17,8 @@
 
 #include <string.h>
 
+#include <interface.h>
+
 extern conf_info_t *info;
 
 char* get_type(enum device_type type)
@@ -83,6 +85,7 @@ socket_t* get_device_socket(device_t *device)
 {
 	char *address;
 	socket_t *socket = malloc(sizeof(*socket));
+        memset(socket, 0, sizeof(*socket));
 	
 	if (device->type == DEV_HUB) {
 		strcpy(socket->address,"127.0.0.1");
@@ -97,7 +100,7 @@ socket_t* get_device_socket(device_t *device)
 		socket->port = dev_info->general.port;
 
 		config_free(dev_info);
-		free(address);
+		//free(address);
 	}
 
 	return socket;
@@ -164,6 +167,7 @@ hyper_info_t* recv_hyper(int sock)
 	return hinfo;
 }
 
+#ifdef ISLKL
 void start_device_thread()
 {
 	int err;
@@ -186,6 +190,7 @@ void* device_request_thread(void *params)
 		.sin_family = AF_INET,
 		.sin_port = info->general.port,
 	};
+        printf("REQUEST THREAD PORT %d\n",info->general.port);
 	struct sockaddr_in raddr;
 	struct hostent *he = gethostbyname("127.0.0.1");
 	addr.sin_addr  = *(struct in_addr*)he->h_addr;
@@ -242,6 +247,67 @@ void* device_request_thread(void *params)
 			perror("LKL NET :: request thread :: Error on wait\n");
 		}
 		//TODO: process requests
+                if (ret_event.data.fd == req_socket) {
+                        struct epoll_event new_event;
+			int dev_sock = accept(req_socket, NULL, NULL);
+			if (dev_sock < 0) {
+				perror("could not accept connection");
+				continue;
+			}
+			new_event.data.fd = dev_sock;
+			new_event.events = EPOLLIN;
+			err = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, dev_sock, &new_event);
+                } else {
+                        int err, sock = ret_event.data.fd;
+                        request_t *request = malloc(sizeof(*request));
+                        err = recv(sock, request, sizeof(*request), 0);
+                        if (err < 0) {
+                                printf("could not receive");
+                        }
+                        switch (request->type) {
+                        case REQ_ADD_IF:
+                                {
+                                        interface_t *interface = malloc(sizeof(*interface));
+                                        int size;
+                                        err = recv(sock, interface, sizeof(*interface),  0);
+                                        if (err < 0) {
+                                                perror("could not recv if");
+                                        }
+                                        err = recv(sock, &size, sizeof(size),  0);
+                                        if (err < 0) {
+                                                perror("could not recv size1");
+                                        }
+                                        interface->dev = malloc(size);
+                                        err = recv(sock, interface->dev, size,  0);
+                                        if (err < 0) {
+                                                perror("could not recv dev");
+                                        }
+                                        err = recv(sock, &size, sizeof(size),  0);
+                                        if (err < 0) {
+                                                perror("could not recv size2");
+                                        }
+                                        if (size > 0) {
+                                                interface->link = malloc(size);
+                                                err = recv(sock, interface->link, size,  0);
+                                                if (err < 0) {
+                                                        perror("could not recv link");
+                                                }
+                                        }
+                                        interface->mac = malloc(sizeof(*(interface->mac)));
+                                        err = recv(sock, interface->mac, sizeof(*(interface->mac)),  0);
+                                        if (err < 0) {
+                                                perror("could not recv mac");
+                                        }
+                                        lkl_init_interface_short(interface);
+                                        break;
+                                }
+                        case REQ_DEL_IF:
+                                break;
+                        default:
+                                printf("UUPS\n");
+                                break;
+                        }
+                }
 	}
 
 	shutdown(req_socket, SHUT_RDWR);
@@ -249,6 +315,7 @@ void* device_request_thread(void *params)
 	return NULL;
 
 }
+#endif
 
 int do_dump_config_file(params *parameters)
 {

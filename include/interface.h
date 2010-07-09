@@ -17,6 +17,7 @@ typedef struct interface{
 
 interface_t* alloc_interface();
 int lkl_init_interface(const interface_t* interface);
+int lkl_init_interface_short(const interface_t* interface);
 int lkl_list_interfaces(int max_ifno);
 void lkl_change_ifname(int ifindex, char *newname);
 void dump_interface(int fd, interface_t *interface);

@@ -79,6 +79,8 @@ hypervisor_t *hypervisor;
 pthread_t request;
 char *prompt = ">";
 unsigned int port;
+char *confdir;
+unsigned int deviceport = 57000;
 
 /// Forward declarations
 static void add_device(GtkWidget *list, const gchar *str);
@@ -263,6 +265,27 @@ void error_dialog(const gchar *message) {
 
 }
 
+struct add_if {
+        interface_t* interface;
+        device_t* dev;
+};
+
+gint notify_add_if(gpointer data)
+{	
+        interface_t *interface = ((struct add_if*) data)->interface;
+        device_t *dev = ((struct add_if*) data)->dev;
+        request_t *request = malloc(sizeof(*request) + sizeof(request_add_if_t));
+        socket_t *socket;
+
+        request->length = sizeof(*request) + sizeof(request_add_if_t);
+        request->type = REQ_ADD_IF;
+        memcpy(request->data, interface, sizeof(*interface));
+
+        socket = get_device_socket(dev);
+
+	return FALSE;
+}
+
 void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 {
 	GtkTopologyDevice *device = (GtkTopologyDevice*) callback_data;
@@ -339,6 +362,10 @@ void callback_add_if(GtkWidget *widget, gpointer   callback_data)
 				   IF_MAC, ether_ntoa(interface->mac),
 				   -1
 				   );
+                struct add_if *ai= malloc(sizeof(*ai));
+                ai->interface = interface;
+                ai->dev = device->dev;
+                gtk_timeout_add(200, notify_add_if, ai);
 	}
 	gtk_widget_destroy(dialog);
 }
@@ -728,6 +755,22 @@ gint notify_device(gpointer data)
 	default:
 		break;
 	}
+
+        if (device->dev->type == DEV_ROUTER || device->dev->type == DEV_SWITCH) {
+                printf("%p\n", device->dev->hostname);
+                char *conf_file = malloc(255);
+                char data[255];
+                sprintf(conf_file,"%s/%s", confdir, device->dev->hostname);
+                int fd = open(conf_file, O_CREAT|O_TRUNC|O_WRONLY, 0666);
+                sprintf(data,"hostname %s;\nipaddress 127.0.0.1;\nport %d\n", device->dev->hostname, deviceport++);
+                if (write(fd, data, strlen(data)) < 0) {
+                        perror("write device data");
+                }
+                printf("%s %s\n", data, conf_file);
+                close(fd);
+                device->dev->config = conf_file;
+        }
+
 	return FALSE;
 }
 
@@ -777,8 +820,14 @@ int main(int argc, char **argv)
 	info = malloc(sizeof(*info));
 	hypervisor = malloc(sizeof(*hypervisor));
 	config_init(info);
-	config_read_file(info, argv[1]);
-	init_hypervisor(hypervisor,info);
+        if (argc == 3) {
+                config_read_file(info, argv[1]);
+                init_hypervisor(hypervisor,info);
+                confdir = argv[2];
+        } else {
+                init_hypervisor(hypervisor,info);
+                confdir = argv[1];
+        }
 	
 	printf("LKL NET :: Hypervisor is starting\n");
 

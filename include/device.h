@@ -4,6 +4,7 @@
 #include <string.h>
 #include <list.h>
 #include <params.h>
+#include <interface.h>
 
 enum device_type {
 	DEV_BRIDGE,
@@ -53,6 +54,21 @@ typedef struct socket {
 	char address[IPV4_ADDR_LEN];
 	unsigned short port;
 } socket_t;
+
+typedef struct request {
+        unsigned int type;
+        unsigned int length;
+        unsigned char data[0];
+} request_t;
+
+enum request_type {
+        REQ_ADD_IF,
+        REQ_DEL_IF,
+};
+
+typedef struct request_add_if {
+        interface_t interface;
+} request_add_if_t;
 
 extern enum device_type get_device_type(char *type);
 extern char* get_type(enum device_type type);

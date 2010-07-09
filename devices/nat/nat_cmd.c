@@ -26,7 +26,9 @@ struct _xt_align {
 
 //#define IP_NAT_RANGE_MAP_IPS 3
 #define IP_NAT_RANGE_PROTO_SPECIFIED 5
-#define IPT_SNAT_OPT_SOURCE 0x01
+//#define IPT_SNAT_OPT_SOURCE 0x01
+#define IPT_INV_VIA_IN 0x01;
+#define IPT_INV_VIA_OUT 0x02;
 
 static const struct option NAT_opts[] = {
 	{ "to-source", 1, NULL, 'S' },
@@ -194,10 +196,12 @@ int do_nat(struct params *params)
 			}
 			break;
 		case 'o':
+			ipt->flags|=IPT_INV_VIA_OUT;
 			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
 				return 1;
 			break;
 		case 'i':
+			ipt->flags|=IPT_INV_VIA_IN;
 			if (ipt_parse_interface(optarg,ipt->out_if,ipt->out_if_mask))
 				return 1;
 			break;

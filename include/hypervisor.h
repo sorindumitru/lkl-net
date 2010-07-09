@@ -23,5 +23,8 @@ typedef struct hypervisor {
 void init_hypervisor(hypervisor_t *hypervisor, conf_info_t *info);
 void start_request_thread();
 void* request_thread(void *params);
+int do_create_router(struct params *params);
+int do_create_link(struct params *params);
+int do_create_switch(struct params *params);
 
 #endif /* LKL_NET_HYPERVISOR_H_ */

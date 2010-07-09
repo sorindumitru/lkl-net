@@ -10,6 +10,8 @@
 #include <config.h>
 #include <device.h>
 
+#include <asm/eth.h>
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -304,9 +306,33 @@ void* device_request_thread(void *params)
                         case REQ_DEL_IF:
                                 break;
                         case REQ_ADD_LINK:
+                                {
+                                        char *eth;
+                                        int size;
+                                        socket_t *socket = malloc(sizeof(*socket));
+                                        err = recv(sock, socket, sizeof(*socket), 0);
+                                        if (err < 0) {
+                                                perror("could not recv socket");
+                                        }
+                                        err = recv(sock, &size, sizeof(size), 0);
+                                        if (err < 0) {
+                                                perror("could not recv size\n");
+                                        }
+                                        eth = malloc(size);
+                                        err = recv(sock, eth, size, 0);
+                                        if (err < 0) {
+                                                perror("could not recv err name");
+                                        }
+                                        struct tun_device *td = malloc(sizeof(*td));
+                                        td->type = TUN_HUB;
+                                        td->port = socket->port;
+                                        td->address = inet_addr(socket->address);
+                                        
+                                        lkl_if_set_info(eth, td);
+                                        printf("changed info %s %s %d\n", eth, socket->address, socket->port);
                                 break;
+                                }
                         default:
-                                printf("UUPS\n");
                                 break;
                         }
                 }

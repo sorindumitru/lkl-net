@@ -65,6 +65,7 @@ typedef struct request {
 enum request_type {
         REQ_ADD_IF,
         REQ_DEL_IF,
+        REQ_ADD_LINK,
 };
 
 typedef struct request_add_if {

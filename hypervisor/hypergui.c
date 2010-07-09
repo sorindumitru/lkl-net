@@ -817,12 +817,15 @@ gint notify_device(gpointer data)
 		break;
 	}
 
+        device->dev->port = deviceport;
+
         if (device->dev->type == DEV_ROUTER || device->dev->type == DEV_SWITCH) {
                 printf("%p\n", device->dev->hostname);
                 char *conf_file = malloc(255);
                 char data[255];
                 sprintf(conf_file,"%s/%s", confdir, device->dev->hostname);
                 int fd = open(conf_file, O_CREAT|O_TRUNC|O_WRONLY, 0666);
+                
                 sprintf(data,"hostname %s;\nipaddress 127.0.0.1;\nport %d\n", device->dev->hostname, deviceport++);
                 if (write(fd, data, strlen(data)) < 0) {
                         perror("write device data");
@@ -837,26 +840,29 @@ gint notify_device(gpointer data)
 
 gint notify_link(gpointer data)
 {	
+        printf("A\n");
         GtkTopologyLink *link = (GtkTopologyLink*) data;
         device_t *hub, *dev;
-        request_t *request = malloc(sizeof(*request) + sizeof(interface_t));
+        request_t *request = malloc(sizeof(*request));
         socket_t *socketd;
         socket_t *socketh;
         struct hostent *host;
         struct sockaddr_in device;
         int err, sock;
+        printf("\\n");
 
         if (link->end1->dev->type == DEV_HUB) {
-                hub = link->end1;
-                dev = link->end2;
+                hub = link->end1->dev;
+                dev = link->end2->dev;
         } else {
-                hub = link->end2;
-                dev = link->end1;
+                hub = link->end2->dev;
+                dev = link->end1->dev;
         }
 
-        request->length = sizeof(*request) + sizeof(request_add_if_t);
-        request->type = REQ_ADD_IF;
-        //memcpy(request->data, interface, sizeof(*interface));
+        request->length = sizeof(*request);
+        request->type = REQ_ADD_LINK;
+
+        printf("AAA %p\n",dev);
 
         socketd = get_device_socket(dev);
         host = gethostbyname(socketd->address);
@@ -865,7 +871,9 @@ gint notify_link(gpointer data)
         device.sin_addr = *(struct in_addr*) host->h_addr;
         free(socketd);
 
-        socketh = get_device_socket(dev);
+        printf("conn mconfig\n");
+
+        socketh = get_device_socket(hub);
         sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) {
                 perror("could not open socket");
@@ -874,12 +882,20 @@ gint notify_link(gpointer data)
         if (err < 0) {
                 perror("could not connect");
         }
-
         err = send(sock, request, sizeof(*request),  0);
         if (err < 0) {
                 perror("could not send data");
         }
         err = send(sock, socketh, sizeof(*socketh), 0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        int size = strlen(link->interface->dev)+1;
+        err = send(sock, &size, sizeof(size), 0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        err = send(sock, link->interface->dev, size, 0);
         if (err < 0) {
                 perror("could not send data");
         }

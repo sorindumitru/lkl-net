@@ -101,10 +101,6 @@ void stop_device(GtkTopologyDevice *device)
 	printf("ret=%d\n",ret);
 	if(ret)
 		perror("kill err\n");
-	
-	ret = kill(device->dev->pid,SIGKILL);
-	if(ret)
-		perror("kill err gnome\n");	
 	device->dev->pid = -1;
 }
 static void recalc_rect(GtkTopologyDevice *device)

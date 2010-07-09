@@ -209,7 +209,7 @@ void print_entry(const char* chain, const struct ipt_entry *entry, struct iptc_h
 	printf("-A %s ", chain);
 	target = iptc_get_target(entry, handle);
 	printf("-j %s", target);
-
+	printf("inmask=#%s#,outmask=#%s#,iniface=#%s#,outiface=#%s#\n",entry->ip.iniface_mask,entry->ip.outiface_mask,entry->ip.iniface,entry->ip.outiface);
 	if (strcmp(target,"DNAT")==0){
 		printf(" ");
 		print_ip("d", entry->ip.dst, entry->ip.dmsk);

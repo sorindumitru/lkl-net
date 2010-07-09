@@ -20,9 +20,42 @@ extern conf_info_t *info;
 extern hypervisor_t *hypervisor;
 pthread_t request;
 
+//find a device given by its name
+device_t *find_device(char *name, enum device_type type)
+{
+	struct list_head *head;
+	printf("dev name=%s\n",name);
+	if (type == DEV_ROUTER){
+		list_for_each(head,&hypervisor->routers) {
+			device_t *device ;
+			device = list_entry(head, device_t, list);
+			if (strcmp(name,device->hostname)==0){
+				return device;
+			}
+		}	
+	}else if (type == DEV_HUB){
+		list_for_each(head,&hypervisor->links) {
+			device_t *device ;
+			device = list_entry(head, device_t, list);
+			if (strcmp(name,device->hostname) == 0){
+				return device;
+			}
+		}	
+	}else if (type == DEV_SWITCH){
+		list_for_each(head,&hypervisor->switches) {
+			device_t *device ;
+			device = list_entry(head, device_t, list);
+			if (strcmp(name,device->hostname)==0){
+				return device;
+			}	
+		}
+	}
+	printf("here???\n");
+	return NULL;
+}
 int do_create_link(struct params *params)
 {
-	pid_t pid;
+	pid_t pid; 
 	int err;
 
 	pid = fork();
@@ -35,6 +68,10 @@ int do_create_link(struct params *params)
 			dev->hostname = strdup(params->p[0]);
 			INIT_LIST_HEAD(&dev->list);
 			list_add(&dev->list,&hypervisor->links);
+		}else{//started from GUI
+			printf("dev name is %s\n",(char*)params->p[0]);
+			device_t *dev = find_device(params->p[0],DEV_HUB);
+			dev->pid = pid;	
 		}
 	} else if (pid == 0) {
 		char *args[] = {
@@ -82,7 +119,11 @@ int do_create_router(struct params *params)
 			dev->hostname = strdup(params->p[0]);
 			INIT_LIST_HEAD(&dev->list);
 			list_add(&dev->list,&hypervisor->routers);
+		}else{//started from GUI
+			device_t *dev = find_device(params->p[0],DEV_ROUTER);
+			dev->pid = pid;	
 		}
+		
 	} else if (pid == 0) {
 		char *args[] = {
 			"gnome-terminal",
@@ -119,6 +160,9 @@ int do_create_switch(struct params *params)
 			dev->hostname = strdup(params->p[0]);
 			INIT_LIST_HEAD(&dev->list);
 			list_add(&dev->list,&hypervisor->switches);
+		}else{//started from GUI
+			device_t *dev = find_device(params->p[0],DEV_SWITCH);
+			dev->pid = pid;	
 		}
 	} else if (pid == 0) {
 		char *args[] = {
@@ -209,6 +253,7 @@ int do_boot_up(struct params *par) {
 		device_t *device = list_entry(head, device_t, list);
 		printf("LKL NET :: started %s\n", device->hostname);
 		struct params params;
+		params.p[0] = strdup(device->hostname);
 		params.p[1] = malloc(8*sizeof(char));
 		params.p[2] = malloc(sizeof(char));
 		sprintf((char*)params.p[1],"%d",device->port);

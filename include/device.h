@@ -19,6 +19,7 @@ typedef struct device {
 	enum device_type type;
 	char *hostname;
 	char *config;
+	int pid;
 	unsigned int port;
 	unsigned int x, y;
 

@@ -121,6 +121,7 @@ void init_topology_devices()
 		struct list_head *ihead;
 		list_del(head);
 		INIT_LIST_HEAD(&dev->list);
+		dev->pid = -1;
 		switch(dev->type){
 		case DEV_HUB:
 			list_add(&dev->list, &hypervisor->links);

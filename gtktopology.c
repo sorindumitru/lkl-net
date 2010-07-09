@@ -1,4 +1,3 @@
-//TODO: Remove link
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +5,8 @@
 #include <gtktopology.h>
 #include <interface.h>
 #include <math.h>
+#include <hypervisor.h>
+#include <signal.h>
 
 #define GRID_SPACING          16
 #define first_link_end        101
@@ -42,6 +43,11 @@ struct submenu_data{
 	GtkTopology *top;
 };
 
+struct start_stop_dev_data{
+	GtkTopologyDevice *device;
+	int req_type;
+};
+
 struct point2D{
 	gfloat x;
 	gfloat y;
@@ -55,6 +61,31 @@ GtkTopologyDevice *drag_device;
 GtkTopologyLink *link_device = NULL;
 unsigned char hovered = 0;
 
+//start a device
+void start_device(GtkTopologyDevice *device)
+{
+	if(device->dev->type == DEV_ROUTER){
+		struct params params;
+		params.p[0] = device->dev->hostname;
+		params.p[1] = malloc(256*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%s",device->dev->config);
+		do_create_router(&params);
+	}else if(device->dev->type == DEV_HUB){
+		struct params params;
+		params.p[0] = strdup(device->dev->hostname);
+		params.p[1] = malloc(8*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%d",device->dev->port);
+		do_create_link(&params);
+	}	
+}
+
+void stop_device(GtkTopologyDevice *device)
+{
+	kill(device->dev->pid,SIGKILL);
+	device->dev->pid = -1;
+}
 static void recalc_rect(GtkTopologyDevice *device)
 {
 	device->xlow = device->dev->x-32;
@@ -391,74 +422,118 @@ static void show_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 1, 0);
 }
 
+void start_stop_clicked(GtkWidget *widget, gpointer data)
+{
+	struct start_stop_dev_data *info = (struct start_stop_dev_data*)data;
+	if(info->req_type == REQ_START){//start device
+		printf("start device\n");
+		start_device(info->device);
+		
+	}else{
+		printf("stop device\n");
+		stop_device(info->device);	
+	}
+}
 
+static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
+{
+	GtkWidget *menu;
+	struct start_stop_dev_data *data = malloc(sizeof(struct start_stop_dev_data));
+	GtkWidget *sub_menu;
+	menu = gtk_menu_new();
+	data->device = device;
+	
+	if(device->dev->pid == -1){
+		sub_menu =  gtk_menu_item_new_with_label("Start");
+		data->req_type = REQ_START;
+	}else if(device->dev->pid > 0){
+		sub_menu =  gtk_menu_item_new_with_label("Stop");
+		data->req_type = REQ_STOP;
+	}
+	g_signal_connect (GTK_OBJECT (sub_menu), "activate",G_CALLBACK (start_stop_clicked), data);
+	gtk_menu_append(GTK_MENU(menu),sub_menu);
+	gtk_widget_show(sub_menu); 
+	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 1, 0);	
+}
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
 {
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);
 	if (event->type == GDK_2BUTTON_PRESS) {
-		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
-		if (device) {
-			printf("Device %s double clicked!\n", device->dev->hostname);
-			if (device->dialog) {
-				device->dialog(drag_device, widget->window);
+		if(event->button == 3);
+		else{
+			GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
+			if (device) {
+				printf("Device %s double clicked!\n", device->dev->hostname);
+				if (device->dialog) {
+					device->dialog(drag_device, widget->window);
+				}
 			}
-		}
-		if (drag_device) {
-			drag_device = NULL;
-			hovered = 0;
+			if (drag_device) {
+				drag_device = NULL;
+				hovered = 0;
+			}
 		}
 	}
 
 	if (event->type == GDK_BUTTON_PRESS) {
 		GtkTopologyDevice *device = QuadTreeFindDevice(device_tree, event->x, event->y);
 		GtkTopology *top = GTK_TOPOLOGY(widget);
-		if(device){
-			if (top->device_sel == SEL_DEL_DEVICE){
-				gtk_widget_queue_draw(widget);
-				gtk_topology_del_device_links(top, device);
-				list_del(&device->list);
-				device->list.next = device->list.prev = NULL;
-				gtk_timeout_add(200,top->notify_device,device);
-				return FALSE;
-			} else if (top->device_sel == SEL_ADD_LINK){
-				link_device = (GtkTopologyLink*)malloc(sizeof(GtkTopologyLink));
-				link_device->end1 = device;
-				link_device->end2 = NULL;
-				if(device->dev->type == DEV_SWITCH || device->dev->type == DEV_ROUTER){
-					show_popup_menu(device,top);
-				} else {
-					top->device_sel = SEL_ADD_LINK2;
-				}
-				return FALSE;
-			} else if (top->device_sel == SEL_ADD_LINK2){
-				if ( (link_device->end1 != device)&&(link_device->end1->dev->type!=device->dev->type)){
-					if(link_device->end1->dev->type!= DEV_HUB && device->dev->type == DEV_HUB){
-						printf("add new link\n");
-						link_device->end2 = device;
-						if (not_overriding()){
-							INIT_LIST_HEAD(&link_device->list);
-							list_add(&link_device->list,&top->links);
-							update_interface();
-							gtk_timeout_add(200,top->notify_link,link_device);
-						}
-						top->device_sel = SEL_ADD_LINK;
-					}else if(link_device->end1->dev->type==DEV_HUB && device->dev->type != DEV_HUB ){
-						link_device->end2 = device;
-						show_popup_menu(device,top);
-					}
-					
-				}else
-					top->device_sel = SEL_ADD_LINK;
-									
-				return FALSE;
-			}else if (top->device_sel == SEL_DEL_LINK && device->dev->type!=DEV_HUB){
-				show_popup_menu(device,top);
-			}else {
-				top->device_sel = SEL_NONE;
-				drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
+		if(event->button == 3){
+			//printf("sel=%d\n",top->device_sel);
+			if(top->device_sel == SEL_NONE && device){
+				printf("right clicked\n");
+				start_stop_popup_menu(device,top);
 			}
-		}else if (top->device_sel == SEL_ADD_LINK2){
-			top->device_sel = SEL_ADD_LINK;
+		}
+		else{
+			if(device){
+				if (top->device_sel == SEL_DEL_DEVICE){
+					gtk_widget_queue_draw(widget);
+					gtk_topology_del_device_links(top, device);
+					list_del(&device->list);
+					device->list.next = device->list.prev = NULL;
+					gtk_timeout_add(200,top->notify_device,device);
+					return FALSE;
+				} else if (top->device_sel == SEL_ADD_LINK){
+					link_device = (GtkTopologyLink*)malloc(sizeof(GtkTopologyLink));
+					link_device->end1 = device;
+					link_device->end2 = NULL;
+					if(device->dev->type == DEV_SWITCH || device->dev->type == DEV_ROUTER){
+						show_popup_menu(device,top);
+					} else {
+						top->device_sel = SEL_ADD_LINK2;
+					}
+					return FALSE;
+				} else if (top->device_sel == SEL_ADD_LINK2){
+					if ( (link_device->end1 != device)&&(link_device->end1->dev->type!=device->dev->type)){
+						if(link_device->end1->dev->type!= DEV_HUB && device->dev->type == DEV_HUB){
+							printf("add new link\n");
+							link_device->end2 = device;
+							if (not_overriding()){
+								INIT_LIST_HEAD(&link_device->list);
+								list_add(&link_device->list,&top->links);
+								update_interface();
+								gtk_timeout_add(200,top->notify_link,link_device);
+							}
+							top->device_sel = SEL_ADD_LINK;
+						}else if(link_device->end1->dev->type==DEV_HUB && device->dev->type != DEV_HUB ){
+							link_device->end2 = device;
+							show_popup_menu(device,top);
+						}
+					
+					}else
+						top->device_sel = SEL_ADD_LINK;
+									
+					return FALSE;
+				}else if (top->device_sel == SEL_DEL_LINK && device->dev->type!=DEV_HUB){
+					show_popup_menu(device,top);
+				}else {
+					top->device_sel = SEL_NONE;
+					drag_device = QuadTreeFindDevice(device_tree, event->x, event->y);
+				}
+			}else if (top->device_sel == SEL_ADD_LINK2){
+				top->device_sel = SEL_ADD_LINK;
+			}
 		}
 	}
 	

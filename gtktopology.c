@@ -6,7 +6,12 @@
 #include <interface.h>
 #include <math.h>
 #include <hypervisor.h>
+
+#include <sys/wait.h>
 #include <signal.h>
+#include <sys/types.h>
+
+#include <dirent.h>
 
 #define GRID_SPACING          16
 #define first_link_end        101
@@ -78,12 +83,28 @@ void start_device(GtkTopologyDevice *device)
 		params.p[2] = malloc(sizeof(char));
 		sprintf((char*)params.p[1],"%d",device->dev->port);
 		do_create_link(&params);
+	}else if(device->dev->type == DEV_SWITCH){
+		struct params params;
+		params.p[0] = strdup(device->dev->hostname);
+		params.p[1] = malloc(256*sizeof(char));
+		params.p[2] = malloc(sizeof(char));
+		sprintf((char*)params.p[1],"%s",device->dev->config);
+		do_create_switch(&params);
 	}	
 }
 
 void stop_device(GtkTopologyDevice *device)
 {
-	kill(device->dev->pid,SIGKILL);
+	int ret;
+	printf("pid=%d\n",device->dev->pid);
+	ret = kill(device->dev->pid+1,SIGKILL);
+	printf("ret=%d\n",ret);
+	if(ret)
+		perror("kill err\n");
+	
+	ret = kill(device->dev->pid,SIGKILL);
+	if(ret)
+		perror("kill err gnome\n");	
 	device->dev->pid = -1;
 }
 static void recalc_rect(GtkTopologyDevice *device)
@@ -434,6 +455,29 @@ void start_stop_clicked(GtkWidget *widget, gpointer data)
 		stop_device(info->device);	
 	}
 }
+static void check_process_running(int *pid)
+{
+	if(kill((*pid)+1,0))
+		*pid = -1;
+	
+	/*DIR *dp;
+	struct dirent *ep;
+     	char proc_id[24];
+	memset(proc_id,0,24);
+	sprintf(proc_id,"%d",(*pid) +1);
+	dp = opendir ("/proc");
+	if (dp != NULL)
+	{
+		while (ep = readdir (dp)){
+			if(strcmp(proc_id,ep->d_name)==0)	
+				return;
+		}
+		closedir (dp);
+		*pid = -1;
+		return;
+	}*/
+	
+}
 
 static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 {
@@ -442,8 +486,8 @@ static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 	GtkWidget *sub_menu;
 	menu = gtk_menu_new();
 	data->device = device;
-	
-	if(device->dev->pid == -1){
+	check_process_running(&device->dev->pid);
+	if(device->dev->pid == -1 || device->dev->pid == 0){
 		sub_menu =  gtk_menu_item_new_with_label("Start");
 		data->req_type = REQ_START;
 	}else if(device->dev->pid > 0){

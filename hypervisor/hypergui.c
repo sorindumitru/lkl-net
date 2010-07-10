@@ -166,6 +166,13 @@ gint timeout_boot( gpointer data )
 	return FALSE;
 }
 
+gint timeout_kill( gpointer data )
+{
+	struct params params;
+	do_kill_all(&params);
+	return FALSE;
+}
+
 gint timeout_load(gpointer data)
 {
 	gchar *filename = (gchar *) data;
@@ -527,6 +534,11 @@ void callback_boot(GtkWidget *widget, gpointer   callback_data)
 	gtk_timeout_add(1000, timeout_boot, NULL);
 }
 
+void callback_kill(GtkWidget *widget, gpointer   callback_data)
+{
+		gtk_timeout_add(1000, timeout_kill, NULL);
+}
+
 void callback_cancel(GtkWidget *widget, gpointer   callback_data)
 {
 	gtk_topology_set_selection(GTK_TOPOLOGY(topology), SEL_NONE);
@@ -629,6 +641,7 @@ int init_gui()
 {
 	GtkWidget *table = gtk_table_new(20, 12, FALSE);
 	GtkWidget *topology = gtk_hbox_new(FALSE, 10);
+	GtkToolItem *kill;
 	GtkToolItem *load_button;
 	GtkToolItem *save_button;
 	GtkToolItem *cancel_button;
@@ -644,6 +657,10 @@ int init_gui()
 	boot = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
 	gtk_signal_connect(GTK_OBJECT(boot), "clicked", G_CALLBACK(callback_boot), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), boot, -1);
+	kill = gtk_tool_button_new_from_stock(GTK_STOCK_CLOSE);
+	gtk_signal_connect(GTK_OBJECT(kill), "clicked", G_CALLBACK(callback_kill), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), kill, -1);
+
 	// Load config
 	load_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
 	gtk_signal_connect(GTK_OBJECT(load_button), "clicked", G_CALLBACK(callback_load), NULL);

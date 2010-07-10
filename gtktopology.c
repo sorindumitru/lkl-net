@@ -97,7 +97,7 @@ void stop_device(GtkTopologyDevice *device)
 {
 	int ret;
 	printf("pid=%d\n",device->dev->pid);
-	ret = kill(device->dev->pid+1,SIGKILL);
+	ret = kill(device->dev->pid,SIGKILL);
 	printf("ret=%d\n",ret);
 	if(ret)
 		perror("kill err\n");
@@ -453,7 +453,7 @@ void start_stop_clicked(GtkWidget *widget, gpointer data)
 }
 static void check_process_running(int *pid)
 {
-	if(kill((*pid)+1,0))
+	if(kill((*pid),0))
 		*pid = -1;
 	
 	/*DIR *dp;
@@ -482,7 +482,9 @@ static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 	GtkWidget *sub_menu;
 	menu = gtk_menu_new();
 	data->device = device;
+	printf("before pid=%d\n",device->dev->pid);
 	check_process_running(&device->dev->pid);
+	printf("after pid=%d\n",device->dev->pid);
 	if(device->dev->pid == -1 || device->dev->pid == 0){
 		sub_menu =  gtk_menu_item_new_with_label("Start");
 		data->req_type = REQ_START;

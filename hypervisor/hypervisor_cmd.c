@@ -68,10 +68,6 @@ int do_create_link(struct params *params)
 			dev->hostname = strdup(params->p[0]);
 			INIT_LIST_HEAD(&dev->list);
 			list_add(&dev->list,&hypervisor->links);
-		}else{//started from GUI
-			printf("dev name is %s\n",(char*)params->p[0]);
-			device_t *dev = find_device(params->p[0],DEV_HUB);
-			dev->pid = pid;	
 		}
 	} else if (pid == 0) {
 		char *args[] = {
@@ -119,9 +115,6 @@ int do_create_router(struct params *params)
 			dev->hostname = strdup(params->p[0]);
 			INIT_LIST_HEAD(&dev->list);
 			list_add(&dev->list,&hypervisor->routers);
-		}else{//started from GUI
-			device_t *dev = find_device(params->p[0],DEV_ROUTER);
-			dev->pid = pid;	
 		}
 		
 	} else if (pid == 0) {
@@ -160,9 +153,6 @@ int do_create_switch(struct params *params)
 			dev->hostname = strdup(params->p[0]);
 			INIT_LIST_HEAD(&dev->list);
 			list_add(&dev->list,&hypervisor->switches);
-		}else{//started from GUI
-			device_t *dev = find_device(params->p[0],DEV_SWITCH);
-			dev->pid = pid;	
 		}
 	} else if (pid == 0) {
 		char *args[] = {

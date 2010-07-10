@@ -39,7 +39,8 @@ bin_nat_CFLAGS = -DISNAT -DISLKL $(AM_CFLAGS)
 bin_nat_LDADD = liblklnetconfig.a lkl/lkl.a
 bin_nat_LINK = $(CCLD) -pthread -lreadline -o $@
 
-bin_hub_SOURCES = devices/hub/hub.c
+bin_hub_SOURCES = devices/hub/hub.c device.c interface.c
+bin_hub_LDADD = liblklnetconfig.a
 
 bin_bridge_SOURCES = devices/bridge/bridge.c packet.c interface.c device.c
 bin_bridge_LDADD = liblklnetconfig.a

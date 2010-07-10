@@ -493,6 +493,74 @@ void* request_thread(void *params)
 				do_get_device_name(sock,hinfo);
 				epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sock, NULL);
 				break;
+                        case REQUEST_SET_PORT:
+                                {
+                                        printf("RECV SET PID\n");
+                                        int type;
+                                        pid_t pid;
+                                        err = recv(sock, &type, sizeof(type), 0);
+                                        if (err < 0) {
+                                                perror("could not recv type");
+                                        }
+                                        printf("TYPE %d\n", type);
+                                        if (type == DEV_HUB) {
+                                                int port;
+                                                struct list_head *head;
+                                                err = recv(sock, &port, sizeof(port), 0);
+                                                if (err < 0) {
+                                                        perror("could not recv port");
+                                                }
+                                                err = recv(sock, &pid, sizeof(pid), 0);
+                                                if (err < 0) {
+                                                        perror("could not recv pid");
+                                                }
+                                                list_for_each (head, &hypervisor->links) {
+                                                        device_t *dev = list_entry(head, device_t, list);
+                                                        if (dev->port == port) {
+                                                                dev->pid = pid;
+                                                        }
+                                                }
+                                        } else {
+                                                int size;
+                                                char *hostname;
+                                                err = recv(sock, &size, sizeof(size), 0);
+                                                if (err < 0) {
+                                                        perror("could not recv size");
+                                                }
+                                                printf("SIZE %d\n", size);
+                                                hostname = malloc(size);
+                                                err = recv(sock, hostname, size, 0);
+                                                if (err < 0) {
+                                                        perror("could not recv hostname");
+                                                }
+                                                printf("HOST %s\n", hostname);
+                                                err = recv(sock, &pid, sizeof(pid), 0);
+                                                if (err < 0) {
+                                                        perror("could not recv pid");
+                                                }
+                                                if (type == DEV_ROUTER) {
+                                                        struct list_head *head;
+                                                        list_for_each (head, &hypervisor->links) {
+                                                                device_t *dev = list_entry(head, device_t, list);
+                                                                if (dev->type == DEV_ROUTER && !strcmp(dev->hostname, hostname)) {
+                                                                        dev->pid = pid;
+                                                                }
+                                                        }
+                                                }
+                                                if (type == DEV_SWITCH) {
+                                                        struct list_head *head;
+                                                        list_for_each (head, &hypervisor->links) {
+                                                                device_t *dev = list_entry(head, device_t, list);
+                                                                if (dev->type == DEV_SWITCH && !strcmp(dev->hostname, hostname)) {
+                                                                        dev->pid = pid;
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                        printf("RECV %d\n", pid);
+                                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sock, NULL);
+                                        break;
+                                }
 			default:
 				printf("Unknown request");
 				break;

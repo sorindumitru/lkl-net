@@ -11,6 +11,8 @@
 #include <string.h>
 #include <config.h>
 
+#include <device.h>
+
 #define PORT_NO 10000
 #define PACKET_SIZE 4096
 
@@ -318,6 +320,8 @@ int main(int argc, char** argv)
 	printf("LKL NET :: hub started on %d\n", atoi(argv[1]));
 	//conf_info_t *info = malloc(sizeof(*info));
 	//config_init(info);
+
+        do_send_pid(DEV_HUB, atoi(argv[1]));
 
 	wait_for_messages(atoi(argv[1]));
 	return 0;

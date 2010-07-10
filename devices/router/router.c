@@ -24,6 +24,8 @@ int main(int argc,char**argv)
 		info->general.hostname = strdup(argv[2]);
 	}
 
+        do_send_pid(DEV_ROUTER, 0);
+        
 	if (lkl_env_init(16*1024*1024) < 0) {
 		printf("LKL init :: could not init environment\n");
 	}

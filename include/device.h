@@ -36,6 +36,7 @@ typedef struct device_list_element {
 
 #define REQUEST_DEVICE_NAME	1
 #define REQUEST_DUMP_CONFIG	2
+#define REQUEST_SET_PORT        3
 #define REQUEST_ERROR_DEVICE_NOT_FOUND	128
 
 typedef struct hyper_info_head {
@@ -80,6 +81,7 @@ extern void start_device_thread();
 extern int send_hyper(int sock, hyper_info_t *hyper);
 extern hyper_info_t* recv_hyper(int sock);
 extern socket_t* get_remote_device_socket(char *device);
+int do_send_pid(enum device_type type, unsigned short port);
 int do_dump_config_file(struct params *parameters);
 
 #endif /* LKL_NET_DEVICE_H_ */

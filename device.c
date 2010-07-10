@@ -335,6 +335,7 @@ void* device_request_thread(void *params)
                         default:
                                 break;
                         }
+                        epoll_ctl(sock, EPOLL_CTL_DEL, sock, NULL);
                 }
 	}
 
@@ -344,6 +345,56 @@ void* device_request_thread(void *params)
 
 }
 #endif
+
+int do_send_pid(enum device_type type, unsigned short port)
+{
+        int err, sock = 0;
+	struct sockaddr_in addr = {
+		.sin_family = AF_INET,
+		.sin_port = htons(57200),
+	};
+	struct hostent *he = gethostbyname("127.0.0.1");
+	addr.sin_addr  = *(struct in_addr*)he->h_addr;
+        hyper_info_t hinfo;
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        err = connect(sock, (struct sockaddr*) &addr, sizeof(addr));
+        if (err < 0) {
+                perror("could not connect to hypervisor");
+        }
+
+        hinfo.length = 0;
+        hinfo.type = REQUEST_SET_PORT;
+        err = send(sock, &hinfo, sizeof(hinfo), 0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        err = send(sock, &type, sizeof(type), 0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        if (port == 0) {
+                int size = strlen(info->general.hostname)+1;
+                err = send(sock, &size, sizeof(size), 0);
+                if (err < 0) {
+                        perror("could not send data");
+                }
+                err = send(sock, info->general.hostname, size, 0);
+                if (err < 0) {
+                        perror("could not send data");
+                }
+        } else {
+                err = send(sock, &port, sizeof(port), 0);
+                if (err < 0) {
+                        perror("could not send data");
+                }
+        }
+        pid_t pid = getpid();
+        err = send(sock, &pid, sizeof(pid_t), 0);
+        if (err < 0) {
+                perror("could not send data");
+        }
+        return 0;
+}
 
 int do_dump_config_file(params *parameters)
 {

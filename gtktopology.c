@@ -96,9 +96,7 @@ void start_device(GtkTopologyDevice *device)
 void stop_device(GtkTopologyDevice *device)
 {
 	int ret;
-	printf("pid=%d\n",device->dev->pid);
-	ret = kill(device->dev->pid,SIGKILL);
-	printf("ret=%d\n",ret);
+	ret = kill(device->dev->pid,SIGHUP);
 	if(ret)
 		perror("kill err\n");
 	device->dev->pid = -1;
@@ -451,28 +449,12 @@ void start_stop_clicked(GtkWidget *widget, gpointer data)
 		stop_device(info->device);	
 	}
 }
-static void check_process_running(int *pid)
+
+static int check_process_running(int pid)
 {
-	if(kill((*pid),0))
-		*pid = -1;
-	
-	/*DIR *dp;
-	struct dirent *ep;
-     	char proc_id[24];
-	memset(proc_id,0,24);
-	sprintf(proc_id,"%d",(*pid) +1);
-	dp = opendir ("/proc");
-	if (dp != NULL)
-	{
-		while (ep = readdir (dp)){
-			if(strcmp(proc_id,ep->d_name)==0)	
-				return;
-		}
-		closedir (dp);
-		*pid = -1;
-		return;
-	}*/
-	
+	if(kill(pid,0))
+		return -1;
+	return pid;
 }
 
 static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
@@ -483,7 +465,7 @@ static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 	menu = gtk_menu_new();
 	data->device = device;
 	printf("before pid=%d\n",device->dev->pid);
-	check_process_running(&device->dev->pid);
+	device->dev->pid = check_process_running(device->dev->pid);
 	printf("after pid=%d\n",device->dev->pid);
 	if(device->dev->pid == -1 || device->dev->pid == 0){
 		sub_menu =  gtk_menu_item_new_with_label("Start");
@@ -497,6 +479,7 @@ static void start_stop_popup_menu(GtkTopologyDevice *device,GtkTopology *top)
 	gtk_widget_show(sub_menu); 
 	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 1, 0);	
 }
+
 static gboolean gtk_topology_button_press(GtkWidget *widget, GdkEventButton *event)
 {
 	QuadTree *device_tree = GTK_TOPOLOGY_GET_PRIVATE(widget);

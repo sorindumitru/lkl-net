@@ -13,6 +13,13 @@
 
 #include <device.h>
 
+#include <signal.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #define PORT_NO 10000
 #define PACKET_SIZE 4096
 
@@ -71,6 +78,9 @@ typedef struct arp_header {
 	unsigned char target_hdwaddr[6];
 	unsigned int target_protaddr;
 } arp_header;	
+
+int sockfd;
+int fd;
   
 static unsigned short dump_eth_header(eth_header *e)
 {
@@ -207,7 +217,7 @@ void dump_header(unsigned char *buf)
 
 void wait_for_messages( int port_no )
 {
-	int sockfd,newsockfd;
+	int newsockfd;
 	socklen_t len;
 	struct sockaddr_in ip4addr;
 	struct sockaddr_in ll_addr;
@@ -317,9 +327,9 @@ void wait_for_messages( int port_no )
 
 int main(int argc, char** argv)
 {
+	struct sigaction signals;
+	sigset_t mask;
 	printf("LKL NET :: hub started on %d\n", atoi(argv[1]));
-	//conf_info_t *info = malloc(sizeof(*info));
-	//config_init(info);
 
         do_send_pid(DEV_HUB, atoi(argv[1]));
 

@@ -362,7 +362,7 @@ int do_send_pid(enum device_type type, unsigned short port)
                 perror("could not connect to hypervisor");
         }
 
-        hinfo.length = 0;
+        hinfo.length = 16;
         hinfo.type = REQUEST_SET_PORT;
         err = send(sock, &hinfo, sizeof(hinfo), 0);
         if (err < 0) {

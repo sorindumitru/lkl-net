@@ -496,7 +496,7 @@ void* request_thread(void *params)
                         case REQUEST_SET_PORT:
                                 {
                                         printf("RECV SET PID\n");
-                                        int type;
+                                        enum device_type type;
                                         pid_t pid;
                                         err = recv(sock, &type, sizeof(type), 0);
                                         if (err < 0) {
@@ -504,7 +504,7 @@ void* request_thread(void *params)
                                         }
                                         printf("TYPE %d\n", type);
                                         if (type == DEV_HUB) {
-                                                int port;
+                                                unsigned short port;
                                                 struct list_head *head;
                                                 err = recv(sock, &port, sizeof(port), 0);
                                                 if (err < 0) {

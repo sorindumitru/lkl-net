@@ -364,7 +364,7 @@ int do_send_pid(enum device_type type, unsigned short port)
 
         hinfo.length = 16;
         hinfo.type = REQUEST_SET_PORT;
-        err = send(sock, &hinfo, sizeof(hinfo), 0);
+        err = send(sock, &hinfo, hinfo.length, 0);
         if (err < 0) {
                 perror("could not send data");
         }

@@ -17,6 +17,7 @@
 #include <packet.h>
 #include <net/if.h>
 #include <linux/if_tun.h>
+#include <netdb.h>
 
 #include <config.h>
 
@@ -59,25 +60,49 @@ int main(int argc, char **argv)
 	topology_t* topology = NULL;
 	struct list_head *head;
 
-	int port;
-	struct in_addr address;
+	int port = 0;
+	struct in_addr address ;
+	struct hostent *hostinfo; 
 
 	int host, lkl, epoll_listen;
 	struct sockaddr_in saddr;
 	struct epoll_event ev_lkl, ev_host;
-
+	char *letters = malloc(20);
+	memset(letters,0,20);
 	printf("::Bridge v1.0\n");
+	
+	if(argc == 2){
+		printf("::Reading config file\n");
+		info = malloc(sizeof(*info));
+		config_init(info);
+		config_read_file(info, argv[1]);
+		list_for_each(head, &info->topologies){
+			topology = list_entry(head, topology_t, list);
+		}
 
-	printf("::Reading config file\n");
-	info = malloc(sizeof(*info));
-	config_init(info);
-	config_read_file(info, argv[1]);
-	list_for_each(head, &info->topologies){
-		topology = list_entry(head, topology_t, list);
+		port = topology->port;
+		address = topology->address;
+
+	}else if( argc == 3 ){
+	
+		hostinfo = gethostbyname(argv[1]);
+		if (!hostinfo) {
+			printf("unknown host %s\n", argv[1]);
+			return -1;
+		}
+		address =*(struct in_addr *) hostinfo->h_addr;
+
+		port = strtol(argv[2],&letters,10);
+		if(port == 0 || strlen(letters)!=0){
+			printf("Invalid port:: Abort\n");
+			return -1;
+		}
+	
+	}else{
+		printf("bin/bridge config_file \nOR\nbin/bridge IPv4_of_hub_system port\n");
+		return -1;
 	}
 
-	port = topology->port;
-	address = topology->address;
 	printf("::Init host interface\n");
 	host = init_host_interface(interface);
 	if (host < 0) {

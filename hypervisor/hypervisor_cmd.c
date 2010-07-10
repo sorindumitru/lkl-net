@@ -540,18 +540,20 @@ void* request_thread(void *params)
                                                 }
                                                 if (type == DEV_ROUTER) {
                                                         struct list_head *head;
-                                                        list_for_each (head, &hypervisor->links) {
+                                                        list_for_each (head, &hypervisor->routers) {
                                                                 device_t *dev = list_entry(head, device_t, list);
                                                                 if (dev->type == DEV_ROUTER && !strcmp(dev->hostname, hostname)) {
+                                                                        printf("AAA\n");
                                                                         dev->pid = pid;
                                                                 }
                                                         }
                                                 }
                                                 if (type == DEV_SWITCH) {
                                                         struct list_head *head;
-                                                        list_for_each (head, &hypervisor->links) {
+                                                        list_for_each (head, &hypervisor->switches) {
                                                                 device_t *dev = list_entry(head, device_t, list);
                                                                 if (dev->type == DEV_SWITCH && !strcmp(dev->hostname, hostname)) {
+                                                                        printf("BBB\n");
                                                                         dev->pid = pid;
                                                                 }
                                                         }

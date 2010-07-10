@@ -290,6 +290,48 @@ int do_boot_up(struct params *par) {
 	return 0;
 }
 
+int do_kill(device_t *device)
+{
+	if (device->pid > 0) {
+		kill(device->pid, SIGHUP);
+	}
+}
+
+int do_kill_all(struct params *par) {
+	struct list_head *head;
+
+	//starting hubs
+	
+	list_for_each(head, &hypervisor->switches){
+		device_t *device = list_entry(head, device_t, list);
+		printf("LKL NET :: killed %s\n", device->hostname);
+		do_kill(device);
+		//free(params.p[0]);
+	}
+
+	list_for_each(head, &hypervisor->routers){
+		device_t *device = list_entry(head, device_t, list);
+		printf("LKL NET :: killed %s\n", device->hostname);
+		struct params params;
+		do_kill(device);
+		//free(params.p[0]);
+	}
+
+	sleep(1);
+
+	list_for_each(head, &hypervisor->links){
+		device_t *device = list_entry(head, device_t, list);
+		printf("LKL NET :: killed %s\n", device->hostname);
+		struct params params;
+		do_kill(device);
+		//free(params.p[0]);
+	}
+	
+	
+
+	return 0;
+}
+
 static void dump_device(int fd, device_t* device)
 {
 	char buffer[128];

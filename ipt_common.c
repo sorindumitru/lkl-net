@@ -28,7 +28,7 @@ struct option global_options[] = {
 	{.name = "to-source",  .flag = NULL,        .has_arg = 1,  .val = 'S'},
 	{.name = "to-destination",  .flag = NULL,        .has_arg = 1,  .val = 'Z'},
 	{.name = "delete",       .flag = NULL,      .has_arg = 1,  .val = 'D'},
-	{.name = "flush",        .flag = NULL,      .has_arg = 1,  .val = 'F'},	
+	{.name = "flush",        .flag = NULL,      .has_arg = 2,  .val = 'F'},	
 	{NULL},
 };
 
@@ -135,6 +135,7 @@ int do_flush_entries(struct iptargs *ipt)
 {
 	struct iptc_handle *handle;
 	handle = iptc_init(ipt->table);
+	printf("ipt->chain=%s\n",ipt->chain);
 	if (!ipt->chain){
 		const char *this;
 		for (this=iptc_first_chain(handle); this; this=iptc_next_chain(handle)) {

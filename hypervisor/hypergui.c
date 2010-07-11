@@ -84,7 +84,7 @@ pthread_t request;
 char *prompt = ">";
 unsigned int port;
 char *confdir;
-unsigned int deviceport = 57000;
+unsigned int deviceport = 55000;
 
 /// Forward declarations
 static void add_device(GtkWidget *list, const gchar *str);
@@ -852,7 +852,9 @@ gint notify_device(gpointer data)
                 printf("%s %s\n", data, conf_file);
                 close(fd);
                 device->dev->config = conf_file;
-        }
+        } else { 
+		deviceport++;
+	}
 
 	return FALSE;
 }

@@ -301,6 +301,15 @@ void* device_request_thread(void *params)
                                                 perror("could not recv mac");
                                         }
                                         lkl_init_interface_short(interface);
+#ifdef ISSWITCH
+					int ifindex = get_dev_index(interface->dev); 
+					//lkl_if_down(get_dev_index("brd0"));
+					if (lkl_br_add_interface("brd0", ifindex) < 0) {\
+						printf("LKL-net :: could not add interface %s to switch\n", interface->dev);	
+					}
+					//lkl_if_up(get_dev_index("brd0"));
+#endif
+
                                         break;
                                 }
                         case REQ_DEL_IF:
